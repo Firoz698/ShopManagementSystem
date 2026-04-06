@@ -1,0 +1,101 @@
+@model CheckoutViewModel
+@{ ViewData["Title"] = "চেকআউট"; }
+
+<div class="container my-4">
+    <h4 class="fw-bold mb-4"><i class="bi bi-credit-card me-2"></i>চেকআউট</h4>
+    <form asp-action="PlaceOrder" method="post">
+        @Html.AntiForgeryToken()
+        <div class="row g-4">
+            <!-- Shipping Info -->
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-dark text-white fw-semibold">
+                        <i class="bi bi-geo-alt me-2"></i>শিপিং তথ্য
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">সম্পূর্ণ ঠিকানা <span class="text-danger">*</span></label>
+                            <textarea asp-for="ShippingAddress" class="form-control" rows="3"
+                                      placeholder="বাড়ি নং, রাস্তা, এলাকা, শহর..." required></textarea>
+                            <span asp-validation-for="ShippingAddress" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">ফোন নম্বর <span class="text-danger">*</span></label>
+                            <input asp-for="Phone" class="form-control" placeholder="01XXXXXXXXX" required />
+                            <span asp-validation-for="Phone" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">পেমেন্ট পদ্ধতি</label>
+                            <div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="PaymentMethod"
+                                           id="cod" value="Cash on Delivery" checked />
+                                    <label class="form-check-label" for="cod">
+                                        <i class="bi bi-cash-coin text-success me-1"></i>ক্যাশ অন ডেলিভারি
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="PaymentMethod"
+                                           id="online" value="Online Payment" disabled />
+                                    <label class="form-check-label text-muted" for="online">
+                                        <i class="bi bi-credit-card me-1"></i>অনলাইন পেমেন্ট (শীঘ্রই আসছে)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-0">
+                            <label class="form-label fw-medium">বিশেষ নোট (ঐচ্ছিক)</label>
+                            <textarea asp-for="Notes" class="form-control" rows="2"
+                                      placeholder="ডেলিভারি সম্পর্কে কিছু জানাতে চাইলে..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-dark text-white fw-semibold">
+                        <i class="bi bi-receipt me-2"></i>অর্ডার সারসংক্ষেপ
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush">
+                            @foreach (var item in Model.Cart.Items)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="@item.ImageUrl"
+                                             onerror="this.src='https://via.placeholder.com/40x40/f8f9fa/6c757d?text=N/A'"
+                                             class="rounded" style="width:36px;height:36px;object-fit:cover" />
+                                        <div>
+                                            <div class="small fw-medium">@item.Name</div>
+                                            <div class="text-muted" style="font-size:.75rem">×@item.Quantity</div>
+                                        </div>
+                                    </div>
+                                    <span class="fw-semibold small">৳@item.SubTotal.ToString("N0")</span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted small">সাবটোটাল</span>
+                            <span class="small">৳@Model.Cart.SubTotal.ToString("N0")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">ডেলিভারি</span>
+                            <span class="small">৳@Model.Cart.ShippingFee.ToString("N0")</span>
+                        </div>
+                        <div class="d-flex justify-content-between fw-bold border-top pt-2">
+                            <span>মোট পরিশোধ</span>
+                            <span class="text-danger fs-5">৳@Model.Cart.Total.ToString("N0")</span>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100 mt-3 fw-semibold">
+                            <i class="bi bi-bag-check me-2"></i>অর্ডার নিশ্চিত করুন
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,130 @@
+@model ShopManagementSystem.Models.Order
+@{ ViewData["Title"] = $"অর্ডার #{Model.Id}"; }
+
+<div class="row g-4">
+    <!-- Order Items -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between">
+                <h6 class="fw-bold mb-0">অর্ডার #@Model.Id — আইটেম সমূহ</h6>
+                <span class="text-muted small">@Model.OrderDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ছবি</th>
+                            <th>পণ্য</th>
+                            <th class="text-center">একক মূল্য</th>
+                            <th class="text-center">পরিমাণ</th>
+                            <th class="text-end">মোট</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var d in Model.OrderDetails)
+                        {
+                            var img = d.Product?.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
+                                   ?? d.Product?.Images.FirstOrDefault()?.ImageUrl;
+                            <tr>
+                                <td>
+                                    <img src="@img"
+                                         onerror="this.src='https://via.placeholder.com/48/f8f9fa/6c757d?text=N/A'"
+                                         class="rounded" style="width:48px;height:48px;object-fit:cover" />
+                                </td>
+                                <td class="fw-medium small">@d.Product?.Name</td>
+                                <td class="text-center small">৳@d.UnitPrice.ToString("N0")</td>
+                                <td class="text-center small">@d.Quantity</td>
+                                <td class="text-end fw-semibold small">৳@((d.UnitPrice * d.Quantity).ToString("N0"))</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="4" class="text-end fw-bold">মোট পরিশোধ</td>
+                            <td class="text-end fw-bold text-danger fs-6">৳@Model.TotalAmount.ToString("N0")</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Info & Status -->
+    <div class="col-lg-4">
+        <!-- Customer info -->
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-header bg-white py-3">
+                <h6 class="fw-bold mb-0"><i class="bi bi-person me-2"></i>গ্রাহকের তথ্য</h6>
+            </div>
+            <div class="card-body py-3">
+                <div class="mb-2">
+                    <div class="text-muted small">নাম</div>
+                    <div class="fw-medium">@Model.User?.FullName</div>
+                </div>
+                <div class="mb-2">
+                    <div class="text-muted small">ইমেইল</div>
+                    <div class="small">@Model.User?.Email</div>
+                </div>
+                <div class="mb-2">
+                    <div class="text-muted small">ফোন</div>
+                    <div class="small">@Model.Phone</div>
+                </div>
+                <div class="mb-2">
+                    <div class="text-muted small">ঠিকানা</div>
+                    <div class="small">@Model.ShippingAddress</div>
+                </div>
+                <div class="mb-0">
+                    <div class="text-muted small">পেমেন্ট পদ্ধতি</div>
+                    <div class="small fw-medium">@Model.PaymentMethod</div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Notes))
+                {
+                    <div class="mt-2 bg-light rounded p-2 small">
+                        <strong>নোট:</strong> @Model.Notes
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Update Status -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h6 class="fw-bold mb-0"><i class="bi bi-arrow-repeat me-2"></i>স্ট্যাটাস আপডেট</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="text-muted small mb-1">বর্তমান স্ট্যাটাস</div>
+                    <span class="badge badge-status-@Model.Status px-3 py-2 rounded-pill fs-6">@Model.Status</span>
+                </div>
+                <form asp-action="UpdateStatus" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <div class="mb-3">
+                        <label class="form-label fw-medium small">নতুন স্ট্যাটাস</label>
+                        <select name="status" class="form-select">
+                            @foreach (var s in (string[])ViewBag.StatusList)
+                            {
+                                <option value="@s" @@(Model.Status == s ? "selected" : "")>@s</option>
+                            }
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-dark w-100 btn-sm">
+                        <i class="bi bi-check-circle me-2"></i>স্ট্যাটাস আপডেট করুন
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <a asp-action="Index" class="btn btn-outline-secondary w-100 mt-3 btn-sm">
+            <i class="bi bi-arrow-left me-2"></i>সব অর্ডার
+        </a>
+    </div>
+</div>
+
+<style>
+    .badge-status-Pending    { background:#fef3c7;color:#92400e; }
+    .badge-status-Processing { background:#dbeafe;color:#1e40af; }
+    .badge-status-Shipped    { background:#e0e7ff;color:#3730a3; }
+    .badge-status-Completed  { background:#d1fae5;color:#065f46; }
+    .badge-status-Cancelled  { background:#fee2e2;color:#991b1b; }
+</style>

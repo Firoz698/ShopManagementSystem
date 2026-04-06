@@ -1,0 +1,238 @@
+@model ProductDetailViewModel
+@{ ViewData["Title"] = Model.Product.Name; }
+
+<div class="container my-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">হোম</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Product" asp-action="Index">প্রোডাক্ট</a></li>
+            <li class="breadcrumb-item active">@Model.Product.Name</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4 mb-5">
+        <!-- Images -->
+        <div class="col-lg-5">
+            @{
+                var images = Model.Product.Images.ToList();
+                var primary = images.FirstOrDefault(i => i.IsPrimary) ?? images.FirstOrDefault();
+            }
+            <div class="card border-0 shadow-sm p-2">
+                <img id="mainImg" src="@(primary?.ImageUrl ?? "https://via.placeholder.com/500x400/f8f9fa/6c757d?text=No+Image")"
+                     class="img-fluid rounded-2" style="height:380px;object-fit:contain;width:100%"
+                     alt="@Model.Product.Name" />
+            </div>
+            @if (images.Count > 1)
+            {
+                <div class="d-flex gap-2 mt-2 flex-wrap">
+                    @foreach (var img in images)
+                    {
+                        <img src="@img.ImageUrl" onclick="document.getElementById('mainImg').src='@img.ImageUrl'"
+                             class="rounded border cursor-pointer" style="width:64px;height:64px;object-fit:cover;cursor:pointer"
+                             alt="thumb" />
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Details -->
+        <div class="col-lg-7">
+            <div class="small text-muted mb-1">@Model.Product.Category?.Name</div>
+            <h2 class="fw-bold mb-2">@Model.Product.Name</h2>
+
+            <!-- Rating summary -->
+            <div class="d-flex align-items-center gap-2 mb-3">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    <i class="bi @(i <= Math.Round(Model.AvgRating) ? "bi-star-fill text-warning" : "bi-star text-muted")"></i>
+                }
+                <span class="small text-muted">(@Model.Reviews.Count টি রিভিউ)</span>
+            </div>
+
+            <!-- Price -->
+            <div class="mb-3">
+                @if (Model.Product.DiscountPrice.HasValue)
+                {
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="fs-3 fw-bold text-danger">৳@Model.Product.DiscountPrice.Value.ToString("N0")</span>
+                        <span class="fs-5 text-muted text-decoration-line-through">৳@Model.Product.Price.ToString("N0")</span>
+                        <span class="badge bg-danger">
+                            @(Math.Round((1 - Model.Product.DiscountPrice.Value / Model.Product.Price) * 100))% ছাড়
+                        </span>
+                    </div>
+                }
+                else
+                {
+                    <span class="fs-3 fw-bold">৳@Model.Product.Price.ToString("N0")</span>
+                }
+            </div>
+
+            <!-- Stock badge -->
+            <div class="mb-3">
+                @if (Model.Product.Stock > 0)
+                {
+                    <span class="badge bg-success-subtle text-success px-3 py-2">
+                        <i class="bi bi-check-circle me-1"></i>স্টকে আছে (@Model.Product.Stock টি)
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-danger-subtle text-danger px-3 py-2">
+                        <i class="bi bi-x-circle me-1"></i>স্টক শেষ
+                    </span>
+                }
+            </div>
+
+            <!-- Add to cart -->
+            @if (Model.Product.Stock > 0)
+            {
+                <form asp-controller="Cart" asp-action="Add" method="post" class="d-flex gap-2 mb-3">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="productId" value="@Model.Product.Id" />
+                    <div class="input-group" style="width:120px">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="changeQty(-1)">−</button>
+                        <input type="number" name="quantity" id="qtyInput" value="1" min="1" max="@Model.Product.Stock"
+                               class="form-control text-center" />
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="changeQty(1)">+</button>
+                    </div>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <button type="submit" class="btn btn-dark px-4">
+                            <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ করুন
+                        </button>
+                    }
+                    else
+                    {
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-dark px-4">
+                            <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ করুন
+                        </a>
+                    }
+                </form>
+            }
+
+            <!-- Wishlist toggle -->
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <form asp-controller="Wishlist" asp-action="Toggle" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="productId" value="@Model.Product.Id" />
+                    <button type="submit" class="btn @(Model.IsInWishlist ? "btn-danger" : "btn-outline-danger") btn-sm">
+                        <i class="bi @(Model.IsInWishlist ? "bi-heart-fill" : "bi-heart") me-1"></i>
+                        @(Model.IsInWishlist ? "উইশলিস্টে আছে" : "উইশলিস্টে যোগ করুন")
+                    </button>
+                </form>
+            }
+
+            <!-- Description -->
+            @if (!string.IsNullOrWhiteSpace(Model.Product.Description))
+            {
+                <hr />
+                <h6 class="fw-semibold">বিবরণ</h6>
+                <p class="text-muted">@Model.Product.Description</p>
+            }
+        </div>
+    </div>
+
+    <!-- ── Reviews ─────────────────────────────────────────────────────────── -->
+    <div class="row">
+        <div class="col-lg-8">
+            <h5 class="fw-bold mb-3">রিভিউ ও রেটিং</h5>
+
+            <!-- Write review -->
+            @if (User.Identity?.IsAuthenticated == true && !Model.UserReviewed)
+            {
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h6 class="fw-semibold mb-3">আপনার রিভিউ লিখুন</h6>
+                        <form asp-controller="Product" asp-action="AddReview" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="ProductId" value="@Model.Product.Id" />
+                            <div class="mb-3">
+                                <label class="form-label small fw-medium">রেটিং</label>
+                                <select name="Rating" class="form-select form-select-sm" style="width:150px" required>
+                                    <option value="5">⭐⭐⭐⭐⭐ চমৎকার</option>
+                                    <option value="4">⭐⭐⭐⭐ ভালো</option>
+                                    <option value="3">⭐⭐⭐ মোটামুটি</option>
+                                    <option value="2">⭐⭐ খারাপ</option>
+                                    <option value="1">⭐ খুব খারাপ</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-medium">মন্তব্য</label>
+                                <textarea name="Comment" class="form-control" rows="3"
+                                          placeholder="আপনার অভিজ্ঞতা শেয়ার করুন..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-dark btn-sm">রিভিউ জমা দিন</button>
+                        </form>
+                    </div>
+                </div>
+            }
+
+            <!-- Review list -->
+            @if (!Model.Reviews.Any())
+            {
+                <p class="text-muted">এখনো কোনো রিভিউ নেই। প্রথম রিভিউ দিন!</p>
+            }
+            @foreach (var r in Model.Reviews)
+            {
+                <div class="card border-0 shadow-sm mb-2">
+                    <div class="card-body py-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <span class="fw-semibold small">@r.User?.FullName</span>
+                                <div class="d-flex gap-1 my-1">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <i class="bi @(i <= r.Rating ? "bi-star-fill text-warning" : "bi-star text-muted") small"></i>
+                                    }
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(r.Comment))
+                                {
+                                    <p class="mb-0 text-muted small">@r.Comment</p>
+                                }
+                            </div>
+                            <small class="text-muted">@r.CreatedAt.ToString("dd MMM yyyy")</small>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- ── Related Products ────────────────────────────────────────────────── -->
+    @if (Model.RelatedItems.Any())
+    {
+        <h5 class="fw-bold mt-5 mb-3">সম্পর্কিত পণ্য</h5>
+        <div class="row g-3">
+            @foreach (var p in Model.RelatedItems)
+            {
+                var img2 = p.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? p.Images.FirstOrDefault()?.ImageUrl;
+                <div class="col-6 col-md-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <a asp-controller="Product" asp-action="Detail" asp-route-id="@p.Id">
+                            <img src="@img2" class="card-img-top product-thumb"
+                                 onerror="this.src='https://via.placeholder.com/300x220/f8f9fa/6c757d?text=No+Image'"
+                                 alt="@p.Name" />
+                        </a>
+                        <div class="card-body p-2">
+                            <div class="small fw-medium product-title">@p.Name</div>
+                            <div class="small fw-bold text-danger mt-1">৳@((p.DiscountPrice ?? p.Price).ToString("N0"))</div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function changeQty(delta) {
+            var input = document.getElementById('qtyInput');
+            var val = parseInt(input.value) + delta;
+            var max = parseInt(input.max);
+            input.value = Math.max(1, Math.min(val, max));
+        }
+    </script>
+}

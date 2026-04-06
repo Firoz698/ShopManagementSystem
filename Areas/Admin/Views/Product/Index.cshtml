@@ -1,0 +1,124 @@
+@model List<ShopManagementSystem.Models.Product>
+@{ ViewData["Title"] = "প্রোডাক্ট ম্যানেজমেন্ট"; }
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div></div>
+    <a asp-action="Create" class="btn btn-dark">
+        <i class="bi bi-plus-circle me-2"></i>নতুন প্রোডাক্ট
+    </a>
+</div>
+
+<!-- Filter bar -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body py-3">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <input type="text" name="search" value="@ViewBag.Search" class="form-control form-control-sm"
+                       placeholder="প্রোডাক্টের নাম খুঁজুন..." />
+            </div>
+            <div class="col-md-3">
+                <select name="categoryId" class="form-select form-select-sm">
+                    <option value="">সব ক্যাটাগরি</option>
+                    @foreach (var cat in (List<ShopManagementSystem.Models.Category>)ViewBag.Categories)
+                    {
+                        <option value="@cat.Id" @@(ViewBag.CategoryId?.ToString() == cat.Id.ToString() ? "selected" : "")>
+                            @cat.Name
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="isActive" class="form-select form-select-sm">
+                    <option value="">সব স্ট্যাটাস</option>
+                    <option value="true"  @@(ViewBag.IsActive?.ToString() == "True"  ? "selected" : "")>সক্রিয়</option>
+                    <option value="false" @@(ViewBag.IsActive?.ToString() == "False" ? "selected" : "")>নিষ্ক্রিয়</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-dark btn-sm">ফিল্টার</button>
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm">রিসেট</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>ছবি</th>
+                    <th>নাম</th>
+                    <th>ক্যাটাগরি</th>
+                    <th>মূল্য</th>
+                    <th>স্টক</th>
+                    <th>স্ট্যাটাস</th>
+                    <th class="text-center">অ্যাকশন</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    var img = p.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? p.Images.FirstOrDefault()?.ImageUrl;
+                    <tr>
+                        <td>
+                            <img src="@img"
+                                 onerror="this.src='https://via.placeholder.com/50x50/f8f9fa/6c757d?text=N/A'"
+                                 class="rounded" style="width:48px;height:48px;object-fit:cover" />
+                        </td>
+                        <td>
+                            <div class="fw-semibold small">@p.Name</div>
+                            <div class="text-muted" style="font-size:.75rem">ID: #@p.Id</div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">@p.Category?.Name</span></td>
+                        <td>
+                            @if (p.DiscountPrice.HasValue)
+                            {
+                                <div class="fw-bold text-danger small">৳@p.DiscountPrice.Value.ToString("N0")</div>
+                                <div class="text-muted text-decoration-line-through" style="font-size:.75rem">৳@p.Price.ToString("N0")</div>
+                            }
+                            else
+                            {
+                                <span class="fw-semibold small">৳@p.Price.ToString("N0")</span>
+                            }
+                        </td>
+                        <td>
+                            <span class="badge @(p.Stock == 0 ? "bg-danger" : p.Stock <= 5 ? "bg-warning text-dark" : "bg-success") rounded-pill">
+                                @p.Stock
+                            </span>
+                        </td>
+                        <td>
+                            <form asp-action="ToggleActive" asp-route-id="@p.Id" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm @(p.IsActive ? "btn-success" : "btn-secondary")" style="min-width:80px">
+                                    @(p.IsActive ? "সক্রিয়" : "নিষ্ক্রিয়")
+                                </button>
+                            </form>
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex gap-1 justify-content-center">
+                                <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@p.Id" method="post"
+                                      onsubmit="return confirm('প্রোডাক্টটি মুছবেন? এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="7" class="text-center text-muted py-5">কোনো প্রোডাক্ট পাওয়া যায়নি</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer bg-white text-muted small">
+        মোট @Model.Count টি প্রোডাক্ট
+    </div>
+</div>

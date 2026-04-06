@@ -1,0 +1,101 @@
+@model ShopManagementSystem.Models.ApplicationUser
+@{ ViewData["Title"] = "ইউজার বিস্তারিত"; }
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-4">
+                <div class="rounded-circle bg-dark text-white d-inline-flex align-items-center justify-content-center fw-bold mb-3"
+                     style="width:72px;height:72px;font-size:1.8rem">
+                    @Model.FullName[0]
+                </div>
+                <h5 class="fw-bold mb-1">@Model.FullName</h5>
+                <div class="text-muted small mb-2">@Model.Email</div>
+                <span class="badge @(((IList<string>)ViewBag.Roles).Contains("Admin") ? "bg-danger" : "bg-primary") rounded-pill px-3 py-2">
+                    @(((IList<string>)ViewBag.Roles).Contains("Admin") ? "Admin" : "User")
+                </span>
+                <hr />
+                <div class="text-start">
+                    <div class="mb-2">
+                        <span class="text-muted small">ফোন:</span>
+                        <span class="small ms-2">@Model.PhoneNumber</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="text-muted small">ঠিকানা:</span>
+                        <span class="small ms-2">@(Model.Address ?? "—")</span>
+                    </div>
+                    <div>
+                        <span class="text-muted small">নিবন্ধন:</span>
+                        <span class="small ms-2">@Model.CreatedAt.ToString("dd MMM yyyy")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary w-100 mt-3 btn-sm">
+            <i class="bi bi-arrow-left me-2"></i>সব ইউজার
+        </a>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h6 class="fw-bold mb-0">অর্ডারের ইতিহাস</h6>
+            </div>
+            @{
+                var orders = ViewBag.Orders as List<ShopManagementSystem.Models.Order>;
+            }
+            @if (orders == null || !orders.Any())
+            {
+                <div class="card-body text-center text-muted py-5">
+                    <i class="bi bi-bag-x display-3 d-block mb-3 opacity-25"></i>
+                    <p>এই ইউজারের কোনো অর্ডার নেই</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>তারিখ</th>
+                                <th class="text-center">আইটেম</th>
+                                <th class="text-end">মোট</th>
+                                <th>স্ট্যাটাস</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var o in orders)
+                            {
+                                <tr>
+                                    <td class="fw-bold small">#@o.Id</td>
+                                    <td class="text-muted small">@o.OrderDate.ToString("dd MMM yyyy")</td>
+                                    <td class="text-center"><span class="badge bg-secondary rounded-pill">@o.OrderDetails.Count</span></td>
+                                    <td class="text-end fw-semibold small">৳@o.TotalAmount.ToString("N0")</td>
+                                    <td>
+                                        <span class="badge badge-status-@o.Status rounded-pill">@o.Status</span>
+                                    </td>
+                                    <td>
+                                        <a asp-area="Admin" asp-controller="Order" asp-action="Detail"
+                                           asp-route-id="@o.Id" class="btn btn-sm btn-light">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .badge-status-Pending    { background:#fef3c7;color:#92400e; }
+    .badge-status-Processing { background:#dbeafe;color:#1e40af; }
+    .badge-status-Shipped    { background:#e0e7ff;color:#3730a3; }
+    .badge-status-Completed  { background:#d1fae5;color:#065f46; }
+    .badge-status-Cancelled  { background:#fee2e2;color:#991b1b; }
+</style>

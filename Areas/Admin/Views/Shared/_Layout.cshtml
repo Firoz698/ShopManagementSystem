@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <style>
+        :root { --sidebar-w: 250px; }
+        body { background: #f4f6fb; }
+        .admin-sidebar {
+            width: var(--sidebar-w); min-height: 100vh; position: fixed; left: 0; top: 0;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+            z-index: 1000; overflow-y: auto;
+        }
+        .admin-sidebar .brand { padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,.1); }
+        .admin-sidebar .nav-link {
+            color: rgba(255,255,255,.75); padding: .6rem 1.5rem;
+            border-radius: 6px; margin: 2px 8px; font-size: .9rem;
+            transition: all .2s;
+        }
+        .admin-sidebar .nav-link:hover,
+        .admin-sidebar .nav-link.active { background: rgba(255,255,255,.12); color: #fff; }
+        .admin-sidebar .nav-link i { width: 22px; }
+        .admin-sidebar .nav-section { padding: .5rem 1.5rem .25rem; font-size: .7rem;
+            text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.4); }
+        .admin-main { margin-left: var(--sidebar-w); }
+        .admin-topbar {
+            background: #fff; border-bottom: 1px solid #e5e7eb;
+            padding: .75rem 1.5rem; position: sticky; top: 0; z-index: 900;
+        }
+        .stat-card { border: none; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+        .badge-status-Pending    { background: #fef3c7; color: #92400e; }
+        .badge-status-Processing { background: #dbeafe; color: #1e40af; }
+        .badge-status-Shipped    { background: #e0e7ff; color: #3730a3; }
+        .badge-status-Completed  { background: #d1fae5; color: #065f46; }
+        .badge-status-Cancelled  { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="admin-sidebar">
+    <div class="brand">
+        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="text-decoration-none">
+            <span class="text-warning fw-bold fs-5"><i class="bi bi-shop me-2"></i>ShopMS</span>
+            <div class="text-white-50 small">Admin Panel</div>
+        </a>
+    </div>
+
+    <nav class="py-2">
+        <div class="nav-section">প্রধান</div>
+        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index"
+           class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active" : "")">
+            <i class="bi bi-speedometer2 me-2"></i>ড্যাশবোর্ড
+        </a>
+
+        <div class="nav-section mt-2">ক্যাটালগ</div>
+        <a asp-area="Admin" asp-controller="Product" asp-action="Index"
+           class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Product" ? "active" : "")">
+            <i class="bi bi-box-seam me-2"></i>প্রোডাক্ট
+        </a>
+        <a asp-area="Admin" asp-controller="Category" asp-action="Index"
+           class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Category" ? "active" : "")">
+            <i class="bi bi-tag me-2"></i>ক্যাটাগরি
+        </a>
+        <a asp-area="Admin" asp-controller="Slider" asp-action="Index"
+           class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Slider" ? "active" : "")">
+            <i class="bi bi-images me-2"></i>স্লাইডার
+        </a>
+
+        <div class="nav-section mt-2">বিক্রয়</div>
+        <a asp-area="Admin" asp-controller="Order" asp-action="Index"
+           class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Order" ? "active" : "")">
+            <i class="bi bi-receipt me-2"></i>অর্ডার
+        </a>
+
+        <div class="nav-section mt-2">ব্যবহারকারী</div>
+        <a asp-area="Admin" asp-controller="User" asp-action="Index"
+           class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "User" ? "active" : "")">
+            <i class="bi bi-people me-2"></i>ইউজার
+        </a>
+
+        <div class="nav-section mt-2">সাইট</div>
+        <a asp-controller="Home" asp-action="Index" asp-area="" class="nav-link">
+            <i class="bi bi-globe me-2"></i>সাইট দেখুন
+        </a>
+    </nav>
+</aside>
+
+<!-- Main content -->
+<div class="admin-main">
+    <!-- Top bar -->
+    <div class="admin-topbar d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-semibold text-secondary">@ViewData["Title"]</h6>
+        <div class="d-flex align-items-center gap-3">
+            @if (TempData["Success"] != null)
+            {
+                <span class="badge bg-success-subtle text-success py-2 px-3 rounded-pill">
+                    <i class="bi bi-check-circle me-1"></i>@TempData["Success"]
+                </span>
+            }
+            <div class="dropdown">
+                <button class="btn btn-sm btn-light dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="bi bi-person-circle me-1"></i>@User.Identity?.Name?.Split('@')[0]
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <form asp-controller="Account" asp-action="Logout" asp-area="" method="post">
+                            @Html.AntiForgeryToken()
+                            <button class="dropdown-item text-danger" type="submit">
+                                <i class="bi bi-box-arrow-right me-2"></i>লগআউট
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page content -->
+    <div class="p-4">
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show py-2">
+                <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @RenderBody()
+    </div>
+
+    <footer class="text-center py-3 text-muted small border-top bg-white">
+        Developed by <strong>Md Firoz</strong> &mdash; ShopManagementSystem &copy; @DateTime.Now.Year
+    </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+@RenderSection("Scripts", required: false)
+</body>
+</html>

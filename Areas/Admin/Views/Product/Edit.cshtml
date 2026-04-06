@@ -1,0 +1,125 @@
+@model ProductCreateViewModel
+@{ ViewData["Title"] = "প্রোডাক্ট সম্পাদনা"; }
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
+
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">প্রোডাক্টের নাম <span class="text-danger">*</span></label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">ক্যাটাগরি <span class="text-danger">*</span></label>
+                            <select asp-for="CategoryId" asp-items="(SelectList)ViewBag.Categories" class="form-select"></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">স্টক পরিমাণ <span class="text-danger">*</span></label>
+                            <input asp-for="Stock" type="number" min="0" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">মূল্য (৳) <span class="text-danger">*</span></label>
+                            <input asp-for="Price" type="number" step="0.01" min="0" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">ছাড়ের মূল্য (৳)</label>
+                            <input asp-for="DiscountPrice" type="number" step="0.01" min="0" class="form-control" placeholder="ঐচ্ছিক" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">বিবরণ</label>
+                        <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                        <label asp-for="IsActive" class="form-check-label fw-medium">সক্রিয়</label>
+                    </div>
+                </div>
+
+                <!-- Image management -->
+                <div class="col-lg-4">
+                    <div class="card bg-light border-0 mb-3">
+                        <div class="card-body">
+                            <h6 class="fw-semibold mb-3"><i class="bi bi-images me-2"></i>বিদ্যমান ছবি</h6>
+                            @{
+                                var existingImages = ViewBag.ExistingImages as List<ShopManagementSystem.Models.ProductImage>;
+                            }
+                            @if (existingImages != null && existingImages.Any())
+                            {
+                                <div class="d-flex flex-wrap gap-2 mb-3">
+                                    @foreach (var img in existingImages)
+                                    {
+                                        <div class="position-relative">
+                                            <img src="@img.ImageUrl" class="rounded border"
+                                                 style="width:72px;height:72px;object-fit:cover"
+                                                 onerror="this.src='https://via.placeholder.com/72'" />
+                                            <div class="form-check position-absolute top-0 end-0">
+                                                <input type="checkbox" name="RemoveImageIds" value="@img.Id"
+                                                       class="form-check-input" id="rm@img.Id"
+                                                       style="margin:2px" title="মুছুন" />
+                                            </div>
+                                            @if (img.IsPrimary)
+                                            {
+                                                <span class="badge bg-primary position-absolute bottom-0 start-0"
+                                                      style="font-size:.6rem">প্রধান</span>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                                <div class="form-text text-warning small">
+                                    <i class="bi bi-info-circle me-1"></i>চেক করলে ছবি মুছে যাবে
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted small">কোনো ছবি নেই</p>
+                            }
+
+                            <hr class="my-3" />
+                            <h6 class="fw-semibold mb-2 small">নতুন ছবি যোগ করুন</h6>
+                            <input type="file" name="Images" class="form-control form-control-sm"
+                                   multiple accept="image/*" onchange="previewImages(this)" />
+                            <div id="imgPreview" class="d-flex flex-wrap gap-2 mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-dark px-4">
+                    <i class="bi bi-check-circle me-2"></i>আপডেট করুন
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">বাতিল</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function previewImages(input) {
+    var preview = document.getElementById('imgPreview');
+    preview.innerHTML = '';
+    Array.from(input.files).forEach(function(file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'rounded border';
+            img.style.cssText = 'width:72px;height:72px;object-fit:cover';
+            preview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+</script>
+}

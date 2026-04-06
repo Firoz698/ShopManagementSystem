@@ -1,0 +1,105 @@
+@model ProductCreateViewModel
+@{ ViewData["Title"] = "নতুন প্রোডাক্ট যোগ করুন"; }
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
+
+            <div class="row g-4">
+                <!-- Left: main info -->
+                <div class="col-lg-8">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">প্রোডাক্টের নাম <span class="text-danger">*</span></label>
+                        <input asp-for="Name" class="form-control" placeholder="প্রোডাক্টের নাম লিখুন" />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">ক্যাটাগরি <span class="text-danger">*</span></label>
+                            <select asp-for="CategoryId" asp-items="(SelectList)ViewBag.Categories" class="form-select">
+                                <option value="">-- ক্যাটাগরি নির্বাচন করুন --</option>
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">স্টক পরিমাণ <span class="text-danger">*</span></label>
+                            <input asp-for="Stock" type="number" min="0" class="form-control" placeholder="0" />
+                            <span asp-validation-for="Stock" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">মূল্য (৳) <span class="text-danger">*</span></label>
+                            <input asp-for="Price" type="number" step="0.01" min="0" class="form-control" placeholder="0.00" />
+                            <span asp-validation-for="Price" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">ছাড়ের মূল্য (৳)</label>
+                            <input asp-for="DiscountPrice" type="number" step="0.01" min="0" class="form-control" placeholder="ঐচ্ছিক" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">বিবরণ</label>
+                        <textarea asp-for="Description" class="form-control" rows="5"
+                                  placeholder="প্রোডাক্টের বিস্তারিত বিবরণ লিখুন..."></textarea>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input asp-for="IsActive" class="form-check-input" type="checkbox" checked />
+                        <label asp-for="IsActive" class="form-check-label fw-medium">সক্রিয় (ইউজারদের কাছে দৃশ্যমান)</label>
+                    </div>
+                </div>
+
+                <!-- Right: images -->
+                <div class="col-lg-4">
+                    <div class="card bg-light border-dashed h-100" style="border:2px dashed #dee2e6 !important">
+                        <div class="card-body">
+                            <h6 class="fw-semibold mb-3">
+                                <i class="bi bi-images me-2"></i>প্রোডাক্ট ছবি
+                            </h6>
+                            <div class="mb-3">
+                                <input type="file" name="Images" id="imgUpload" class="form-control form-control-sm"
+                                       multiple accept="image/*" onchange="previewImages(this)" />
+                                <div class="form-text">একাধিক ছবি আপলোড করা যাবে। প্রথম ছবিটি প্রধান ছবি হবে।</div>
+                            </div>
+                            <div id="imgPreview" class="d-flex flex-wrap gap-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-dark px-4">
+                    <i class="bi bi-check-circle me-2"></i>প্রোডাক্ট সেভ করুন
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">বাতিল</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function previewImages(input) {
+    var preview = document.getElementById('imgPreview');
+    preview.innerHTML = '';
+    Array.from(input.files).forEach(function(file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'rounded border';
+            img.style.cssText = 'width:72px;height:72px;object-fit:cover';
+            preview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+</script>
+}

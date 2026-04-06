@@ -1,0 +1,54 @@
+@model ShopManagementSystem.Models.Slider
+@{ ViewData["Title"] = "স্লাইডার সম্পাদনা"; }
+
+<div class="card border-0 shadow-sm" style="max-width:680px">
+    <div class="card-body p-4">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div class="mb-3">
+                <label class="form-label fw-medium">বর্তমান ছবি</label>
+                <img src="@Model.ImageUrl" class="d-block rounded w-100 mb-2"
+                     style="height:180px;object-fit:cover"
+                     onerror="this.src='https://via.placeholder.com/680x180/1a1a2e/fff?text=No+Image'" />
+                <label class="form-label fw-medium small">নতুন ছবি (ঐচ্ছিক)</label>
+                <input type="file" name="image" class="form-control form-control-sm" accept="image/*" />
+            </div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-medium small">টাইটেল</label>
+                    <input asp-for="Title" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-medium small">সাব-টাইটেল</label>
+                    <input asp-for="SubTitle" class="form-control" />
+                </div>
+            </div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-medium small">বাটনের লেখা</label>
+                    <input asp-for="ButtonText" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-medium small">বাটনের লিংক</label>
+                    <input asp-for="ButtonUrl" class="form-control" />
+                </div>
+            </div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-medium small">সাজানোর ক্রম</label>
+                    <input asp-for="SortOrder" type="number" min="0" class="form-control" />
+                </div>
+            </div>
+            <div class="form-check form-switch mb-4">
+                <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                <label asp-for="IsActive" class="form-check-label fw-medium">সক্রিয়</label>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-dark px-4">
+                    <i class="bi bi-check-circle me-2"></i>আপডেট করুন
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">বাতিল</a>
+            </div>
+        </form>
+    </div>
+</div>

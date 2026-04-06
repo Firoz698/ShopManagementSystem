@@ -1,0 +1,93 @@
+@model CartViewModel
+@{ ViewData["Title"] = "আমার কার্ট"; }
+
+<div class="container my-4">
+    <h4 class="fw-bold mb-4"><i class="bi bi-cart3 me-2"></i>আমার কার্ট</h4>
+
+    @if (!Model.Items.Any())
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-cart-x display-2 text-muted d-block mb-3"></i>
+            <h5 class="text-muted">আপনার কার্ট খালি</h5>
+            <a asp-controller="Product" asp-action="Index" class="btn btn-dark mt-3">
+                <i class="bi bi-arrow-left me-2"></i>কেনাকাটা শুরু করুন
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <div class="col-lg-8">
+                @foreach (var item in Model.Items)
+                {
+                    <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-body">
+                            <div class="row align-items-center g-3">
+                                <div class="col-3 col-md-2">
+                                    <img src="@item.ImageUrl"
+                                         onerror="this.src='https://via.placeholder.com/80x80/f8f9fa/6c757d?text=N/A'"
+                                         class="img-fluid rounded" style="height:70px;object-fit:cover" alt="@item.Name" />
+                                </div>
+                                <div class="col-5 col-md-5">
+                                    <h6 class="fw-semibold mb-1">@item.Name</h6>
+                                    <div class="text-muted small">একক মূল্য: ৳@item.Price.ToString("N0")</div>
+                                </div>
+                                <div class="col-4 col-md-3">
+                                    <form asp-action="UpdateQuantity" method="post" class="d-flex align-items-center gap-1">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="cartId" value="@item.CartId" />
+                                        <button type="button" class="btn btn-outline-secondary btn-sm"
+                                                onclick="var i=this.nextElementSibling;i.value=Math.max(1,+i.value-1)">−</button>
+                                        <input type="number" name="quantity" value="@item.Quantity" min="1" max="@item.Stock"
+                                               class="form-control form-control-sm text-center" style="width:55px"
+                                               onchange="this.form.submit()" />
+                                        <button type="button" class="btn btn-outline-secondary btn-sm"
+                                                onclick="var i=this.previousElementSibling;i.value=Math.min(@item.Stock,+i.value+1);i.form.submit()">+</button>
+                                    </form>
+                                    <div class="fw-bold mt-1 small text-center">৳@item.SubTotal.ToString("N0")</div>
+                                </div>
+                                <div class="col-12 col-md-2 text-end">
+                                    <form asp-action="Remove" method="post" onsubmit="return confirm('সরিয়ে দিন?')">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="cartId" value="@item.CartId" />
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Order Summary -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-dark text-white fw-semibold">অর্ডার সারসংক্ষেপ</div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">সাবটোটাল</span>
+                            <span>৳@Model.SubTotal.ToString("N0")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">ডেলিভারি চার্জ</span>
+                            <span>৳@Model.ShippingFee.ToString("N0")</span>
+                        </div>
+                        <hr />
+                        <div class="d-flex justify-content-between fw-bold fs-5">
+                            <span>মোট</span>
+                            <span class="text-danger">৳@Model.Total.ToString("N0")</span>
+                        </div>
+                        <a asp-action="Checkout" class="btn btn-dark w-100 mt-3">
+                            <i class="bi bi-credit-card me-2"></i>চেকআউট করুন
+                        </a>
+                        <a asp-controller="Product" asp-action="Index" class="btn btn-outline-secondary w-100 mt-2 btn-sm">
+                            কেনাকাটা চালিয়ে যান
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

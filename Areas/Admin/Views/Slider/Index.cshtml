@@ -1,0 +1,58 @@
+@model List<ShopManagementSystem.Models.Slider>
+@{ ViewData["Title"] = "স্লাইডার ম্যানেজমেন্ট"; }
+
+<div class="d-flex justify-content-end mb-4">
+    <a asp-action="Create" class="btn btn-dark">
+        <i class="bi bi-plus-circle me-2"></i>নতুন স্লাইডার
+    </a>
+</div>
+
+<div class="row g-3">
+    @foreach (var s in Model)
+    {
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="position-relative">
+                    <img src="@s.ImageUrl" class="card-img-top"
+                         style="height:180px;object-fit:cover"
+                         onerror="this.src='https://via.placeholder.com/400x180/1a1a2e/fff?text=No+Image'"
+                         alt="slider" />
+                    <span class="badge @(s.IsActive ? "bg-success" : "bg-secondary") position-absolute top-0 end-0 m-2">
+                        @(s.IsActive ? "সক্রিয়" : "নিষ্ক্রিয়")
+                    </span>
+                    <span class="badge bg-dark position-absolute top-0 start-0 m-2">ক্রম: @s.SortOrder</span>
+                </div>
+                <div class="card-body py-2 px-3">
+                    <div class="fw-semibold small">@(s.Title ?? "(কোনো টাইটেল নেই)")</div>
+                    @if (!string.IsNullOrEmpty(s.SubTitle))
+                    {
+                        <div class="text-muted" style="font-size:.8rem">@s.SubTitle</div>
+                    }
+                    @if (!string.IsNullOrEmpty(s.ButtonText))
+                    {
+                        <span class="badge bg-warning text-dark mt-1">বাটন: @s.ButtonText</span>
+                    }
+                </div>
+                <div class="card-footer bg-white border-0 d-flex gap-2 pt-0 pb-3 px-3">
+                    <a asp-action="Edit" asp-route-id="@s.Id" class="btn btn-sm btn-outline-primary flex-fill">
+                        <i class="bi bi-pencil me-1"></i>সম্পাদনা
+                    </a>
+                    <form asp-action="Delete" asp-route-id="@s.Id" method="post"
+                          onsubmit="return confirm('স্লাইডারটি মুছবেন?')" class="flex-fill">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                            <i class="bi bi-trash me-1"></i>মুছুন
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+    @if (!Model.Any())
+    {
+        <div class="col-12 text-center py-5 text-muted">
+            <i class="bi bi-images display-3 d-block mb-3 opacity-25"></i>
+            <h5>কোনো স্লাইডার নেই</h5>
+        </div>
+    }
+</div>

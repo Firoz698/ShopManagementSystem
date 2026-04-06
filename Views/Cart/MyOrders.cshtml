@@ -1,0 +1,64 @@
+@model List<ShopManagementSystem.Models.Order>
+@{ ViewData["Title"] = "আমার অর্ডার"; }
+
+<div class="container my-4">
+    <h4 class="fw-bold mb-4"><i class="bi bi-bag-check me-2"></i>আমার অর্ডার</h4>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-bag-x display-2 d-block mb-3 opacity-25"></i>
+            <h5>কোনো অর্ডার নেই</h5>
+            <a asp-controller="Product" asp-action="Index" class="btn btn-dark mt-3">কেনাকাটা শুরু করুন</a>
+        </div>
+    }
+    else
+    {
+        @foreach (var order in Model)
+        {
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <span class="fw-bold">অর্ডার #@order.Id</span>
+                        <span class="text-muted small ms-2">@order.OrderDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge badge-status-@order.Status px-3 py-2 rounded-pill">@order.Status</span>
+                        <span class="fw-bold text-danger">৳@order.TotalAmount.ToString("N0")</span>
+                    </div>
+                </div>
+                <div class="card-body py-3">
+                    <div class="row g-2">
+                        @foreach (var d in order.OrderDetails)
+                        {
+                            <div class="col-12">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div>
+                                        <div class="fw-medium small">@d.Product?.Name</div>
+                                        <div class="text-muted" style="font-size:.8rem">
+                                            ৳@d.UnitPrice.ToString("N0") × @d.Quantity =
+                                            <strong>৳@((d.UnitPrice * d.Quantity).ToString("N0"))</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="mt-2 text-muted small">
+                        <i class="bi bi-geo-alt me-1"></i>@order.ShippingAddress &nbsp;|&nbsp;
+                        <i class="bi bi-telephone me-1"></i>@order.Phone &nbsp;|&nbsp;
+                        <i class="bi bi-cash-coin me-1"></i>@order.PaymentMethod
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<style>
+    .badge-status-Pending    { background:#fef3c7;color:#92400e; }
+    .badge-status-Processing { background:#dbeafe;color:#1e40af; }
+    .badge-status-Shipped    { background:#e0e7ff;color:#3730a3; }
+    .badge-status-Completed  { background:#d1fae5;color:#065f46; }
+    .badge-status-Cancelled  { background:#fee2e2;color:#991b1b; }
+</style>

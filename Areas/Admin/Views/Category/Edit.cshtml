@@ -1,0 +1,36 @@
+@model ShopManagementSystem.Models.Category
+@{ ViewData["Title"] = "ক্যাটাগরি সম্পাদনা"; }
+
+<div class="card border-0 shadow-sm" style="max-width:600px">
+    <div class="card-body p-4">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div class="mb-3">
+                <label class="form-label fw-medium">ক্যাটাগরির নাম <span class="text-danger">*</span></label>
+                <input asp-for="Name" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-medium">বর্তমান ছবি</label>
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <div>
+                        <img src="@Model.ImageUrl" class="rounded" style="width:80px;height:80px;object-fit:cover"
+                             onerror="this.style.display='none'" />
+                    </div>
+                }
+                <label class="form-label fw-medium mt-2 small">নতুন ছবি (ঐচ্ছিক)</label>
+                <input type="file" name="image" class="form-control form-control-sm" accept="image/*" />
+            </div>
+            <div class="form-check form-switch mb-4">
+                <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                <label asp-for="IsActive" class="form-check-label fw-medium">সক্রিয়</label>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-dark px-4">
+                    <i class="bi bi-check-circle me-2"></i>আপডেট করুন
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">বাতিল</a>
+            </div>
+        </form>
+    </div>
+</div>
