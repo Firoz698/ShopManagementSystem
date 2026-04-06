@@ -16,6 +16,7 @@ namespace ShopManagementSystem.Controllers
             _signInManager = signInManager;
         }
 
+
         // GET /Account/Register
         [HttpGet]
         public IActionResult Register() => View();
