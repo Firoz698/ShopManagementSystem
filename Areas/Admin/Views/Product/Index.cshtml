@@ -1,109 +1,179 @@
 @model List<ShopManagementSystem.Models.Product>
 @{ ViewData["Title"] = "প্রোডাক্ট ম্যানেজমেন্ট"; }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div></div>
-    <a asp-action="Create" class="btn btn-dark">
-        <i class="bi bi-plus-circle me-2"></i>নতুন প্রোডাক্ট
+<style>
+    /* ── Toolbar ── */
+    .prod-toolbar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:1.25rem; background:#fff; border:1px solid #e9ecef; border-radius:12px; padding:12px 14px; }
+    .toolbar-left { display:flex; align-items:center; gap:8px; flex:1; flex-wrap:wrap; min-width:0; }
+    .prod-srch { height:36px; border:1px solid #e2e8f0; border-radius:8px; padding:0 12px; font-size:13px; outline:none; background:#f8fafc; color:#1e293b; width:220px; min-width:120px; transition:border-color .15s; }
+    .prod-srch:focus { border-color:#94a3b8; background:#fff; }
+    .prod-sel { height:36px; border:1px solid #e2e8f0; border-radius:8px; padding:0 10px; font-size:13px; background:#f8fafc; color:#1e293b; outline:none; cursor:pointer; }
+    .btn-filter { height:36px; padding:0 14px; border-radius:8px; border:none; background:#212529; color:#fff; font-size:13px; font-weight:500; cursor:pointer; transition:opacity .15s; white-space:nowrap; }
+    .btn-filter:hover { opacity:.85; }
+    .btn-reset-prod { height:36px; padding:0 14px; border-radius:8px; border:1px solid #e2e8f0; background:transparent; color:#6c757d; font-size:13px; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; white-space:nowrap; transition:background .12s; }
+    .btn-reset-prod:hover { background:#f8f9fa; color:#495057; }
+    .btn-add-prod { display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 16px; border-radius:8px; border:none; background:#212529; color:#fff; font-size:13px; font-weight:500; cursor:pointer; white-space:nowrap; text-decoration:none; flex-shrink:0; transition:opacity .15s; }
+    .btn-add-prod:hover { opacity:.85; color:#fff; }
+
+    /* ── Card & Table ── */
+    .prod-card { background:#fff; border:1px solid #e9ecef; border-radius:12px; overflow:hidden; }
+    .prod-tbl-wrap { overflow-x:auto; }
+    .prod-table { width:100%; border-collapse:collapse; min-width:650px; }
+    .prod-table thead th { background:#f8f9fa; color:#6c757d; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; padding:11px 14px; text-align:left; border-bottom:1px solid #e9ecef; white-space:nowrap; }
+    .prod-table thead th.tc { text-align:center; }
+    .prod-table tbody tr { border-bottom:1px solid #f1f5f9; transition:background .1s; }
+    .prod-table tbody tr:last-child { border-bottom:none; }
+    .prod-table tbody tr:hover { background:#fafafa; }
+    .prod-table td { padding:12px 14px; font-size:13px; vertical-align:middle; }
+    .prod-table td.tc { text-align:center; }
+    .prod-img { width:44px; height:44px; border-radius:8px; object-fit:cover; border:1px solid #f1f5f9; display:block; }
+    .prod-name-t { font-weight:600; font-size:13px; color:#212529; line-height:1.4; }
+    .prod-id-t { font-size:11px; color:#adb5bd; margin-top:2px; }
+    .cat-badge { display:inline-flex; align-items:center; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:500; background:#f8f9fa; color:#495057; border:1px solid #e9ecef; }
+    .price-sale { font-weight:600; font-size:13px; color:#dc2626; }
+    .price-orig { font-size:11px; color:#adb5bd; text-decoration:line-through; margin-top:1px; }
+    .price-reg { font-weight:600; font-size:13px; color:#212529; }
+    .stk-ok  { display:inline-flex; align-items:center; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:600; background:#dcfce7; color:#15803d; }
+    .stk-low { display:inline-flex; align-items:center; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:600; background:#fef9c3; color:#854d0e; }
+    .stk-out { display:inline-flex; align-items:center; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:600; background:#fee2e2; color:#991b1b; }
+    .toggle-on-btn  { display:inline-flex; align-items:center; padding:4px 14px; border-radius:999px; font-size:11px; font-weight:600; border:none; cursor:pointer; background:#dcfce7; color:#15803d; transition:opacity .12s; }
+    .toggle-off-btn { display:inline-flex; align-items:center; padding:4px 14px; border-radius:999px; font-size:11px; font-weight:600; border:1px solid #e2e8f0; cursor:pointer; background:#f8fafc; color:#64748b; transition:opacity .12s; }
+    .toggle-on-btn:hover, .toggle-off-btn:hover { opacity:.8; }
+    .act-wrap-p { display:flex; gap:6px; justify-content:center; }
+    .btn-act-p { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:8px; border:1px solid #e2e8f0; background:transparent; cursor:pointer; font-size:13px; padding:0; transition:background .12s,border-color .12s; }
+    .btn-edit-p { color:#2563eb; }
+    .btn-edit-p:hover { border-color:#93c5fd; background:#eff6ff; }
+    .btn-del-p  { color:#dc2626; }
+    .btn-del-p:hover  { border-color:#fca5a5; background:#fef2f2; }
+
+    /* ── Footer & Pagination ── */
+    .prod-footer { border-top:1px solid #e9ecef; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; background:#fff; }
+    .prod-footer-info { font-size:12px; color:#adb5bd; }
+    .pgn { display:flex; align-items:center; gap:4px; }
+    .pgn-btn { display:inline-flex; align-items:center; justify-content:center; min-width:30px; height:30px; padding:0 8px; border-radius:8px; border:1px solid #e9ecef; background:transparent; font-size:12px; color:#6c757d; cursor:pointer; transition:background .1s; text-decoration:none; }
+    .pgn-btn:hover { background:#f8f9fa; }
+    .pgn-btn.active { background:#212529; color:#fff; border-color:#212529; }
+    .pgn-btn.disabled { opacity:.4; pointer-events:none; }
+
+    /* ── Mobile cards ── */
+    .prod-mobile { display:none; }
+    .m-prod-card { border-bottom:1px solid #f1f5f9; padding:14px; }
+    .m-prod-card:last-child { border-bottom:none; }
+    .m-prod-top { display:flex; gap:12px; align-items:flex-start; margin-bottom:10px; }
+    .m-prod-info { flex:1; min-width:0; }
+    .m-prod-name { font-weight:600; font-size:14px; color:#212529; }
+    .m-prod-sub  { font-size:11px; color:#adb5bd; margin-top:2px; }
+    .m-prod-bottom { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+    .m-prod-meta { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+
+    @@media(max-width:640px){
+        .prod-tbl-wrap{ display:none; }
+        .prod-mobile{ display:block; }
+        .prod-srch{ width:100%; }
+        .toolbar-left{ flex-direction:column; align-items:stretch; }
+        .prod-sel{ width:100%; }
+    }
+</style>
+
+<div class="prod-toolbar">
+    <div class="toolbar-left">
+        <form method="get" id="filterForm" style="display:contents">
+            <input type="text" name="search" value="@ViewBag.Search"
+                   class="prod-srch" placeholder="প্রোডাক্টের নাম খুঁজুন..." />
+
+            <select name="categoryId" class="prod-sel">
+                <option value="">সব ক্যাটাগরি</option>
+                @foreach (var cat in (List<ShopManagementSystem.Models.Category>)ViewBag.Categories)
+                {
+                    <option value="@cat.Id"
+                        @@(ViewBag.CategoryId?.ToString() == cat.Id.ToString() ? "selected" : "")>
+                        @cat.Name
+                    </option>
+                }
+            </select>
+
+            <select name="isActive" class="prod-sel">
+                <option value="">সব স্ট্যাটাস</option>
+                <option value="true"  @@(ViewBag.IsActive?.ToString() == "True"  ? "selected" : "")>সক্রিয়</option>
+                <option value="false" @@(ViewBag.IsActive?.ToString() == "False" ? "selected" : "")>নিষ্ক্রিয়</option>
+            </select>
+
+            <button type="submit" class="btn-filter">ফিল্টার</button>
+            <a asp-action="Index" class="btn-reset-prod">রিসেট</a>
+        </form>
+    </div>
+
+    <a asp-action="Create" class="btn-add-prod">
+        <i class="bi bi-plus-circle" style="font-size:15px"></i>
+        নতুন প্রোডাক্ট
     </a>
 </div>
 
-<!-- Filter bar -->
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body py-3">
-        <form method="get" class="row g-2 align-items-end">
-            <div class="col-md-4">
-                <input type="text" name="search" value="@ViewBag.Search" class="form-control form-control-sm"
-                       placeholder="প্রোডাক্টের নাম খুঁজুন..." />
-            </div>
-            <div class="col-md-3">
-                <select name="categoryId" class="form-select form-select-sm">
-                    <option value="">সব ক্যাটাগরি</option>
-                    @foreach (var cat in (List<ShopManagementSystem.Models.Category>)ViewBag.Categories)
-                    {
-                        <option value="@cat.Id" @@(ViewBag.CategoryId?.ToString() == cat.Id.ToString() ? "selected" : "")>
-                            @cat.Name
-                        </option>
-                    }
-                </select>
-            </div>
-            <div class="col-md-2">
-                <select name="isActive" class="form-select form-select-sm">
-                    <option value="">সব স্ট্যাটাস</option>
-                    <option value="true"  @@(ViewBag.IsActive?.ToString() == "True"  ? "selected" : "")>সক্রিয়</option>
-                    <option value="false" @@(ViewBag.IsActive?.ToString() == "False" ? "selected" : "")>নিষ্ক্রিয়</option>
-                </select>
-            </div>
-            <div class="col-md-3 d-flex gap-2">
-                <button type="submit" class="btn btn-dark btn-sm">ফিল্টার</button>
-                <a asp-action="Index" class="btn btn-outline-secondary btn-sm">রিসেট</a>
-            </div>
-        </form>
-    </div>
-</div>
+<div class="prod-card">
 
-<div class="card border-0 shadow-sm">
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-dark">
+    <div class="prod-tbl-wrap">
+        <table class="prod-table">
+            <thead>
                 <tr>
                     <th>ছবি</th>
                     <th>নাম</th>
                     <th>ক্যাটাগরি</th>
                     <th>মূল্য</th>
-                    <th>স্টক</th>
-                    <th>স্ট্যাটাস</th>
-                    <th class="text-center">অ্যাকশন</th>
+                    <th class="tc">স্টক</th>
+                    <th class="tc">স্ট্যাটাস</th>
+                    <th class="tc">অ্যাকশন</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var p in Model)
                 {
-                    var img = p.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? p.Images.FirstOrDefault()?.ImageUrl;
+                    var img = p.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
+                              ?? p.Images.FirstOrDefault()?.ImageUrl
+                              ?? "https://via.placeholder.com/44/f1f5f9/94a3b8?text=N%2FA";
+
+                    var stockClass = p.Stock == 0 ? "stk-out" : p.Stock <= 5 ? "stk-low" : "stk-ok";
+
                     <tr>
                         <td>
-                            <img src="@img"
-                                 onerror="this.src='https://via.placeholder.com/50x50/f8f9fa/6c757d?text=N/A'"
-                                 class="rounded" style="width:48px;height:48px;object-fit:cover" />
+                            <img src="@img" class="prod-img"
+                                 onerror="this.src='https://via.placeholder.com/44/f1f5f9/94a3b8?text=N%2FA'"
+                                 alt="@p.Name" />
                         </td>
                         <td>
-                            <div class="fw-semibold small">@p.Name</div>
-                            <div class="text-muted" style="font-size:.75rem">ID: #@p.Id</div>
+                            <div class="prod-name-t">@p.Name</div>
+                            <div class="prod-id-t">ID: #@p.Id</div>
                         </td>
-                        <td><span class="badge bg-light text-dark border">@p.Category?.Name</span></td>
+                        <td><span class="cat-badge">@p.Category?.Name</span></td>
                         <td>
                             @if (p.DiscountPrice.HasValue)
                             {
-                                <div class="fw-bold text-danger small">৳@p.DiscountPrice.Value.ToString("N0")</div>
-                                <div class="text-muted text-decoration-line-through" style="font-size:.75rem">৳@p.Price.ToString("N0")</div>
+                                <div class="price-sale">৳@p.DiscountPrice.Value.ToString("N0")</div>
+                                <div class="price-orig">৳@p.Price.ToString("N0")</div>
                             }
                             else
                             {
-                                <span class="fw-semibold small">৳@p.Price.ToString("N0")</span>
+                                <span class="price-reg">৳@p.Price.ToString("N0")</span>
                             }
                         </td>
-                        <td>
-                            <span class="badge @(p.Stock == 0 ? "bg-danger" : p.Stock <= 5 ? "bg-warning text-dark" : "bg-success") rounded-pill">
-                                @p.Stock
-                            </span>
-                        </td>
-                        <td>
-                            <form asp-action="ToggleActive" asp-route-id="@p.Id" method="post">
+                        <td class="tc"><span class="@stockClass">@p.Stock</span></td>
+                        <td class="tc">
+                            <form asp-action="ToggleActive" asp-route-id="@p.Id" method="post" style="display:contents">
                                 @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-sm @(p.IsActive ? "btn-success" : "btn-secondary")" style="min-width:80px">
+                                <button type="submit" class="@(p.IsActive ? "toggle-on-btn" : "toggle-off-btn")">
                                     @(p.IsActive ? "সক্রিয়" : "নিষ্ক্রিয়")
                                 </button>
                             </form>
                         </td>
-                        <td class="text-center">
-                            <div class="d-flex gap-1 justify-content-center">
-                                <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary">
+                        <td class="tc">
+                            <div class="act-wrap-p">
+                                <a asp-action="Edit" asp-route-id="@p.Id" class="btn-act-p btn-edit-p" title="সম্পাদনা">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 <form asp-action="Delete" asp-route-id="@p.Id" method="post"
-                                      onsubmit="return confirm('প্রোডাক্টটি মুছবেন? এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।')">
+                                      onsubmit="return confirm('প্রোডাক্টটি মুছবেন? এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।')"
+                                      style="display:contents">
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <button type="submit" class="btn-act-p btn-del-p" title="মুছুন">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -113,12 +183,116 @@
                 }
                 @if (!Model.Any())
                 {
-                    <tr><td colspan="7" class="text-center text-muted py-5">কোনো প্রোডাক্ট পাওয়া যায়নি</td></tr>
+                    <tr>
+                        <td colspan="7" style="text-align:center;color:#adb5bd;padding:48px 16px;font-size:14px">
+                            কোনো প্রোডাক্ট পাওয়া যায়নি
+                        </td>
+                    </tr>
                 }
             </tbody>
         </table>
     </div>
-    <div class="card-footer bg-white text-muted small">
-        মোট @Model.Count টি প্রোডাক্ট
+
+    <div class="prod-mobile">
+        @foreach (var p in Model)
+        {
+            var img2 = p.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
+                       ?? p.Images.FirstOrDefault()?.ImageUrl
+                       ?? "https://via.placeholder.com/44/f1f5f9/94a3b8?text=N%2FA";
+            var stockClass2 = p.Stock == 0 ? "stk-out" : p.Stock <= 5 ? "stk-low" : "stk-ok";
+
+            <div class="m-prod-card">
+                <div class="m-prod-top">
+                    <img src="@img2" class="prod-img"
+                         onerror="this.src='https://via.placeholder.com/44/f1f5f9/94a3b8?text=N%2FA'"
+                         alt="@p.Name" />
+                    <div class="m-prod-info">
+                        <div class="m-prod-name">@p.Name</div>
+                        <div class="m-prod-sub">ID: #@p.Id · @p.Category?.Name</div>
+                    </div>
+                </div>
+                <div class="m-prod-bottom">
+                    <div class="m-prod-meta">
+                        @if (p.DiscountPrice.HasValue)
+                        {
+                            <span style="font-size:13px;font-weight:600;color:#dc2626">৳@p.DiscountPrice.Value.ToString("N0")</span>
+                        }
+                        else
+                        {
+                            <span style="font-size:13px;font-weight:600;color:#212529">৳@p.Price.ToString("N0")</span>
+                        }
+                        <span class="@stockClass2">স্টক: @p.Stock</span>
+                        <form asp-action="ToggleActive" asp-route-id="@p.Id" method="post" style="display:contents">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="@(p.IsActive ? "toggle-on-btn" : "toggle-off-btn")">
+                                @(p.IsActive ? "সক্রিয়" : "নিষ্ক্রিয়")
+                            </button>
+                        </form>
+                    </div>
+                    <div class="act-wrap-p">
+                        <a asp-action="Edit" asp-route-id="@p.Id" class="btn-act-p btn-edit-p">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form asp-action="Delete" asp-route-id="@p.Id" method="post"
+                              onsubmit="return confirm('প্রোডাক্টটি মুছবেন?')"
+                              style="display:contents">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn-act-p btn-del-p">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="prod-footer">
+        <span class="prod-footer-info">মোট @Model.Count টি প্রোডাক্ট</span>
+
+        @{
+            int pageSize = 10;
+            int currentPage = ViewBag.CurrentPage ?? 1;
+            int totalPages = ViewBag.TotalPages ?? 1;
+        }
+        @if (totalPages > 1)
+        {
+            <div class="pgn">
+                @if (currentPage > 1)
+                {
+                    <a asp-action="Index" asp-route-page="@(currentPage-1)"
+                       asp-route-search="@ViewBag.Search"
+                       asp-route-categoryId="@ViewBag.CategoryId"
+                       asp-route-isActive="@ViewBag.IsActive"
+                       class="pgn-btn">‹</a>
+                }
+                else
+                {   
+                    <span class="pgn-btn disabled">‹</span>
+                }
+
+                @for (int i = 1; i <= totalPages; i++)
+                {
+                    <a asp-action="Index" asp-route-page="@i"
+                       asp-route-search="@ViewBag.Search"
+                       asp-route-categoryId="@ViewBag.CategoryId"
+                       asp-route-isActive="@ViewBag.IsActive"
+                       class="pgn-btn @(i == currentPage ? "active" : "")">@i</a>
+                }
+
+                @if (currentPage < totalPages)
+                {
+                    <a asp-action="Index" asp-route-page="@(currentPage+1)"
+                       asp-route-search="@ViewBag.Search"
+                       asp-route-categoryId="@ViewBag.CategoryId"
+                       asp-route-isActive="@ViewBag.IsActive"
+                       class="pgn-btn">›</a>
+                }
+                else
+                {
+                    <span class="pgn-btn disabled">›</span>
+                }
+            </div>
+        }
     </div>
 </div>

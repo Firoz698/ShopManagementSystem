@@ -91,5 +91,37 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             }
             return RedirectToAction("Index");
         }
+
+
+
+        // GET
+        public async Task<IActionResult> Edit(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+            return View(user);
+        }
+
+        // POST
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(string id, ApplicationUser model)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            user.FullName = model.FullName;
+            user.PhoneNumber = model.PhoneNumber;
+            user.Address = model.Address;
+
+            var result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded)
+                return RedirectToAction("Detail", new { id });
+
+            foreach (var e in result.Errors)
+                ModelState.AddModelError("", e.Description);
+
+            return View(model);
+        }
     }
 }

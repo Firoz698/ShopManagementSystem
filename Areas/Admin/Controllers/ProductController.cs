@@ -22,26 +22,55 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
         }
 
         // GET /Admin/Product
-        public async Task<IActionResult> Index(string? search, int? categoryId, bool? isActive)
+        public async Task<IActionResult> Index(string? search, int? categoryId, bool? isActive, int page = 1)
         {
             var query = _db.Products
                 .Include(p => p.Category)
                 .Include(p => p.Images)
                 .AsQueryable();
 
+            // 🔍 Search
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(p => p.Name.Contains(search));
+
+            // 📂 Category Filter
             if (categoryId.HasValue)
                 query = query.Where(p => p.CategoryId == categoryId.Value);
+
+            // 🔄 Active Filter
             if (isActive.HasValue)
                 query = query.Where(p => p.IsActive == isActive.Value);
 
-            ViewBag.Categories = await _db.Categories.Where(c => c.IsActive).ToListAsync();
-            ViewBag.Search     = search;
-            ViewBag.CategoryId = categoryId;
-            ViewBag.IsActive   = isActive;
+            // 📊 Total Count (pagination এর জন্য)
+            int totalCount = await query.CountAsync();
 
-            return View(await query.OrderByDescending(p => p.CreatedAt).ToListAsync());
+            int pageSize = 10;
+
+            // ❗ page validation
+            if (page < 1) page = 1;
+
+            int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+            if (page > totalPages && totalPages > 0)
+                page = totalPages;
+
+            // 📥 Data Fetch with Pagination
+            var products = await query
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // 🎯 ViewBag Data
+            ViewBag.Categories = await _db.Categories.Where(c => c.IsActive).ToListAsync();
+            ViewBag.Search = search;
+            ViewBag.CategoryId = categoryId;
+            ViewBag.IsActive = isActive;
+
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+
+            return View(products);
         }
 
         // GET /Admin/Product/Create

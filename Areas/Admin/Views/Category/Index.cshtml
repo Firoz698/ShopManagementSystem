@@ -1,23 +1,309 @@
 @model List<ShopManagementSystem.Models.Category>
-@{ ViewData["Title"] = "ক্যাটাগরি ম্যানেজমেন্ট"; }
+@{
+    ViewData["Title"] = "ক্যাটাগরি ম্যানেজমেন্ট";
+}
 
-<div class="d-flex justify-content-end mb-4">
-    <a asp-action="Create" class="btn btn-dark">
-        <i class="bi bi-plus-circle me-2"></i>নতুন ক্যাটাগরি
+<style>
+    .cat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 1.5rem;
+    }
+
+    .cat-title {
+        font-size: 20px;
+        font-weight: 500;
+    }
+
+    .cat-subtitle {
+        font-size: 13px;
+        color: #6c757d;
+        margin-top: 3px;
+    }
+
+    .btn-add-cat {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #212529;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 18px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: opacity .15s;
+    }
+
+        .btn-add-cat:hover {
+            opacity: .82;
+            color: #fff;
+        }
+
+    /* Desktop table */
+    .cat-card {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .tbl-responsive {
+        overflow-x: auto;
+    }
+
+    .cat-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 600px;
+    }
+
+        .cat-table thead th {
+            background: #f8f9fa;
+            color: #6c757d;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+            white-space: nowrap;
+        }
+
+            .cat-table thead th.tc {
+                text-align: center;
+            }
+
+        .cat-table tbody tr {
+            border-bottom: 1px solid #f0f0f0;
+            transition: background .1s;
+        }
+
+            .cat-table tbody tr:last-child {
+                border-bottom: none;
+            }
+
+            .cat-table tbody tr:hover {
+                background: #fafafa;
+            }
+
+        .cat-table td {
+            padding: 14px 16px;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+            .cat-table td.tc {
+                text-align: center;
+            }
+
+    .cat-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .cat-avatar-ph {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #fff3cd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
+
+    .cat-name {
+        font-weight: 600;
+        color: #212529;
+    }
+
+    .cat-slug {
+        font-family: monospace;
+        font-size: 12px;
+        background: #f8f9fa;
+        color: #6c757d;
+        padding: 3px 8px;
+        border-radius: 4px;
+        border: 1px solid #e9ecef;
+        white-space: nowrap;
+    }
+
+    .badge-count {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .badge-active {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .badge-inactive {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        background: #f1f5f9;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+    }
+
+    .act-wrap {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+    }
+
+    .btn-act {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        background: transparent;
+        cursor: pointer;
+        font-size: 13px;
+        padding: 0;
+        transition: background .12s, border-color .12s;
+    }
+
+        .btn-act.edit {
+            color: #2563eb;
+        }
+
+            .btn-act.edit:hover {
+                border-color: #93c5fd;
+                background: #eff6ff;
+            }
+
+        .btn-act.del {
+            color: #dc2626;
+        }
+
+            .btn-act.del:hover {
+                border-color: #fca5a5;
+                background: #fef2f2;
+            }
+
+    .cat-empty {
+        text-align: center;
+        color: #9ca3af;
+        padding: 48px 16px;
+        font-size: 14px;
+    }
+
+    /* Mobile cards */
+    .mobile-cards {
+        display: none;
+    }
+
+    .m-card {
+        padding: 14px 16px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+        .m-card:last-child {
+            border-bottom: none;
+        }
+
+    .m-top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+
+    .m-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .m-name {
+        font-weight: 600;
+        font-size: 15px;
+        color: #212529;
+    }
+
+    .m-slug-m {
+        font-size: 11px;
+        color: #9ca3af;
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .m-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .m-badges {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+    }
+
+    @@media (max-width: 640px) {
+        .tbl-responsive {
+            display: none;
+        }
+
+        .mobile-cards {
+            display: block;
+        }
+    }
+</style>
+
+<div class="cat-header">
+    <div>
+        <div class="cat-title">ক্যাটাগরি ম্যানেজমেন্ট</div>
+        <div class="cat-subtitle">মোট @Model.Count টি ক্যাটাগরি</div>
+    </div>
+    <a asp-action="Create" class="btn-add-cat">
+        <i class="bi bi-plus-circle"></i> নতুন ক্যাটাগরি
     </a>
 </div>
 
-<div class="card border-0 shadow-sm">
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-dark">
+<div class="cat-card">
+
+    <div class="tbl-responsive">
+        <table class="cat-table">
+            <thead>
                 <tr>
                     <th>ছবি</th>
                     <th>নাম</th>
                     <th>স্লাগ</th>
-                    <th class="text-center">প্রোডাক্ট সংখ্যা</th>
-                    <th class="text-center">স্ট্যাটাস</th>
-                    <th class="text-center">অ্যাকশন</th>
+                    <th class="tc">প্রোডাক্ট</th>
+                    <th class="tc">স্ট্যাটাস</th>
+                    <th class="tc">অ্যাকশন</th>
                 </tr>
             </thead>
             <tbody>
@@ -27,37 +313,35 @@
                         <td>
                             @if (!string.IsNullOrEmpty(cat.ImageUrl))
                             {
-                                <img src="@cat.ImageUrl" class="rounded-circle"
-                                     style="width:42px;height:42px;object-fit:cover"
-                                     onerror="this.src='https://via.placeholder.com/42'" />
+                                <img src="@cat.ImageUrl" class="cat-avatar"
+                                     onerror="this.src='https://via.placeholder.com/40'" alt="@cat.Name" />
                             }
                             else
                             {
-                                <div class="rounded-circle bg-warning d-flex align-items-center justify-content-center"
-                                     style="width:42px;height:42px">
-                                    <i class="bi bi-grid text-dark"></i>
+                                <div class="cat-avatar-ph">
+                                    <i class="bi bi-grid"></i>
                                 </div>
                             }
                         </td>
-                        <td class="fw-semibold">@cat.Name</td>
-                        <td><code class="small">@cat.Slug</code></td>
-                        <td class="text-center">
-                            <span class="badge bg-primary rounded-pill">@cat.Products.Count</span>
+                        <td><span class="cat-name">@cat.Name</span></td>
+                        <td><span class="cat-slug">@cat.Slug</span></td>
+                        <td class="tc">
+                            <span class="badge-count">@cat.Products.Count</span>
                         </td>
-                        <td class="text-center">
-                            <span class="badge @(cat.IsActive ? "bg-success" : "bg-secondary") rounded-pill px-3">
+                        <td class="tc">
+                            <span class="@(cat.IsActive ? "badge-active" : "badge-inactive")">
                                 @(cat.IsActive ? "সক্রিয়" : "নিষ্ক্রিয়")
                             </span>
                         </td>
-                        <td class="text-center">
-                            <div class="d-flex gap-1 justify-content-center">
-                                <a asp-action="Edit" asp-route-id="@cat.Id" class="btn btn-sm btn-outline-primary">
+                        <td class="tc">
+                            <div class="act-wrap">
+                                <a asp-action="Edit" asp-route-id="@cat.Id" class="btn-act edit" title="সম্পাদনা">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 <form asp-action="Delete" asp-route-id="@cat.Id" method="post"
-                                      onsubmit="return confirm('ক্যাটাগরিটি মুছবেন?')">
+                                      onsubmit="return confirm('ক্যাটাগরিটি মুছবেন?')" style="display:contents">
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <button type="submit" class="btn-act del" title="মুছুন">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -67,9 +351,57 @@
                 }
                 @if (!Model.Any())
                 {
-                    <tr><td colspan="6" class="text-center text-muted py-5">কোনো ক্যাটাগরি নেই</td></tr>
+                    <tr><td colspan="6" class="cat-empty">কোনো ক্যাটাগরি নেই</td></tr>
                 }
             </tbody>
         </table>
     </div>
+
+    <div class="mobile-cards">
+        @foreach (var cat in Model)
+        {
+            <div class="m-card">
+                <div class="m-top">
+                    @if (!string.IsNullOrEmpty(cat.ImageUrl))
+                    {
+                        <img src="@cat.ImageUrl" class="cat-avatar"
+                             onerror="this.src='https://via.placeholder.com/40'" alt="@cat.Name" />
+                    }
+                    else
+                    {
+                        <div class="cat-avatar-ph"><i class="bi bi-grid"></i></div>
+                    }
+                    <div class="m-info">
+                        <div class="m-name">@cat.Name</div>
+                        <div class="m-slug-m">@cat.Slug</div>
+                    </div>
+                </div>
+                <div class="m-bottom">
+                    <div class="m-badges">
+                        <span class="badge-count">@cat.Products.Count প্রোডাক্ট</span>
+                        <span class="@(cat.IsActive ? "badge-active" : "badge-inactive")">
+                            @(cat.IsActive ? "সক্রিয়" : "নিষ্ক্রিয়")
+                        </span>
+                    </div>
+                    <div class="act-wrap">
+                        <a asp-action="Edit" asp-route-id="@cat.Id" class="btn-act edit">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form asp-action="Delete" asp-route-id="@cat.Id" method="post"
+                              onsubmit="return confirm('ক্যাটাগরিটি মুছবেন?')" style="display:contents">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn-act del">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+        @if (!Model.Any())
+        {
+            <div class="cat-empty">কোনো ক্যাটাগরি নেই</div>
+        }
+    </div>
+
 </div>
