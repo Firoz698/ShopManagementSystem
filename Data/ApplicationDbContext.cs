@@ -19,9 +19,17 @@ namespace ShopManagementSystem.Data
         public DbSet<OrderDetail>  OrderDetails { get; set; }
         public DbSet<Review>       Reviews      { get; set; }
 
+        public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<PaymentTransaction>()
+                .HasOne(p => p.Order)
+                .WithOne()
+                .HasForeignKey<PaymentTransaction>(p => p.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Unique constraints
             builder.Entity<Cart>()

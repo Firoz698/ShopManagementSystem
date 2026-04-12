@@ -32,6 +32,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<ISslCommerzService, SslCommerzService>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession(options =>
 {
