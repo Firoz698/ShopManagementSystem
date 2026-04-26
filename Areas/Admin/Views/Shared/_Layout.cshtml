@@ -212,6 +212,18 @@
             <a asp-controller="Home" asp-action="Index" asp-area="" class="nav-link">
                 <i class="bi bi-globe me-2"></i>সাইট দেখুন
             </a>
+
+            <!-- কম্বো অফার -->
+            <a asp-area="Admin" asp-controller="Combo" asp-action="Index"
+               class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Combo" ? "active" : "")">
+                <i class="bi bi-gift me-2"></i>কম্বো অফার
+            </a>
+
+            <!-- হোমপেজ সেকশন -->
+            <a asp-area="Admin" asp-controller="HomepageSection" asp-action="Index"
+               class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "HomepageSection" ? "active" : "")">
+                <i class="bi bi-layout-text-window me-2"></i>হোমপেজ সেকশন
+            </a>
         </nav>
     </aside>
 

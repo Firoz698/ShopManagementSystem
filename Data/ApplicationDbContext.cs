@@ -25,6 +25,11 @@ namespace ShopManagementSystem.Data
 
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
         public DbSet<ReturnRequest> ReturnRequests { get; set; }
+        public DbSet<ComboOffer> ComboOffers { get; set; }
+        public DbSet<ComboItem> ComboItems { get; set; }
+        public DbSet<HomepageSection> HomepageSections { get; set; }
+        public DbSet<HomepageSectionCategory> HomepageSectionCategories { get; set; }
+        public DbSet<HomepageSectionProduct> HomepageSectionProducts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -32,6 +37,30 @@ namespace ShopManagementSystem.Data
 
             builder.Entity<ReturnRequest>()
                 .HasIndex(r => new { r.OrderId, r.ProductId, r.UserId });
+
+            builder.Entity<ComboOffer>()
+                .HasMany(c => c.Items)
+                .WithOne(i => i.Combo)
+                .HasForeignKey(i => i.ComboId)
+                .OnDelete(DeleteBehavior.Cascade);
+            builder.Entity<ComboItem>()
+                .HasOne(ci => ci.Product)
+                .WithMany()
+                .HasForeignKey(ci => ci.ProductId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<HomepageSection>()
+                .HasMany(s => s.Categories)
+                .WithOne(sc => sc.Section)
+                .HasForeignKey(sc => sc.SectionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<HomepageSection>()
+                .HasMany(s => s.Products)
+                .WithOne(sp => sp.Section)
+                .HasForeignKey(sp => sp.SectionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
 
             builder.Entity<ChatMessage>()
                 .HasOne(c => c.Sender)

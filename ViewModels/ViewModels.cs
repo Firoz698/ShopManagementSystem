@@ -45,9 +45,11 @@ namespace ShopManagementSystem.ViewModels
     // ── Home / Product ───────────────────────────────────────────────────────────
     public class HomeViewModel
     {
-        public List<Slider>   Sliders    { get; set; } = new();
+        public List<Slider> Sliders { get; set; } = new();
         public List<Category> Categories { get; set; } = new();
-        public List<Product>  Products   { get; set; } = new();
+        public List<Product> Products { get; set; } = new();
+        public List<ComboOffer> ComboOffers { get; set; } = new();
+        public List<HomepageSection> Sections { get; set; } = new();
     }
 
     public class ProductListViewModel
@@ -137,7 +139,56 @@ namespace ShopManagementSystem.ViewModels
     //    public CartViewModel Cart { get; set; } = new();
     //}
 
+    public class ComboCreateViewModel
+    {
+        [Required, MaxLength(200)]
+        public string Title { get; set; } = string.Empty;
 
+        [MaxLength(500)]
+        public string? Description { get; set; }
+
+        [Required]
+        public decimal ComboPrice { get; set; }
+
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public bool IsActive { get; set; } = true;
+        public int SortOrder { get; set; } = 0;
+
+        public IFormFile? BannerImage { get; set; }
+
+        // Selected product IDs + quantities
+        public List<ComboProductEntry> Products { get; set; } = new();
+    }
+
+    public class ComboProductEntry
+    {
+        public int ProductId { get; set; }
+        public int Quantity { get; set; } = 1;
+    }
+
+    // ── Homepage Section Create ViewModel ────────────────────────────────────────
+    public class HomepageSectionCreateViewModel
+    {
+        [Required, MaxLength(100)]
+        public string Title { get; set; } = string.Empty;
+
+        [Required]
+        public string SectionType { get; set; } = "category"; // category|combo|product|banner
+
+        public string? SubTitle { get; set; }
+        public string? BgColor { get; set; } = "#ffffff";
+        public string? TextColor { get; set; } = "#000000";
+        public string? ButtonText { get; set; }
+        public string? ButtonUrl { get; set; }
+        public bool IsActive { get; set; } = true;
+        public int SortOrder { get; set; } = 0;
+
+        public IFormFile? BannerImage { get; set; }
+
+        public List<int> SelectedCategoryIds { get; set; } = new();
+        public List<int> SelectedProductIds { get; set; } = new();
+    }
 
 
     public class CheckoutViewModel
@@ -267,6 +318,11 @@ namespace ShopManagementSystem.ViewModels
             "Pending", "Processing", "Shipped", "Completed", "Cancelled"
         };
     }
+
+
+
+
+
 }
 
 // Dummy attribute for ViewModel (no EF needed here)

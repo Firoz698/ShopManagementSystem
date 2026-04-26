@@ -1,0 +1,122 @@
+﻿@model List<ShopManagementSystem.Models.ComboOffer>
+@{
+    ViewData["Title"] = "কম্বো অফার ম্যানেজমেন্ট";
+}
+
+<div class="d-flex justify-content-end mb-4">
+    <a asp-action="Create" class="btn btn-dark">
+        <i class="bi bi-plus-circle me-2"></i>নতুন কম্বো অফার
+    </a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-5 text-muted">
+        <i class="bi bi-gift display-3 d-block mb-3 opacity-25"></i>
+        <h5>কোনো কম্বো অফার নেই</h5>
+        <a asp-action="Create" class="btn btn-dark mt-2">প্রথম কম্বো তৈরি করুন</a>
+    </div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var combo in Model)
+        {
+            var savings = combo.OriginalPrice.HasValue ? combo.OriginalPrice.Value - combo.ComboPrice : 0;
+            var isExpired = combo.EndDate.HasValue && combo.EndDate < DateTime.Now;
+
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100 @(isExpired ? "opacity-50" : "")">
+                    @if (!string.IsNullOrEmpty(combo.BannerImageUrl))
+                    {
+                        <img src="@combo.BannerImageUrl" class="card-img-top"
+                             style="height:140px;object-fit:cover" alt="@combo.Title" />
+                    }
+                    else
+                    {
+                        <div class="d-flex" style="height:120px;background:#f8f9fa;overflow:hidden">
+                            @foreach (var item in combo.Items.Take(3))
+                            {
+                                var pImg = item.Product?.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
+                                ?? item.Product?.Images.FirstOrDefault()?.ImageUrl;
+                                <div class="flex-fill overflow-hidden">
+                                    <img src="@pImg" style="width:100%;height:120px;object-fit:cover"
+                                         onerror="this.src='https://via.placeholder.com/150x120/e9ecef/6c757d?text=+'"
+                                         alt="" />
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="fw-bold mb-0">@combo.Title</h6>
+                            <span class="badge @(combo.IsActive && !isExpired ? "bg-success" : "bg-secondary") rounded-pill">
+                                @(isExpired ? "মেয়াদ শেষ" : combo.IsActive ? "সক্রিয়" : "নিষ্ক্রিয়")
+                            </span>
+                        </div>
+
+                        <!-- Products -->
+                        <div class="mb-2">
+                            @foreach (var item in combo.Items)
+                            {
+                                <div class="d-flex align-items-center gap-1 mb-1">
+                                    <i class="bi bi-check2 text-success small"></i>
+                                    <span class="small">
+                                        @item.Product?.Name
+                                        @if (item.Quantity > 1)
+                                        {
+                                            <span class="text-muted">(×@item.Quantity)</span>
+                                        }
+                                    </span>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Price -->
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="fw-bold text-danger fs-6">৳@combo.ComboPrice.ToString("N0")</span>
+                            @if (combo.OriginalPrice.HasValue)
+                            {
+                                <span class="text-muted small text-decoration-line-through">
+                                    ৳@combo.OriginalPrice.Value.ToString("N0")
+                                </span>
+                                <span class="badge bg-danger-subtle text-danger">৳@savings.ToString("N0") ছাড়</span>
+                            }
+                        </div>
+
+                        <!-- Dates -->
+                        @if (combo.StartDate.HasValue || combo.EndDate.HasValue)
+                        {
+                            <div class="small text-muted">
+                                <i class="bi bi-calendar3 me-1"></i>
+                                @(combo.StartDate?.ToString("dd MMM") ?? "এখন") →
+                                @(combo.EndDate?.ToString("dd MMM yyyy") ?? "অনির্দিষ্ট")
+                            </div>
+                        }
+                    </div>
+
+                    <div class="card-footer bg-white border-0 pb-3 px-3 d-flex gap-2">
+                        <a asp-action="Edit" asp-route-id="@combo.Id"
+                           class="btn btn-sm btn-outline-primary flex-fill">
+                            <i class="bi bi-pencil me-1"></i>সম্পাদনা
+                        </a>
+                        <form asp-action="ToggleActive" asp-route-id="@combo.Id" method="post" class="flex-fill">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm @(combo.IsActive ? "btn-outline-warning" : "btn-outline-success") w-100">
+                                @(combo.IsActive ? "নিষ্ক্রিয় করুন" : "সক্রিয় করুন")
+                            </button>
+                        </form>
+                        <form asp-action="Delete" asp-route-id="@combo.Id" method="post"
+                              onsubmit="return confirm('কম্বোটি মুছবেন?')">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

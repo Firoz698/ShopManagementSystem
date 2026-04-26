@@ -1,0 +1,270 @@
+﻿@model ComboCreateViewModel
+@{
+    ViewData["Title"] = "নতুন কম্বো অফার তৈরি করুন";
+}
+
+@{
+    var allProducts = ViewBag.Products as List<ShopManagementSystem.Models.Product> ?? new();
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <div class="row g-4">
+                <!-- ── Left ─────────────────────────────────────────────── -->
+                <div class="col-lg-7">
+
+                    <!-- Basic Info -->
+                    <div class="card bg-light border-0 mb-3">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3">🎁 কম্বো তথ্য</h6>
+                            <div class="mb-3">
+                                <label class="form-label fw-medium small">কম্বোর নাম <span class="text-danger">*</span></label>
+                                <input asp-for="Title" class="form-control" placeholder="যেমন: সামার বান্ডেল প্যাক" />
+                                <span asp-validation-for="Title" class="text-danger small"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-medium small">বিবরণ</label>
+                                <textarea asp-for="Description" class="form-control" rows="2"
+                                          placeholder="কম্বো সম্পর্কে সংক্ষিপ্ত বিবরণ..."></textarea>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-medium small">কম্বো মূল্য (৳) <span class="text-danger">*</span></label>
+                                    <input asp-for="ComboPrice" type="number" step="0.01" class="form-control"
+                                           placeholder="0.00" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-medium small">শুরুর তারিখ</label>
+                                    <input asp-for="StartDate" type="date" class="form-control" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-medium small">শেষের তারিখ</label>
+                                    <input asp-for="EndDate" type="date" class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Selection -->
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold mb-0">📦 পণ্য নির্বাচন করুন</h6>
+                                <button type="button" class="btn btn-sm btn-dark" onclick="addProductRow()">
+                                    <i class="bi bi-plus me-1"></i>পণ্য যোগ করুন
+                                </button>
+                            </div>
+
+                            <div id="productRows">
+                                <!-- Initial row -->
+                                <div class="product-row row g-2 align-items-center mb-2" id="row0">
+                                    <div class="col-8">
+                                        <select name="Products[0].ProductId" class="form-select form-select-sm"
+                                                onchange="updatePreview(this)">
+                                            <option value="0">-- পণ্য নির্বাচন করুন --</option>
+                                            @foreach (var p in allProducts)
+                                            {
+                                                var pImg = p.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? p.Images.FirstOrDefault()?.ImageUrl;
+                                                <option value="@p.Id"
+                                                        data-price="@(p.DiscountPrice ?? p.Price)"
+                                                        data-name="@p.Name"
+                                                        data-img="@pImg">
+                                                    @p.Name — ৳@((p.DiscountPrice ?? p.Price).ToString("N0"))
+                                                </option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text">×</span>
+                                            <input type="number" name="Products[0].Quantity"
+                                                   class="form-control qty-input" value="1" min="1" max="99"
+                                                   onchange="recalcTotal()" />
+                                        </div>
+                                    </div>
+                                    <div class="col-1 text-center">
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                onclick="removeRow('row0')">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Total preview -->
+                            <div class="mt-3 p-3 bg-white rounded-3 border">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="small text-muted">পণ্যগুলোর মোট মূল্য</span>
+                                    <span class="small fw-semibold" id="originalTotal">৳০</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="small text-muted">কম্বো মূল্য</span>
+                                    <span class="small fw-semibold text-danger" id="comboTotal">৳০</span>
+                                </div>
+                                <div class="d-flex justify-content-between border-top pt-2">
+                                    <span class="fw-bold small">সাশ্রয়</span>
+                                    <span class="fw-bold text-success" id="savingsTotal">৳০</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Right ─────────────────────────────────────────────── -->
+                <div class="col-lg-5">
+                    <!-- Banner Image -->
+                    <div class="card bg-light border-0 mb-3">
+                        <div class="card-body">
+                            <h6 class="fw-semibold mb-3"><i class="bi bi-image me-2"></i>ব্যানার ছবি</h6>
+                            <input type="file" name="BannerImage" class="form-control form-control-sm"
+                                   accept="image/*"
+                                   onchange="document.getElementById('bannerPreview').src=URL.createObjectURL(this.files[0]);document.getElementById('bannerPreview').style.display='block'" />
+                            <img id="bannerPreview" src="#" class="mt-2 rounded w-100"
+                                 style="height:140px;object-fit:cover;display:none" />
+                            <div class="form-text">না দিলে পণ্যের ছবি থেকে auto-generate হবে।</div>
+                        </div>
+                    </div>
+
+                    <!-- Product Preview -->
+                    <div class="card bg-light border-0 mb-3">
+                        <div class="card-body">
+                            <h6 class="fw-semibold mb-2">📋 নির্বাচিত পণ্য</h6>
+                            <div id="productPreview" class="small text-muted">
+                                এখনো কোনো পণ্য নির্বাচন করা হয়নি
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h6 class="fw-semibold mb-3">⚙️ সেটিংস</h6>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-medium small">সাজানোর ক্রম</label>
+                                    <input asp-for="SortOrder" type="number" min="0" class="form-control form-control-sm" />
+                                </div>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input asp-for="IsActive" class="form-check-input" type="checkbox" checked />
+                                <label class="form-check-label fw-medium">সক্রিয় (হোমপেজে দেখাবে)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-dark px-4">
+                    <i class="bi bi-check-circle me-2"></i>কম্বো সেভ করুন
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">বাতিল</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var rowIndex = 1;
+        var productData = {};
+
+        // Build product data map
+        @foreach (var p in allProducts)
+        {
+                var pImg = p.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? p.Images.FirstOrDefault()?.ImageUrl ?? "";
+                <text>
+                productData[@p.Id] = {
+                    name:  "@p.Name.Replace("\"", "\\\"") ",
+                    price: @((p.DiscountPrice ?? p.Price).ToString("F2", System.Globalization.CultureInfo.InvariantCulture)),
+                    img:   "@pImg"
+                };
+                </text>
+        }
+
+        function addProductRow() {
+            var i = rowIndex++;
+            var opts = '<option value="0">-- পণ্য নির্বাচন করুন --</option>';
+            for (var id in productData) {
+                opts += `<option value="${id}" data-price="${productData[id].price}" data-name="${productData[id].name}" data-img="${productData[id].img}">
+                    ${productData[id].name} — ৳${Math.round(productData[id].price).toLocaleString()}
+                </option>`;
+            }
+            var html = `
+            <div class="product-row row g-2 align-items-center mb-2" id="row${i}">
+                <div class="col-8">
+                    <select name="Products[${i}].ProductId" class="form-select form-select-sm" onchange="updatePreview(this)">
+                        ${opts}
+                    </select>
+                </div>
+                <div class="col-3">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">×</span>
+                        <input type="number" name="Products[${i}].Quantity" class="form-control qty-input"
+                               value="1" min="1" max="99" onchange="recalcTotal()" />
+                    </div>
+                </div>
+                <div class="col-1 text-center">
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow('row${i}')">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+            </div>`;
+            document.getElementById('productRows').insertAdjacentHTML('beforeend', html);
+        }
+
+        function removeRow(id) {
+            var el = document.getElementById(id);
+            if (el) { el.remove(); recalcTotal(); updatePreviewAll(); }
+        }
+
+        function updatePreview(select) {
+            recalcTotal();
+            updatePreviewAll();
+        }
+
+        function updatePreviewAll() {
+            var selects = document.querySelectorAll('#productRows select');
+            var html = '';
+            selects.forEach(function(sel) {
+                var opt = sel.options[sel.selectedIndex];
+                var id  = sel.value;
+                if (id && id !== '0' && productData[id]) {
+                    var qty = sel.closest('.product-row').querySelector('.qty-input').value;
+                    html += `<div class="d-flex align-items-center gap-2 mb-1">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <span>${productData[id].name} <span class="text-muted">×${qty}</span></span>
+                    </div>`;
+                }
+            });
+            document.getElementById('productPreview').innerHTML = html || '<span class="text-muted">এখনো কোনো পণ্য নির্বাচন হয়নি</span>';
+        }
+
+        function recalcTotal() {
+            var total = 0;
+            document.querySelectorAll('#productRows .product-row').forEach(function(row) {
+                var sel = row.querySelector('select');
+                var qty = parseFloat(row.querySelector('.qty-input')?.value || 1);
+                var id  = sel?.value;
+                if (id && id !== '0' && productData[id]) {
+                    total += productData[id].price * qty;
+                }
+            });
+            var comboPrice = parseFloat(document.querySelector('[name="ComboPrice"]')?.value || 0);
+            var savings    = total - comboPrice;
+
+            document.getElementById('originalTotal').textContent = '৳' + Math.round(total).toLocaleString();
+            document.getElementById('comboTotal').textContent    = '৳' + Math.round(comboPrice).toLocaleString();
+            document.getElementById('savingsTotal').textContent  = savings > 0
+                ? '৳' + Math.round(savings).toLocaleString()
+                : '৳০';
+        }
+
+        // Combo price input change
+        document.querySelector('[name="ComboPrice"]')?.addEventListener('input', recalcTotal);
+    </script>
+}

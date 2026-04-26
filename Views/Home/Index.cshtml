@@ -3,7 +3,7 @@
     ViewData["Title"] = "হোম";
 }
 
-<!-- ── Dynamic Slider ──────────────────────────────────────────────────────── -->
+<!-- ── Slider ──────────────────────────────────────────────────────────────── -->
 @if (Model.Sliders.Any())
 {
     <div id="heroSlider" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="4000">
@@ -24,7 +24,7 @@
                     @if (!string.IsNullOrEmpty(s.Title))
                     {
                         <div class="carousel-caption d-none d-md-block">
-                            <h2 class="fw-bold display-5 text-shadow">@s.Title</h2>
+                            <h2 class="fw-bold display-5">@s.Title</h2>
                             @if (!string.IsNullOrEmpty(s.SubTitle))
                             {
                                 <p class="fs-5">@s.SubTitle</p>
@@ -49,46 +49,268 @@
     </div>
 }
 
-<div class="container my-5">
+<!-- ── Dynamic Sections ────────────────────────────────────────────────────── -->
+@foreach (var sec in Model.Sections)
+{
+    <section style="background-color:@sec.BgColor; color:@sec.TextColor" class="py-5">
+        <div class="container">
 
-    <!-- ── Categories ──────────────────────────────────────────────────────── -->
-    @if (Model.Categories.Any())
-    {
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="fw-bold mb-0">ক্যাটাগরি</h4>
-            <a asp-controller="Product" asp-action="Index" class="btn btn-sm btn-outline-dark">সব দেখুন</a>
-        </div>
-        <div class="row g-3 mb-5">
-            @foreach (var cat in Model.Categories)
+            <!-- Section Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h4 class="fw-bold mb-0" style="color:@sec.TextColor">@sec.Title</h4>
+                    @if (!string.IsNullOrEmpty(sec.SubTitle))
+                    {
+                        <p class="text-muted mb-0 small">@sec.SubTitle</p>
+                    }
+                </div>
+                @if (!string.IsNullOrEmpty(sec.ButtonText))
+                {
+                    <a href="@sec.ButtonUrl" class="btn btn-sm btn-outline-dark">
+                        @sec.ButtonText <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                }
+            </div>
+
+            @if (sec.SectionType == "category")
             {
-                <div class="col-6 col-md-3 col-lg-2">
-                    <a href="/Product?categoryId=@cat.Id" class="text-decoration-none">
-                        <div class="card category-card text-center h-100 border-0 shadow-sm">
-                            <div class="card-body py-3">
-                                @if (!string.IsNullOrEmpty(cat.ImageUrl))
+                <!-- ── Category Section ────────────────────────────────────── -->
+                <div class="row g-3">
+                    @foreach (var sc in sec.Categories)
+                    {
+                        var cat = sc.Category;
+                        if (cat == null || !cat.IsActive) continue;
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <a href="/Product?categoryId=@cat.Id" class="text-decoration-none">
+                                <div class="card category-card text-center h-100 border-0 shadow-sm">
+                                    <div class="card-body py-3">
+                                        @if (!string.IsNullOrEmpty(cat.ImageUrl))
+                                        {
+                                            <img src="@cat.ImageUrl" class="rounded-circle mb-2"
+                                                 style="width:64px;height:64px;object-fit:cover"
+                                                 onerror="this.style.display='none'" alt="@cat.Name" />
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-warning rounded-circle d-inline-flex align-items-center
+                                                                        justify-content-center mb-2"
+                                                 style="width:64px;height:64px">
+                                                <i class="bi bi-grid fs-4 text-dark"></i>
+                                            </div>
+                                        }
+                                        <div class="fw-semibold small">@cat.Name</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                </div>
+            }
+            else if (sec.SectionType == "combo")
+            {
+                <!-- ── Combo Section ──────────────────────────────────────── -->
+                <div class="row g-3">
+                    @foreach (var combo in Model.ComboOffers)
+                    {
+                        var comboItems = combo.Items.ToList();
+                        var savings = combo.OriginalPrice.HasValue
+                        ? combo.OriginalPrice.Value - combo.ComboPrice : 0;
+                        var savePct = combo.OriginalPrice.HasValue && combo.OriginalPrice > 0
+                        ? Math.Round(savings / combo.OriginalPrice.Value * 100) : 0;
+
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card border-0 shadow-sm h-100 combo-card overflow-hidden position-relative">
+                                <!-- Combo banner -->
+                                @if (!string.IsNullOrEmpty(combo.BannerImageUrl))
                                 {
-                                    <img src="@cat.ImageUrl" class="rounded-circle mb-2"
-                                         style="width:60px;height:60px;object-fit:cover"
-                                         onerror="this.style.display='none'" alt="@cat.Name" />
+                                    <img src="@combo.BannerImageUrl" class="card-img-top"
+                                         style="height:160px;object-fit:cover" alt="@combo.Title"
+                                         onerror="this.style.display='none'" />
                                 }
                                 else
                                 {
-                                    <div class="bg-warning rounded-circle d-inline-flex align-items-center
-                                                            justify-content-center mb-2" style="width:60px;height:60px">
-                                        <i class="bi bi-grid fs-4 text-dark"></i>
+                                    <div class="d-flex" style="height:140px;background:#f8f9fa;overflow:hidden">
+                                        @foreach (var item in comboItems.Take(3))
+                                        {
+                                            var pImg = item.Product?.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
+                                            ?? item.Product?.Images.FirstOrDefault()?.ImageUrl;
+                                            <div class="flex-fill" style="overflow:hidden">
+                                                <img src="@pImg"
+                                                     style="width:100%;height:140px;object-fit:cover"
+                                                     onerror="this.src='https://via.placeholder.com/150x140/e9ecef/6c757d?text=+'"
+                                                     alt="@item.Product?.Name" />
+                                            </div>
+                                        }
                                     </div>
                                 }
-                                <div class="fw-semibold small">@cat.Name</div>
+
+                                <!-- Save badge -->
+                                @if (savePct > 0)
+                                {
+                                    <div class="position-absolute top-0 start-0 m-2">
+                                        <span class="badge bg-danger fs-6 px-3 py-2">@savePct% সাশ্রয়</span>
+                                    </div>
+                                }
+
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-2">@combo.Title</h6>
+                                    @if (!string.IsNullOrEmpty(combo.Description))
+                                    {
+                                        <p class="text-muted small mb-2">@combo.Description</p>
+                                    }
+
+                                    <div class="mb-3">
+                                        @foreach (var item in comboItems)
+                                        {
+                                            <div class="d-flex align-items-center gap-2 mb-1">
+                                                <i class="bi bi-check-circle-fill text-success small"></i>
+                                                <span class="small">
+                                                    @item.Product?.Name
+                                                    @if (item.Quantity > 1)
+                                                    {
+                                                        <span class="text-muted">(×@item.Quantity)</span>
+                                                    }
+                                                </span>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <div class="d-flex align-items-center gap-2 mb-3">
+                                        <span class="fs-5 fw-bold text-danger">৳@combo.ComboPrice.ToString("N0")</span>
+                                        @if (combo.OriginalPrice.HasValue)
+                                        {
+                                            <span class="text-muted text-decoration-line-through small">
+                                                ৳@combo.OriginalPrice.Value.ToString("N0")
+                                            </span>
+                                            <span class="badge bg-success-subtle text-success small">
+                                                ৳@savings.ToString("N0") সাশ্রয়
+                                            </span>
+                                        }
+                                    </div>
+
+                                    @if (combo.EndDate.HasValue)
+                                    {
+                                        <div class="small text-muted mb-3">
+                                            <i class="bi bi-clock me-1"></i>
+                                            অফার শেষ: @combo.EndDate.Value.ToString("dd MMM yyyy")
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="card-footer bg-white border-0 pb-3 px-3 d-flex gap-2">
+                                    <a asp-controller="Combo" asp-action="Detail" asp-route-id="@combo.Id"
+                                       class="btn btn-outline-dark btn-sm flex-fill">
+                                        <i class="bi bi-eye me-1"></i>বিস্তারিত
+                                    </a>
+                                    @if (User.Identity?.IsAuthenticated == true)
+                                    {
+                                        <form asp-controller="Combo" asp-action="AddToCart" method="post" class="flex-fill">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@combo.Id" />
+                                            <button type="submit" class="btn btn-danger btn-sm w-100">
+                                                <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="Account" asp-action="Login"
+                                           class="btn btn-danger btn-sm flex-fill">
+                                            <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ
+                                        </a>
+                                    }
+                                </div>
                             </div>
                         </div>
-                    </a>
+                    }
+                </div>
+            }
+            else if (sec.SectionType == "product")
+            {
+                <!-- ── Product Section ────────────────────────────────────── -->
+                <div class="row g-3">
+                    @foreach (var sp in sec.Products)
+                    {
+                        var p = sp.Product;
+                        if (p == null || !p.IsActive) continue;
+                        var img = p.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? p.Images.FirstOrDefault()?.ImageUrl;
+                        var hasSizes = p.Sizes.Any(s => s.IsActive && s.Stock > 0);
+                        var price = hasSizes ? p.Sizes.Where(s => s.IsActive).Min(s => s.SalesPrice) : (p.DiscountPrice ?? p.Price);
+
+                        <div class="col-6 col-md-4 col-lg-3">
+                            <div class="card product-card h-100 border-0 shadow-sm">
+                                <a asp-controller="Product" asp-action="Detail" asp-route-id="@p.Id">
+                                    <img src="@img" class="card-img-top product-thumb"
+                                         onerror="this.src='https://via.placeholder.com/300x220/f8f9fa/6c757d?text=No+Image'"
+                                         alt="@p.Name" />
+                                </a>
+                                <div class="card-body p-3">
+                                    <div class="small text-muted mb-1">@p.Category?.Name</div>
+                                    <h6 class="fw-semibold product-title mb-2">
+                                        <a asp-controller="Product" asp-action="Detail" asp-route-id="@p.Id"
+                                           class="text-decoration-none text-dark">@p.Name</a>
+                                    </h6>
+                                    <span class="fw-bold text-danger">
+                                        ৳@price.ToString("N0")@(hasSizes ? " থেকে" : "")
+                                    </span>
+                                </div>
+                                <div class="card-footer bg-transparent border-0 pb-3 px-3">
+                                    @if (User.Identity?.IsAuthenticated == true)
+                                    {
+                                        @if (hasSizes)
+                                        {
+                                            <a asp-controller="Product" asp-action="Detail" asp-route-id="@p.Id"
+                                               class="btn btn-dark btn-sm w-100">
+                                                <i class="bi bi-eye me-1"></i>সাইজ দেখুন
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-dark btn-sm w-100"
+                                                    onclick="quickAddToCart(@p.Id, this)">
+                                                <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ
+                                            </button>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="Account" asp-action="Login"
+                                           class="btn btn-dark btn-sm w-100">
+                                            <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else if (sec.SectionType == "banner" && !string.IsNullOrEmpty(sec.BannerImageUrl))
+            {
+                <!-- ── Banner Section ─────────────────────────────────────── -->
+                <div class="position-relative rounded-3 overflow-hidden">
+                    <img src="@sec.BannerImageUrl" class="w-100"
+                         style="max-height:300px;object-fit:cover" alt="@sec.Title" />
+                    @if (!string.IsNullOrEmpty(sec.ButtonText))
+                    {
+                        <div class="position-absolute top-50 start-50 translate-middle text-center">
+                            <h3 class="fw-bold text-white mb-2" style="text-shadow:0 2px 8px rgba(0,0,0,.6)">
+                                @sec.Title
+                            </h3>
+                            <a href="@sec.ButtonUrl" class="btn btn-warning btn-lg px-4">
+                                @sec.ButtonText
+                            </a>
+                        </div>
+                    }
                 </div>
             }
         </div>
-    }
+    </section>
+}
 
-    <!-- ── Feature Banners ─────────────────────────────────────────────────── -->
-    <div class="row g-3 mb-5">
+<!-- ── Feature Banners ─────────────────────────────────────────────────────── -->
+<div class="container py-4">
+    <div class="row g-3">
         <div class="col-md-4">
             <div class="p-3 rounded-3 text-center bg-primary bg-opacity-10 border border-primary border-opacity-25">
                 <i class="bi bi-truck fs-2 text-primary"></i>
@@ -111,169 +333,62 @@
             </div>
         </div>
     </div>
-
-    <!-- ── New Arrivals ─────────────────────────────────────────────────────── -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="fw-bold mb-0">নতুন পণ্য</h4>
-        <a asp-controller="Product" asp-action="Index" class="btn btn-sm btn-outline-dark">সব দেখুন</a>
-    </div>
-
-    <div class="row g-3">
-        @foreach (var p in Model.Products)
-        {
-            var img = p.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? p.Images.FirstOrDefault()?.ImageUrl;
-            var hasSizes = p.Sizes.Any(s => s.IsActive && s.Stock > 0);
-            var minPrice = hasSizes ? p.Sizes.Where(s => s.IsActive && s.Stock > 0).Min(s => s.SalesPrice) : (p.DiscountPrice ?? p.Price);
-
-            <div class="col-6 col-md-4 col-lg-3">
-                <div class="card product-card h-100 border-0 shadow-sm">
-                    <a asp-controller="Product" asp-action="Detail" asp-route-id="@p.Id">
-                        <img src="@img" class="card-img-top product-thumb"
-                             onerror="this.src='https://via.placeholder.com/300x220/f8f9fa/6c757d?text=No+Image'"
-                             alt="@p.Name" />
-                    </a>
-                    @if (p.DiscountPrice.HasValue)
-                    {
-                        <span class="badge bg-danger position-absolute top-0 end-0 m-2">Sale</span>
-                    }
-                    <div class="card-body p-3">
-                        <div class="small text-muted mb-1">@p.Category?.Name</div>
-                        <h6 class="card-title fw-semibold mb-2 product-title">
-                            <a asp-controller="Product" asp-action="Detail" asp-route-id="@p.Id"
-                               class="text-decoration-none text-dark">@p.Name</a>
-                        </h6>
-                        <div class="d-flex align-items-center gap-2">
-                            @if (hasSizes)
-                            {
-                                <span class="fw-bold text-dark">৳@minPrice.ToString("N0") থেকে</span>
-                            }
-                            else if (p.DiscountPrice.HasValue)
-                            {
-                                <span class="fw-bold text-danger">৳@p.DiscountPrice.Value.ToString("N0")</span>
-                                <span class="text-muted small text-decoration-line-through">৳@p.Price.ToString("N0")</span>
-                            }
-                            else
-                            {
-                                <span class="fw-bold text-dark">৳@p.Price.ToString("N0")</span>
-                            }
-                        </div>
-                        @if (p.Stock == 0 && !hasSizes)
-                        {
-                            <span class="badge bg-secondary mt-1">স্টক শেষ</span>
-                        }
-                    </div>
-                    <div class="card-footer bg-transparent border-0 pt-0 pb-3 px-3">
-                        @if (p.Stock > 0 || hasSizes)
-                        {
-                            @if (User.Identity?.IsAuthenticated == true)
-                            {
-                                @if (hasSizes)
-                                {
-                                    <!-- Size আছে → Detail page এ যাবে -->
-                                    <a asp-controller="Product" asp-action="Detail" asp-route-id="@p.Id"
-                                       class="btn btn-dark btn-sm w-100">
-                                        <i class="bi bi-eye me-1"></i>সাইজ দেখুন
-                                    </a>
-                                }
-                                else
-                                {
-                                    <!-- Size নেই → Ajax Add to Cart -->
-                                    <button class="btn btn-dark btn-sm w-100"
-                                            onclick="quickAddToCart(@p.Id, this)">
-                                        <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ
-                                    </button>
-                                }
-                            }
-                            else
-                            {
-                                <a asp-controller="Account" asp-action="Login"
-                                   class="btn btn-dark btn-sm w-100">
-                                    <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ
-                                </a>
-                            }
-                        }
-                        else
-                        {
-                            <button class="btn btn-secondary btn-sm w-100" disabled>স্টক নেই</button>
-                        }
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
 </div>
 
-<!-- ── Cart Success Toast ─────────────────────────────────────────────────── -->
+<!-- Toast -->
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index:9999">
     <div id="cartToast" class="toast align-items-center text-bg-success border-0" role="alert">
         <div class="d-flex">
-            <div class="toast-body fw-medium">
-                <i class="bi bi-check-circle me-2"></i>কার্টে যোগ হয়েছে!
-            </div>
+            <div class="toast-body fw-medium"><i class="bi bi-check-circle me-2"></i>কার্টে যোগ হয়েছে!</div>
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
         </div>
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        // CSRF token
-        const _token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+<style>
+    .combo-card {
+        transition: transform .2s, box-shadow .2s;
+    }
 
-        // Quick Add to Cart (no size, from home/list page)
-        function quickAddToCart(productId, btnEl) {
-            if (btnEl) {
-                btnEl.disabled = true;
-                btnEl.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>';
-            }
-
-            var formData = new FormData();
-            formData.append('productId', productId);
-            formData.append('quantity',  1);
-            formData.append('__RequestVerificationToken', _token);
-
-            fetch('/Cart/AddAjax', { method: 'POST', body: formData })
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                if (data.success) {
-                    // Cart badge update
-                    updateCartBadge(data.cartCount);
-
-                    // Toast show
-                    var toastEl = document.getElementById('cartToast');
-                    var toast   = new bootstrap.Toast(toastEl, { delay: 2500 });
-                    toast.show();
-                } else {
-                    alert(data.message || 'কার্টে যোগ করা যায়নি।');
-                }
-                if (btnEl) {
-                    btnEl.disabled = false;
-                    btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>কার্টে যোগ';
-                }
-            })
-            .catch(function() {
-                if (btnEl) {
-                    btnEl.disabled = false;
-                    btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>কার্টে যোগ';
-                }
-            });
+        .combo-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,.12) !important;
         }
 
-        // Cart badge update in navbar
-        function updateCartBadge(count) {
-            var badge = document.querySelector('.navbar .badge.rounded-pill');
-            if (badge) {
-                badge.textContent = count;
-            } else {
-                var cartLink = document.querySelector('a[href="/Cart"]');
-                if (cartLink) {
-                    cartLink.style.position = 'relative';
-                    var sp = document.createElement('span');
-                    sp.className   = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark';
-                    sp.textContent = count;
-                    cartLink.appendChild(sp);
-                }
-            }
+    .slider-img {
+        height: 480px;
+        object-fit: cover;
+        filter: brightness(.85);
+    }
+
+    @@media (max-width:768px) {
+        .slider-img {
+            height: 240px;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        const _token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+
+        function quickAddToCart(productId, btnEl) {
+            if (btnEl) { btnEl.disabled = true; btnEl.innerHTML = '<span class="spinner-border spinner-border-sm"></span>'; }
+            var fd = new FormData();
+            fd.append('productId', productId);
+            fd.append('quantity',  1);
+            fd.append('__RequestVerificationToken', _token);
+            fetch('/Cart/AddAjax', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    new bootstrap.Toast(document.getElementById('cartToast'), { delay: 2500 }).show();
+                    var badge = document.querySelector('.navbar .badge.rounded-pill');
+                    if (badge) badge.textContent = data.cartCount;
+                } else { alert(data.message); }
+                if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>কার্টে যোগ'; }
+            })
+            .catch(() => { if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>কার্টে যোগ'; } });
         }
     </script>
 }

@@ -1,0 +1,200 @@
+﻿@model ShopManagementSystem.Models.ComboOffer
+@{
+    ViewData["Title"] = Model.Title;
+    var allItems = Model.Items.ToList();
+
+    var savings = Model.OriginalPrice.HasValue ? Model.OriginalPrice.Value - Model.ComboPrice : 0;
+    var savePct = Model.OriginalPrice.HasValue && Model.OriginalPrice > 0
+        ? Math.Round(savings / Model.OriginalPrice.Value * 100) : 0;
+    var timeLeft = Model.EndDate.HasValue ? (Model.EndDate.Value - DateTime.Now).TotalSeconds : 0;
+}
+
+<div class="container my-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">হোম</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Combo" asp-action="Index">কম্বো অফার</a></li>
+            <li class="breadcrumb-item active">@Model.Title</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- ── Left: Image ────────────────────────────────────────────────── -->
+        <div class="col-lg-5">
+            @if (!string.IsNullOrEmpty(Model.BannerImageUrl))
+            {
+                <div class="card border-0 shadow-sm overflow-hidden">
+                    <img src="@Model.BannerImageUrl" class="img-fluid"
+                         style="max-height:400px;object-fit:cover;width:100%"
+                         alt="@Model.Title" />
+                </div>
+            }
+            else
+            {
+                <div class="card border-0 shadow-sm overflow-hidden">
+                    @if (allItems.Count == 1)
+                    {
+                        var pImg = allItems[0].Product?.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
+                        ?? allItems[0].Product?.Images.FirstOrDefault()?.ImageUrl;
+                        <img src="@pImg" style="width:100%;height:380px;object-fit:cover"
+                             onerror="this.src='https://via.placeholder.com/500x380/f8f9fa/6c757d?text=Combo'"
+                             alt="" />
+                    }
+                    else
+                    {
+                        <div class="row g-1 m-0">
+                            @{
+                                int cols = allItems.Count == 2 ? 6 : 4;
+                            }
+                            @for (int idx = 0; idx < Math.Min(allItems.Count, 3); idx++)
+                            {
+                                var pImg = allItems[idx].Product?.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
+                                ?? allItems[idx].Product?.Images.FirstOrDefault()?.ImageUrl;
+                                <div class="col-@cols p-0">
+                                    <img src="@pImg"
+                                         style="width:100%;height:240px;object-fit:cover"
+                                         onerror="this.src='https://via.placeholder.com/300x240/e9ecef/6c757d?text=+'"
+                                         alt="" />
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- Countdown -->
+            @if (Model.EndDate.HasValue && timeLeft > 0)
+            {
+                <div class="card border-0 shadow-sm mt-3 bg-dark text-white text-center p-3">
+                    <div class="small mb-2 opacity-75">⏳ অফার শেষ হতে বাকি</div>
+                    <div class="d-flex justify-content-center gap-3" id="detailCountdown"
+                         data-seconds="@((int)timeLeft)">
+                        <div><div class="fs-3 fw-bold" id="ct_d">00</div><div class="small opacity-75">দিন</div></div>
+                        <div class="fs-3 fw-bold opacity-50">:</div>
+                        <div><div class="fs-3 fw-bold" id="ct_h">00</div><div class="small opacity-75">ঘণ্টা</div></div>
+                        <div class="fs-3 fw-bold opacity-50">:</div>
+                        <div><div class="fs-3 fw-bold" id="ct_m">00</div><div class="small opacity-75">মিনিট</div></div>
+                        <div class="fs-3 fw-bold opacity-50">:</div>
+                        <div><div class="fs-3 fw-bold" id="ct_s">00</div><div class="small opacity-75">সেকেন্ড</div></div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- ── Right: Details ────────────────────────────────────────────── -->
+        <div class="col-lg-7">
+            @if (savePct > 0)
+            {
+                <span class="badge bg-danger mb-2 px-3 py-2">@savePct% সাশ্রয়</span>
+            }
+
+            <h2 class="fw-bold mb-2">@Model.Title</h2>
+            @if (!string.IsNullOrEmpty(Model.Description))
+            {
+                <p class="text-muted mb-3">@Model.Description</p>
+            }
+
+            <!-- Products included -->
+            <div class="card border-0 bg-light mb-4">
+                <div class="card-header bg-transparent border-0 fw-semibold">
+                    📦 এই কম্বোতে যা যা আছে
+                </div>
+                <div class="card-body pt-0">
+                    @foreach (var item in allItems)
+                    {
+                        var pImg = item.Product?.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
+                        ?? item.Product?.Images.FirstOrDefault()?.ImageUrl;
+                        var pPrice = item.Product?.DiscountPrice ?? item.Product?.Price ?? 0;
+
+                        <div class="d-flex align-items-center gap-3 py-2 border-bottom">
+                            <img src="@pImg" class="rounded shadow-sm flex-shrink-0"
+                                 style="width:56px;height:56px;object-fit:cover"
+                                 onerror="this.src='https://via.placeholder.com/56'" alt="" />
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold small">@item.Product?.Name</div>
+                                <div class="text-muted small">@item.Product?.Category?.Name</div>
+                                <div class="small">
+                                    একক মূল্য: <span class="text-muted text-decoration-line-through">৳@pPrice.ToString("N0")</span>
+                                    @if (item.Quantity > 1)
+                                    {
+                                        <span class="ms-1">× @item.Quantity</span>
+                                    }
+                                </div>
+                            </div>
+                            <div>
+                                <a asp-controller="Product" asp-action="Detail" asp-route-id="@item.ProductId"
+                                   class="btn btn-sm btn-light" target="_blank">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Price breakdown -->
+            <div class="card border-0 border-danger border-2 mb-4" style="border-style:solid !important">
+                <div class="card-body">
+                    @if (Model.OriginalPrice.HasValue)
+                    {
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">আলাদাভাবে কিনলে</span>
+                            <span class="text-muted text-decoration-line-through">৳@Model.OriginalPrice.Value.ToString("N0")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-success fw-medium">আপনার সাশ্রয়</span>
+                            <span class="text-success fw-bold">-৳@savings.ToString("N0")</span>
+                        </div>
+                        <hr class="my-2" />
+                    }
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold fs-5">কম্বো মূল্য</span>
+                        <span class="fw-bold text-danger" style="font-size:2rem">৳@Model.ComboPrice.ToString("N0")</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add to cart -->
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <form asp-controller="Combo" asp-action="AddToCart" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn btn-danger btn-lg w-100 fw-semibold py-3">
+                        <i class="bi bi-cart-plus me-2"></i>পুরো কম্বো কার্টে যোগ করুন
+                    </button>
+                </form>
+                <p class="text-muted small text-center mt-2">
+                    <i class="bi bi-shield-check me-1 text-success"></i>
+                    সব পণ্য একসাথে কার্টে যোগ হবে
+                </p>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Login"
+                   class="btn btn-danger btn-lg w-100 fw-semibold py-3">
+                    <i class="bi bi-cart-plus me-2"></i>কার্টে যোগ করতে লগইন করুন
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var cd = document.getElementById('detailCountdown');
+        if (cd) {
+            var secs = parseInt(cd.dataset.seconds);
+            function updateDetail() {
+                if (secs <= 0) return;
+                document.getElementById('ct_d').textContent = String(Math.floor(secs/86400)).padStart(2,'0');
+                document.getElementById('ct_h').textContent = String(Math.floor((secs%86400)/3600)).padStart(2,'0');
+                document.getElementById('ct_m').textContent = String(Math.floor((secs%3600)/60)).padStart(2,'0');
+                document.getElementById('ct_s').textContent = String(secs%60).padStart(2,'0');
+                secs--;
+            }
+            updateDetail();
+            setInterval(updateDetail, 1000);
+        }
+    </script>
+}

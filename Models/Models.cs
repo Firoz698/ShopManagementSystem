@@ -342,4 +342,105 @@ namespace ShopManagementSystem.Models
         [ForeignKey("OrderId")]
         public Order? Order { get; set; }
     }
+
+    // ── Combo Offer ──────────────────────────────────────────────────────────────
+    public class ComboOffer
+    {
+        public int Id { get; set; }
+
+        [Required, MaxLength(200)]
+        public string Title { get; set; } = string.Empty;
+
+        [MaxLength(500)]
+        public string? Description { get; set; }
+
+        public string? BannerImageUrl { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal ComboPrice { get; set; }       // কম্বো মূল্য
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? OriginalPrice { get; set; }   // মূল মূল্য (auto-calculated)
+
+        public bool IsActive { get; set; } = true;
+
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+
+        public int SortOrder { get; set; } = 0;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        public ICollection<ComboItem> Items { get; set; } = new List<ComboItem>();
+    }
+
+    // ── Combo Item (কম্বোর ভেতরে যে প্রোডাক্টগুলো আছে) ─────────────────────────
+    public class ComboItem
+    {
+        public int Id { get; set; }
+        public int ComboId { get; set; }
+        public int ProductId { get; set; }
+        public int Quantity { get; set; } = 1;
+
+        [ForeignKey("ComboId")]
+        public ComboOffer? Combo { get; set; }
+
+        [ForeignKey("ProductId")]
+        public Product? Product { get; set; }
+    }
+
+    // ── Homepage Section (ডায়নামিক সেকশন) ──────────────────────────────────────
+    public class HomepageSection
+    {
+        public int Id { get; set; }
+
+        [Required, MaxLength(100)]
+        public string Title { get; set; } = string.Empty;
+
+        [MaxLength(50)]
+        public string SectionType { get; set; } = "category"; // category | combo | product | banner
+
+        public string? SubTitle { get; set; }
+        public string? BgColor { get; set; } = "#ffffff";
+        public string? TextColor { get; set; } = "#000000";
+        public string? BannerImageUrl { get; set; }
+        public string? ButtonText { get; set; }
+        public string? ButtonUrl { get; set; }
+
+        public bool IsActive { get; set; } = true;
+        public int SortOrder { get; set; } = 0;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        // Category section এর জন্য
+        public ICollection<HomepageSectionCategory> Categories { get; set; } = new List<HomepageSectionCategory>();
+
+        // Product section এর জন্য
+        public ICollection<HomepageSectionProduct> Products { get; set; } = new List<HomepageSectionProduct>();
+    }
+
+    public class HomepageSectionCategory
+    {
+        public int Id { get; set; }
+        public int SectionId { get; set; }
+        public int CategoryId { get; set; }
+
+        [ForeignKey("SectionId")]
+        public HomepageSection? Section { get; set; }
+
+        [ForeignKey("CategoryId")]
+        public Category? Category { get; set; }
+    }
+
+    public class HomepageSectionProduct
+    {
+        public int Id { get; set; }
+        public int SectionId { get; set; }
+        public int ProductId { get; set; }
+
+        [ForeignKey("SectionId")]
+        public HomepageSection? Section { get; set; }
+
+        [ForeignKey("ProductId")]
+        public Product? Product { get; set; }
+    }
+
 }
