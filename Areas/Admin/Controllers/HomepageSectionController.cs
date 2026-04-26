@@ -62,16 +62,93 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             _db.HomepageSections.Add(section);
             await _db.SaveChangesAsync();
 
-            // Categories
             foreach (var catId in vm.SelectedCategoryIds)
                 _db.HomepageSectionCategories.Add(new HomepageSectionCategory { SectionId = section.Id, CategoryId = catId });
 
-            // Products
             foreach (var prodId in vm.SelectedProductIds)
                 _db.HomepageSectionProducts.Add(new HomepageSectionProduct { SectionId = section.Id, ProductId = prodId });
 
             await _db.SaveChangesAsync();
             TempData["Success"] = "হোমপেজ সেকশন যোগ হয়েছে।";
+            return RedirectToAction("Index");
+        }
+
+        // GET /Admin/HomepageSection/Edit/5
+        public async Task<IActionResult> Edit(int id)
+        {
+            var section = await _db.HomepageSections
+                .Include(s => s.Categories)
+                .Include(s => s.Products)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (section == null) return NotFound();
+
+            ViewBag.AllCategories = await _db.Categories.Where(c => c.IsActive).ToListAsync();
+            ViewBag.AllProducts = await _db.Products.Where(p => p.IsActive)
+                .Include(p => p.Images).OrderBy(p => p.Name).ToListAsync();
+
+            var vm = new HomepageSectionCreateViewModel
+            {
+                Title = section.Title,
+                SubTitle = section.SubTitle,
+                SectionType = section.SectionType,
+                BgColor = section.BgColor,
+                TextColor = section.TextColor,
+                ButtonText = section.ButtonText,
+                ButtonUrl = section.ButtonUrl,
+                IsActive = section.IsActive,
+                SortOrder = section.SortOrder,
+                SelectedCategoryIds = section.Categories.Select(c => c.CategoryId).ToList(),
+                SelectedProductIds = section.Products.Select(p => p.ProductId).ToList()
+            };
+
+            ViewBag.SectionId = id;
+            ViewBag.ExistingBannerImageUrl = section.BannerImageUrl;
+
+            return View(vm);
+        }
+
+        // POST /Admin/HomepageSection/Edit/5
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, HomepageSectionCreateViewModel vm)
+        {
+            var section = await _db.HomepageSections
+                .Include(s => s.Categories)
+                .Include(s => s.Products)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (section == null) return NotFound();
+
+            section.Title = vm.Title;
+            section.SubTitle = vm.SubTitle;
+            section.SectionType = vm.SectionType;
+            section.BgColor = vm.BgColor;
+            section.TextColor = vm.TextColor;
+            section.ButtonText = vm.ButtonText;
+            section.ButtonUrl = vm.ButtonUrl;
+            section.IsActive = vm.IsActive;
+            section.SortOrder = vm.SortOrder;
+
+            // Banner image update
+            if (vm.BannerImage != null && vm.BannerImage.Length > 0)
+            {
+                if (!string.IsNullOrEmpty(section.BannerImageUrl))
+                    _imageService.Delete(section.BannerImageUrl);
+                section.BannerImageUrl = await _imageService.UploadAsync(vm.BannerImage, "sections");
+            }
+
+            // Categories update
+            _db.HomepageSectionCategories.RemoveRange(section.Categories);
+            foreach (var catId in vm.SelectedCategoryIds)
+                _db.HomepageSectionCategories.Add(new HomepageSectionCategory { SectionId = section.Id, CategoryId = catId });
+
+            // Products update
+            _db.HomepageSectionProducts.RemoveRange(section.Products);
+            foreach (var prodId in vm.SelectedProductIds)
+                _db.HomepageSectionProducts.Add(new HomepageSectionProduct { SectionId = section.Id, ProductId = prodId });
+
+            await _db.SaveChangesAsync();
+            TempData["Success"] = "সেকশন আপডেট হয়েছে।";
             return RedirectToAction("Index");
         }
 

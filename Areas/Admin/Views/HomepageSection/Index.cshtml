@@ -1,5 +1,7 @@
 ﻿@model List<ShopManagementSystem.Models.HomepageSection>
-@{ ViewData["Title"] = "হোমপেজ সেকশন ম্যানেজমেন্ট"; }
+@{
+    ViewData["Title"] = "হোমপেজ সেকশন ম্যানেজমেন্ট";
+}
 
 <div class="d-flex justify-content-end mb-4">
     <a asp-action="Create" class="btn btn-dark">
@@ -32,19 +34,19 @@ else
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var section in Model)
+                    @foreach (var sec in Model)
                     {
                         <tr>
                             <td>
                                 <div class="d-flex flex-column gap-1">
-                                    <form asp-action="MoveUp" asp-route-id="@@section.Id" method="post" class="d-inline">
+                                    <form asp-action="MoveUp" asp-route-id="@sec.Id" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="btn btn-xs btn-light p-1 lh-1" title="উপরে">
                                             <i class="bi bi-chevron-up" style="font-size:.7rem"></i>
                                         </button>
                                     </form>
-                                    <span class="fw-bold text-center small">@@section.SortOrder</span>
-                                    <form asp-action="MoveDown" asp-route-id="@@section.Id" method="post" class="d-inline">
+                                    <span class="fw-bold text-center small">@sec.SortOrder</span>
+                                    <form asp-action="MoveDown" asp-route-id="@sec.Id" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="btn btn-xs btn-light p-1 lh-1" title="নিচে">
                                             <i class="bi bi-chevron-down" style="font-size:.7rem"></i>
@@ -53,27 +55,27 @@ else
                                 </div>
                             </td>
                             <td>
-                                <div class="fw-semibold small">@@section.Title</div>
-                                @if (!string.IsNullOrEmpty(section.SubTitle))
+                                <div class="fw-semibold small">@sec.Title</div>
+                                @if (!string.IsNullOrEmpty(sec.SubTitle))
                                 {
-                                    <div class="text-muted" style="font-size:.75rem">@@section.SubTitle</div>
+                                    <div class="text-muted" style="font-size:.75rem">@sec.SubTitle</div>
                                 }
-                                @if (!string.IsNullOrEmpty(section.ButtonText))
+                                @if (!string.IsNullOrEmpty(sec.ButtonText))
                                 {
                                     <span class="badge bg-light text-dark border" style="font-size:.7rem">
-                                        বাটন: @@section.ButtonText
+                                        বাটন: @sec.ButtonText
                                     </span>
                                 }
                             </td>
                             <td>
                                 @{
-                                    var typeLabel = section.SectionType switch
+                                    var typeLabel = sec.SectionType switch
                                     {
                                         "category" => ("bi-tag", "ক্যাটাগরি", "bg-primary"),
-                                        "combo"    => ("bi-gift", "কম্বো", "bg-danger"),
-                                        "product"  => ("bi-box-seam", "পণ্য", "bg-success"),
-                                        "banner"   => ("bi-image", "ব্যানার", "bg-warning text-dark"),
-                                        _          => ("bi-grid", section.SectionType, "bg-secondary")
+                                        "combo" => ("bi-gift", "কম্বো", "bg-danger"),
+                                        "product" => ("bi-box-seam", "পণ্য", "bg-success"),
+                                        "banner" => ("bi-image", "ব্যানার", "bg-warning text-dark"),
+                                        _ => ("bi-grid", sec.SectionType, "bg-secondary")
                                     };
                                 }
                                 <span class="badge @typeLabel.Item3 rounded-pill px-2">
@@ -81,15 +83,15 @@ else
                                 </span>
                             </td>
                             <td class="small">
-                                @if (section.SectionType == "category")
+                                @if (sec.SectionType == "category")
                                 {
-                                    <span>@@section.Categories.Count টি ক্যাটাগরি</span>
+                                    <span>@sec.Categories.Count টি ক্যাটাগরি</span>
                                 }
-                                else if (section.SectionType == "product")
+                                else if (sec.SectionType == "product")
                                 {
-                                    <span>@@section.Products.Count টি পণ্য</span>
+                                    <span>@sec.Products.Count টি পণ্য</span>
                                 }
-                                else if (section.SectionType == "combo")
+                                else if (sec.SectionType == "combo")
                                 {
                                     <span>কম্বো অফার</span>
                                 }
@@ -100,27 +102,33 @@ else
                             </td>
                             <td>
                                 <div class="d-flex gap-1 align-items-center">
-                                    <div class="rounded border" style="width:20px;height:20px;background:@@section.BgColor"></div>
-                                    <div class="rounded border" style="width:20px;height:20px;background:@@section.TextColor"></div>
+                                    <div class="rounded border" style="width:20px;height:20px;background:@sec.BgColor"></div>
+                                    <div class="rounded border" style="width:20px;height:20px;background:@sec.TextColor"></div>
                                 </div>
                             </td>
                             <td class="text-center">
-                                <form asp-action="ToggleActive" asp-route-id="@@section.Id" method="post">
+                                <form asp-action="ToggleActive" asp-route-id="@sec.Id" method="post">
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-sm @(section.IsActive ? "btn-success" : "btn-secondary")"
+                                    <button type="submit" class="btn btn-sm @(sec.IsActive ? "btn-success" : "btn-secondary")"
                                             style="min-width:70px">
-                                        @(section.IsActive ? "সক্রিয়" : "নিষ্ক্রিয়")
+                                        @(sec.IsActive ? "সক্রিয়" : "নিষ্ক্রিয়")
                                     </button>
                                 </form>
                             </td>
                             <td class="text-center">
-                                <form asp-action="Delete" asp-route-id="@@section.Id" method="post"
-                                      onsubmit="return confirm('সেকশনটি মুছবেন?')">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <a asp-action="Edit" asp-route-id="@sec.Id"
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form asp-action="Delete" asp-route-id="@sec.Id" method="post"
+                                          onsubmit="return confirm('সেকশনটি মুছবেন?')">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     }

@@ -1,0 +1,302 @@
+﻿@model HomepageSectionCreateViewModel
+@{
+    ViewData["Title"] = "সেকশন এডিট";
+    var allCategories = ViewBag.AllCategories as List<ShopManagementSystem.Models.Category> ?? new();
+    var allProducts = ViewBag.AllProducts as List<ShopManagementSystem.Models.Product> ?? new();
+    int sectionId = ViewBag.SectionId;
+    string existingBanner = ViewBag.ExistingBannerImageUrl ?? "";
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <form asp-action="Edit" asp-route-id="@sectionId" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <div class="row g-4">
+                <!-- ── Left ─────────────────────────────────────────────── -->
+                <div class="col-lg-7">
+
+                    <div class="card bg-light border-0 mb-3">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3">📋 সেকশন তথ্য</h6>
+                            <div class="mb-3">
+                                <label class="form-label fw-medium small">শিরোনাম <span class="text-danger">*</span></label>
+                                <input asp-for="Title" class="form-control" placeholder="যেমন: জনপ্রিয় ক্যাটাগরি" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-medium small">সাব-টাইটেল</label>
+                                <input asp-for="SubTitle" class="form-control" />
+                            </div>
+
+                            <!-- Section Type -->
+                            <div class="mb-3">
+                                <label class="form-label fw-medium small">সেকশনের ধরন <span class="text-danger">*</span></label>
+                                <div class="row g-2">
+                                    @{
+                                        var types = new[]
+                                        {
+                                                                        ("category", "bi-tag",      "ক্যাটাগরি",   "নির্দিষ্ট ক্যাটাগরি দেখাবে"),
+                                                                        ("combo",    "bi-gift",     "কম্বো অফার",  "সব active কম্বো দেখাবে"),
+                                                                        ("product",  "bi-box-seam", "পণ্য",         "নির্দিষ্ট পণ্য দেখাবে"),
+                                                                        ("banner",   "bi-image",    "ব্যানার",      "ফুল-উইথ ব্যানার ইমেজ")
+                                                                        };
+                                    }
+                                    @foreach (var (val, icon, label, desc) in types)
+                                    {
+                                        var isSelected = Model.SectionType == val;
+                                        <div class="col-6">
+                                            <div class="type-option border rounded-3 p-2 @(isSelected ? "selected" : "")"
+                                                 onclick="selectType('@val', this)">
+                                                <input type="radio" name="SectionType" value="@val"
+                                                       id="type_@val" class="visually-hidden"
+                                                       @(isSelected ? "checked" : "") />
+                                                <label for="type_@val" class="w-100" style="cursor:pointer">
+                                                    <i class="bi @icon me-2 text-primary"></i>
+                                                    <span class="fw-medium small">@label</span>
+                                                    <div class="text-muted" style="font-size:.72rem">@desc</div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="row g-2">
+                                <div class="col-md-5">
+                                    <label class="form-label fw-medium small">বাটনের লেখা</label>
+                                    <input asp-for="ButtonText" class="form-control" placeholder="সব দেখুন" />
+                                </div>
+                                <div class="col-md-7">
+                                    <label class="form-label fw-medium small">বাটনের লিংক</label>
+                                    <input asp-for="ButtonUrl" class="form-control" placeholder="/Product" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category selection -->
+                    <div id="categorySection" class="card bg-light border-0 mb-3"
+                         style="display:@(Model.SectionType == "category" ? "" : "none")">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3">🏷️ ক্যাটাগরি নির্বাচন করুন</h6>
+                            <div class="row g-2">
+                                @foreach (var cat in allCategories)
+                                {
+                                    var isChecked = Model.SelectedCategoryIds.Contains(cat.Id);
+                                    <div class="col-6 col-md-4">
+                                        <div class="form-check border rounded-3 p-2">
+                                            <input class="form-check-input" type="checkbox"
+                                                   name="SelectedCategoryIds" value="@cat.Id"
+                                                   id="cat_@cat.Id" @(isChecked ? "checked" : "") />
+                                            <label class="form-check-label small w-100" for="cat_@cat.Id" style="cursor:pointer">
+                                                @if (!string.IsNullOrEmpty(cat.ImageUrl))
+                                                {
+                                                    <img src="@cat.ImageUrl" class="rounded-circle me-1"
+                                                         style="width:22px;height:22px;object-fit:cover"
+                                                         onerror="this.style.display='none'" />
+                                                }
+                                                @cat.Name
+                                            </label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product selection -->
+                    <div id="productSection" class="card bg-light border-0 mb-3"
+                         style="display:@(Model.SectionType == "product" ? "" : "none")">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3">📦 পণ্য নির্বাচন করুন</h6>
+                            <div class="mb-2">
+                                <input type="text" class="form-control form-control-sm"
+                                       placeholder="পণ্য খুঁজুন..."
+                                       onkeyup="filterProducts(this.value)" />
+                            </div>
+                            <div class="row g-2" id="productCheckboxes" style="max-height:300px;overflow-y:auto">
+                                @foreach (var p in allProducts)
+                                {
+                                    var pImg = p.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
+                                    ?? p.Images.FirstOrDefault()?.ImageUrl;
+                                    var isChecked = Model.SelectedProductIds.Contains(p.Id);
+                                    <div class="col-12 product-check-item" data-name="@p.Name.ToLower()">
+                                        <div class="form-check border rounded-3 p-2 d-flex align-items-center gap-2">
+                                            <input class="form-check-input flex-shrink-0" type="checkbox"
+                                                   name="SelectedProductIds" value="@p.Id"
+                                                   id="prod_@p.Id" @(isChecked ? "checked" : "") />
+                                            @if (!string.IsNullOrEmpty(pImg))
+                                            {
+                                                <img src="@pImg" class="rounded flex-shrink-0"
+                                                     style="width:36px;height:36px;object-fit:cover"
+                                                     onerror="this.style.display='none'" />
+                                            }
+                                            <label class="form-check-label small" for="prod_@p.Id" style="cursor:pointer">
+                                                <span class="fw-medium">@p.Name</span>
+                                                <span class="text-muted ms-1">৳@((p.DiscountPrice ?? p.Price).ToString("N0"))</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Right ─────────────────────────────────────────────── -->
+                <div class="col-lg-5">
+                    <!-- Colors -->
+                    <div class="card bg-light border-0 mb-3">
+                        <div class="card-body">
+                            <h6 class="fw-semibold mb-3">🎨 ডিজাইন</h6>
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-medium small">ব্যাকগ্রাউন্ড রং</label>
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <input asp-for="BgColor" type="color" class="form-control form-control-color"
+                                               style="width:50px;height:38px" />
+                                        <input type="text" id="bgColorText" class="form-control form-control-sm"
+                                               value="@Model.BgColor"
+                                               onchange="document.querySelector('[name=BgColor]').value=this.value" />
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-1 mt-2">
+                                        @foreach (var c in new[] { "#ffffff", "#f8f9fa", "#fff3cd", "#d1fae5", "#dbeafe", "#fce7f3", "#1a1a2e", "#0f3460" })
+                                        {
+                                            <div class="rounded border color-preset"
+                                                 style="width:22px;height:22px;background:@c;cursor:pointer"
+                                                 onclick="setBg('@c')" title="@c"></div>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-medium small">লেখার রং</label>
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <input asp-for="TextColor" type="color" class="form-control form-control-color"
+                                               style="width:50px;height:38px" />
+                                        <input type="text" id="textColorText" class="form-control form-control-sm"
+                                               value="@Model.TextColor"
+                                               onchange="document.querySelector('[name=TextColor]').value=this.value" />
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-1 mt-2">
+                                        @foreach (var c in new[] { "#000000", "#1a1a2e", "#ffffff", "#dc2626", "#065f46", "#1e40af" })
+                                        {
+                                            <div class="rounded border color-preset"
+                                                 style="width:22px;height:22px;background:@c;cursor:pointer"
+                                                 onclick="setTextColor('@c')" title="@c"></div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Preview -->
+                            <div class="rounded-3 p-3 text-center mt-2" id="sectionPreview"
+                                 style="background:@Model.BgColor;color:@Model.TextColor;transition:.3s">
+                                <div class="fw-bold" id="previewTitle">@Model.Title</div>
+                                <div class="small opacity-75" id="previewSubtitle">@Model.SubTitle</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Banner image -->
+                    <div id="bannerImageSection" class="card bg-light border-0 mb-3"
+                         style="display:@(Model.SectionType == "banner" ? "" : "none")">
+                        <div class="card-body">
+                            <h6 class="fw-semibold mb-2"><i class="bi bi-image me-2"></i>ব্যানার ছবি</h6>
+                            @if (!string.IsNullOrEmpty(existingBanner))
+                            {
+                                <div class="mb-2">
+                                    <img src="@existingBanner" class="rounded w-100"
+                                         style="height:100px;object-fit:cover" />
+                                    <div class="small text-muted mt-1">বর্তমান ছবি — নতুন ছবি দিলে বদলে যাবে</div>
+                                </div>
+                            }
+                            <input type="file" name="BannerImage" class="form-control form-control-sm"
+                                   accept="image/*"
+                                   onchange="document.getElementById('bannerPrev').src=URL.createObjectURL(this.files[0]);document.getElementById('bannerPrev').style.display='block'" />
+                            <img id="bannerPrev" src="#" class="mt-2 rounded w-100"
+                                 style="height:120px;object-fit:cover;display:none" />
+                        </div>
+                    </div>
+
+                    <!-- Settings -->
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h6 class="fw-semibold mb-3">⚙️ সেটিংস</h6>
+                            <div class="mb-3">
+                                <label class="form-label fw-medium small">সাজানোর ক্রম</label>
+                                <input asp-for="SortOrder" type="number" min="0"
+                                       class="form-control form-control-sm" style="width:100px" />
+                            </div>
+                            <div class="form-check form-switch">
+                                <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                                <label class="form-check-label fw-medium">সক্রিয়</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-dark px-4">
+                    <i class="bi bi-check-circle me-2"></i>আপডেট করুন
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">বাতিল</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .type-option {
+        cursor: pointer;
+        transition: border-color .2s,background .2s;
+    }
+
+        .type-option:hover {
+            border-color: #0d6efd !important;
+            background: #f0f7ff;
+        }
+
+        .type-option.selected {
+            border-color: #0d6efd !important;
+            background: #f0f7ff;
+        }
+</style>
+
+@section Scripts {
+    <script>
+        function selectType(val, container) {
+            document.querySelectorAll('.type-option').forEach(el => el.classList.remove('selected'));
+            container.classList.add('selected');
+            document.getElementById('type_' + val).checked = true;
+            document.getElementById('categorySection').style.display    = val === 'category' ? '' : 'none';
+            document.getElementById('productSection').style.display     = val === 'product'  ? '' : 'none';
+            document.getElementById('bannerImageSection').style.display = val === 'banner'   ? '' : 'none';
+        }
+
+        function setBg(color) {
+            document.querySelector('[name=BgColor]').value = color;
+            document.getElementById('bgColorText').value   = color;
+            document.getElementById('sectionPreview').style.background = color;
+        }
+        function setTextColor(color) {
+            document.querySelector('[name=TextColor]').value = color;
+            document.getElementById('textColorText').value   = color;
+            document.getElementById('sectionPreview').style.color = color;
+        }
+
+        document.querySelector('[name=Title]')?.addEventListener('input', function() {
+            document.getElementById('previewTitle').textContent = this.value || 'সেকশন টাইটেল';
+        });
+        document.querySelector('[name=SubTitle]')?.addEventListener('input', function() {
+            document.getElementById('previewSubtitle').textContent = this.value || 'সাব-টাইটেল';
+        });
+
+        function filterProducts(query) {
+            document.querySelectorAll('.product-check-item').forEach(function(item) {
+                item.style.display = item.dataset.name.includes(query.toLowerCase()) ? '' : 'none';
+            });
+        }
+    </script>
+}

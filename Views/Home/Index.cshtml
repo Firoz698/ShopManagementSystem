@@ -228,12 +228,14 @@
             else if (sec.SectionType == "product")
             {
                 <!-- ── Product Section ────────────────────────────────────── -->
+                var sectionProducts = sec.Products.Where(sp => sp.Product != null && sp.Product.IsActive).ToList();
+                var previewProducts = sectionProducts.Take(4).ToList();
+
                 <div class="row g-3">
-                    @foreach (var sp in sec.Products)
+                    @foreach (var sp in previewProducts)
                     {
                         var p = sp.Product;
-                        if (p == null || !p.IsActive) continue;
-                        var img = p.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? p.Images.FirstOrDefault()?.ImageUrl;
+                        var img = p!.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? p.Images.FirstOrDefault()?.ImageUrl;
                         var hasSizes = p.Sizes.Any(s => s.IsActive && s.Stock > 0);
                         var price = hasSizes ? p.Sizes.Where(s => s.IsActive).Min(s => s.SalesPrice) : (p.DiscountPrice ?? p.Price);
 
@@ -284,7 +286,20 @@
                         </div>
                     }
                 </div>
+
+                <!-- সব দেখুন Button -->
+                @if (sectionProducts.Count > 4)
+                {
+                    <div class="text-center mt-4">
+                        <a href="@(string.IsNullOrEmpty(sec.ButtonUrl) ? "/Product" : sec.ButtonUrl)"
+                           class="btn btn-outline-dark px-5 py-2 fw-semibold">
+                            <i class="bi bi-grid me-2"></i>সব পণ্য দেখুন
+                            <span class="badge bg-dark ms-1">@sectionProducts.Count</span>
+                        </a>
+                    </div>
+                }
             }
+
             else if (sec.SectionType == "banner" && !string.IsNullOrEmpty(sec.BannerImageUrl))
             {
                 <!-- ── Banner Section ─────────────────────────────────────── -->
