@@ -1,82 +1,190 @@
 @model ProductCreateViewModel
-@{ ViewData["Title"] = "প্রোডাক্ট সম্পাদনা"; }
+@{
+    ViewData["Title"] = "প্রোডাক্ট সম্পাদনা";
+}
 
 <div class="card border-0 shadow-sm">
     <div class="card-body p-4">
-        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+
+        <form asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
             @Html.AntiForgeryToken()
+            <input asp-for="Id" type="hidden" />
+
             <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
 
             <div class="row g-4">
                 <div class="col-lg-8">
+
                     <div class="mb-3">
                         <label class="form-label fw-medium">প্রোডাক্টের নাম <span class="text-danger">*</span></label>
                         <input asp-for="Name" class="form-control" />
                         <span asp-validation-for="Name" class="text-danger small"></span>
                     </div>
+
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label class="form-label fw-medium">ক্যাটাগরি <span class="text-danger">*</span></label>
-                            <select asp-for="CategoryId" asp-items="(SelectList)ViewBag.Categories" class="form-select"></select>
+                            <select asp-for="CategoryId" asp-items="(SelectList)ViewBag.Categories" class="form-select">
+                                <option value="">-- ক্যাটাগরি বেছে নিন --</option>
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger small"></span>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium">স্টক পরিমাণ <span class="text-danger">*</span></label>
                             <input asp-for="Stock" type="number" min="0" class="form-control" />
+                            <span asp-validation-for="Stock" class="text-danger small"></span>
                         </div>
                     </div>
+
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label class="form-label fw-medium">মূল্য (৳) <span class="text-danger">*</span></label>
                             <input asp-for="Price" type="number" step="0.01" min="0" class="form-control" />
+                            <span asp-validation-for="Price" class="text-danger small"></span>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium">ছাড়ের মূল্য (৳)</label>
-                            <input asp-for="DiscountPrice" type="number" step="0.01" min="0" class="form-control" placeholder="ঐচ্ছিক" />
+                            <input asp-for="DiscountPrice" type="number" step="0.01" min="0"
+                                   class="form-control" placeholder="ঐচ্ছিক" />
+                            <span asp-validation-for="DiscountPrice" class="text-danger small"></span>
                         </div>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label fw-medium">বিবরণ</label>
                         <textarea asp-for="Description" class="form-control" rows="5"></textarea>
                     </div>
+
                     <div class="form-check form-switch mb-3">
                         <input asp-for="IsActive" class="form-check-input" type="checkbox" />
                         <label asp-for="IsActive" class="form-check-label fw-medium">সক্রিয়</label>
                     </div>
+
+                    <!-- ── Sizes Section ── -->
+                    <div class="card border-0 bg-light mt-2">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <h6 class="fw-semibold mb-0">
+                                    <i class="bi bi-rulers me-2"></i>সাইজ ম্যানেজমেন্ট
+                                </h6>
+                                <button type="button" class="btn btn-sm btn-outline-dark"
+                                        onclick="addSizeRow()">
+                                    <i class="bi bi-plus-circle me-1"></i>সাইজ যোগ করুন
+                                </button>
+                            </div>
+
+                            <div id="sizesContainer">
+                                @if (Model.Sizes != null && Model.Sizes.Any())
+                                {
+                                    for (int i = 0; i < Model.Sizes.Count; i++)
+                                    {
+                                        <div class="size-row row g-2 align-items-center mb-2 border rounded p-2 bg-white">
+                                            @if (Model.Sizes[i].Id.HasValue)
+                                            {
+                                                <input type="hidden" name="Sizes[@i].Id" value="@Model.Sizes[i].Id" />
+                                            }
+                                            <input type="hidden" name="Sizes[@i].IsRemove" value="false" class="isRemoveInput" />
+
+                                            <div class="col-md-3">
+                                                <input type="text" name="Sizes[@i].SizeName"
+                                                       value="@Model.Sizes[i].SizeName"
+                                                       class="form-control form-control-sm"
+                                                       placeholder="সাইজের নাম *" />
+                                            </div>
+                                            <div class="col-md-2">
+                                                <input type="text" name="Sizes[@i].SizeCode"
+                                                       value="@Model.Sizes[i].SizeCode"
+                                                       class="form-control form-control-sm"
+                                                       placeholder="কোড" />
+                                            </div>
+                                            <div class="col-md-2">
+                                                <input type="number" name="Sizes[@i].SalesPrice"
+                                                       value="@Model.Sizes[i].SalesPrice"
+                                                       step="0.01" min="0"
+                                                       class="form-control form-control-sm"
+                                                       placeholder="বিক্রয় মূল্য" />
+                                            </div>
+                                            <div class="col-md-2">
+                                                <input type="number" name="Sizes[@i].Stock"
+                                                       value="@Model.Sizes[i].Stock"
+                                                       min="0"
+                                                       class="form-control form-control-sm"
+                                                       placeholder="স্টক" />
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="form-check form-switch mt-1">
+                                                    <input type="checkbox" name="Sizes[@i].IsActive"
+                                                           value="true" class="form-check-input"
+                                                           @(Model.Sizes[i].IsActive ? "checked" : "") />
+                                                    <label class="form-check-label small">সক্রিয়</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-1 text-center">
+                                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                                        onclick="removeSizeRow(this)">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
-                <!-- Image management -->
+                <!-- ── Image Management ── -->
                 <div class="col-lg-4">
                     <div class="card bg-light border-0 mb-3">
                         <div class="card-body">
-                            <h6 class="fw-semibold mb-3"><i class="bi bi-images me-2"></i>বিদ্যমান ছবি</h6>
+                            <h6 class="fw-semibold mb-1">
+                                <i class="bi bi-images me-2"></i>বিদ্যমান ছবি
+                            </h6>
+                            <p class="text-muted small mb-3">
+                                <i class="bi bi-info-circle me-1"></i>
+                                ⭐ ক্লিক করে প্রধান ছবি বেছে নিন। ☑ চেক করলে ছবি মুছে যাবে।
+                            </p>
+
                             @{
                                 var existingImages = ViewBag.ExistingImages as List<ShopManagementSystem.Models.ProductImage>;
+                                var primaryImgId = existingImages?.FirstOrDefault(i => i.IsPrimary)?.Id;
                             }
+
                             @if (existingImages != null && existingImages.Any())
                             {
                                 <div class="d-flex flex-wrap gap-2 mb-3">
                                     @foreach (var img in existingImages)
                                     {
-                                        <div class="position-relative">
-                                            <img src="@img.ImageUrl" class="rounded border"
-                                                 style="width:72px;height:72px;object-fit:cover"
-                                                 onerror="this.src='https://via.placeholder.com/72'" />
-                                            <div class="form-check position-absolute top-0 end-0">
-                                                <input type="checkbox" name="RemoveImageIds" value="@img.Id"
-                                                       class="form-check-input" id="rm@img.Id"
-                                                       style="margin:2px" title="মুছুন" />
+                                        <div class="img-item position-relative" style="width:80px">
+                                            <img src="@img.ImageUrl"
+                                                 class="rounded border img-thumb @(img.IsPrimary ? "border-primary border-2" : "")"
+                                                 style="width:80px;height:80px;object-fit:cover;cursor:pointer;transition:all .2s"
+                                                 onerror="this.src='https://via.placeholder.com/80'"
+                                                 onclick="setPrimary(@img.Id, this)"
+                                                 title="প্রধান হিসেবে সেট করুন" />
+
+                                            <span id="primaryBadge_@img.Id"
+                                                  class="badge bg-primary position-absolute bottom-0 start-0"
+                                                  style="font-size:.6rem;display:@(img.IsPrimary ? "block" : "none")">
+                                                ⭐ প্রধান
+                                            </span>
+
+                                            <div class="position-absolute top-0 end-0">
+                                                <input type="checkbox" name="RemoveImageIds"
+                                                       value="@img.Id"
+                                                       class="form-check-input remove-cb"
+                                                       id="rm_@img.Id"
+                                                       style="margin:3px;cursor:pointer"
+                                                       title="এই ছবি মুছুন"
+                                                       onchange="onRemoveChange(@img.Id, this)" />
                                             </div>
-                                            @if (img.IsPrimary)
-                                            {
-                                                <span class="badge bg-primary position-absolute bottom-0 start-0"
-                                                      style="font-size:.6rem">প্রধান</span>
-                                            }
                                         </div>
                                     }
                                 </div>
-                                <div class="form-text text-warning small">
-                                    <i class="bi bi-info-circle me-1"></i>চেক করলে ছবি মুছে যাবে
-                                </div>
+
+                                <input type="hidden" name="PrimaryImageId" id="primaryImageIdInput"
+                                       value="@primaryImgId" />
                             }
                             else
                             {
@@ -85,8 +193,10 @@
 
                             <hr class="my-3" />
                             <h6 class="fw-semibold mb-2 small">নতুন ছবি যোগ করুন</h6>
-                            <input type="file" name="Images" class="form-control form-control-sm"
-                                   multiple accept="image/*" onchange="previewImages(this)" />
+                            <input type="file" name="Images" id="imageUploader"
+                                   class="form-control form-control-sm"
+                                   multiple accept="image/*"
+                                   onchange="previewImages(this)" />
                             <div id="imgPreview" class="d-flex flex-wrap gap-2 mt-2"></div>
                         </div>
                     </div>
@@ -94,32 +204,128 @@
             </div>
 
             <hr class="my-4" />
+
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-dark px-4">
                     <i class="bi bi-check-circle me-2"></i>আপডেট করুন
                 </button>
                 <a asp-action="Index" class="btn btn-outline-secondary">বাতিল</a>
             </div>
+
         </form>
     </div>
 </div>
 
 @section Scripts {
-<script>
-function previewImages(input) {
-    var preview = document.getElementById('imgPreview');
-    preview.innerHTML = '';
-    Array.from(input.files).forEach(function(file) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            var img = document.createElement('img');
-            img.src = e.target.result;
-            img.className = 'rounded border';
-            img.style.cssText = 'width:72px;height:72px;object-fit:cover';
-            preview.appendChild(img);
-        };
-        reader.readAsDataURL(file);
-    });
-}
-</script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+        // ── প্রধান ছবি সেট করা ──────────────────────────────────────────────
+        function setPrimary(imgId, el) {
+            document.querySelectorAll('[id^="primaryBadge_"]').forEach(function (b) {
+                b.style.display = 'none';
+            });
+            document.querySelectorAll('.img-thumb').forEach(function (img) {
+                img.classList.remove('border-primary', 'border-2');
+                img.classList.add('border');
+            });
+            document.getElementById('primaryBadge_' + imgId).style.display = 'block';
+            el.classList.add('border-primary', 'border-2');
+            document.getElementById('primaryImageIdInput').value = imgId;
+        }
+
+        // ── মুছুন checkbox ───────────────────────────────────────────────────
+        function onRemoveChange(imgId, cb) {
+            var thumb = cb.closest('.img-item').querySelector('.img-thumb');
+            if (cb.checked) {
+                thumb.style.opacity = '0.35';
+                thumb.style.pointerEvents = 'none';
+                var primaryInput = document.getElementById('primaryImageIdInput');
+                if (primaryInput && primaryInput.value == imgId) {
+                    primaryInput.value = '';
+                    document.getElementById('primaryBadge_' + imgId).style.display = 'none';
+                    thumb.classList.remove('border-primary', 'border-2');
+                }
+            } else {
+                thumb.style.opacity = '1';
+                thumb.style.pointerEvents = 'auto';
+            }
+        }
+
+        // ── নতুন ছবির preview ───────────────────────────────────────────────
+        function previewImages(input) {
+            var preview = document.getElementById('imgPreview');
+            preview.innerHTML = '';
+            Array.from(input.files).forEach(function (file) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'rounded border';
+                    img.style.cssText = 'width:72px;height:72px;object-fit:cover';
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // ── Sizes ────────────────────────────────────────────────────────────
+        var sizeIndex = @(Model.Sizes?.Count ?? 0);
+
+        function addSizeRow() {
+            var i = sizeIndex++;
+            var html = `
+                <div class="size-row row g-2 align-items-center mb-2 border rounded p-2 bg-white">
+                    <input type="hidden" name="Sizes[${i}].IsRemove" value="false" class="isRemoveInput" />
+                    <div class="col-md-3">
+                        <input type="text" name="Sizes[${i}].SizeName"
+                               class="form-control form-control-sm" placeholder="সাইজের নাম *" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="text" name="Sizes[${i}].SizeCode"
+                               class="form-control form-control-sm" placeholder="কোড" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" name="Sizes[${i}].SalesPrice"
+                               step="0.01" min="0"
+                               class="form-control form-control-sm" placeholder="বিক্রয় মূল্য" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" name="Sizes[${i}].Stock"
+                               min="0" value="0"
+                               class="form-control form-control-sm" placeholder="স্টক" />
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-check form-switch mt-1">
+                            <input type="checkbox" name="Sizes[${i}].IsActive"
+                                   value="true" class="form-check-input" checked />
+                            <label class="form-check-label small">সক্রিয়</label>
+                        </div>
+                    </div>
+                    <div class="col-md-1 text-center">
+                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                onclick="removeSizeRow(this)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>`;
+            document.getElementById('sizesContainer').insertAdjacentHTML('beforeend', html);
+        }
+
+        function removeSizeRow(btn) {
+            var row = btn.closest('.size-row');
+            var hiddenId = row.querySelector('input[name*=".Id"]');
+            var isRemoveInput = row.querySelector('.isRemoveInput');
+
+            if (hiddenId && hiddenId.value) {
+                // Existing size — IsRemove = true করো, hide করো
+                isRemoveInput.value = 'true';
+                row.style.display = 'none';
+            } else {
+                // নতুন row — সরাসরি remove
+                row.remove();
+            }
+        }
+    </script>
 }

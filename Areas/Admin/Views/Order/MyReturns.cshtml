@@ -1,0 +1,65 @@
+@model List<ShopManagementSystem.Models.ReturnRequest>
+@{ ViewData["Title"] = "রিটার্ন হিস্ট্রি"; }
+
+<div class="container my-4">
+    <h4 class="fw-bold mb-4">
+        <i class="bi bi-arrow-return-left text-danger me-2"></i>রিটার্ন রিকোয়েস্ট হিস্ট্রি
+    </h4>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-inbox display-2 d-block mb-3 opacity-25"></i>
+            <h5>কোনো রিটার্ন রিকোয়েস্ট নেই</h5>
+            <a asp-controller="Cart" asp-action="MyOrders" class="btn btn-dark mt-3 btn-sm">
+                আমার অর্ডার দেখুন
+            </a>
+        </div>
+    }
+    else
+    {
+        @foreach (var ret in Model)
+        {
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                        <div>
+                            <div class="fw-semibold">@ret.Product?.Name</div>
+                            <div class="text-muted small mt-1">
+                                অর্ডার #@ret.OrderId &nbsp;|&nbsp;
+                                @ret.CreatedAt.ToString("dd MMM yyyy")
+                            </div>
+                            <div class="mt-2 text-muted small">
+                                <strong>কারণ:</strong> @ret.Reason
+                            </div>
+                            @if (!string.IsNullOrEmpty(ret.AdminNote))
+                            {
+                                <div class="mt-2 bg-light rounded p-2 small">
+                                    <strong>অ্যাডমিন নোট:</strong> @ret.AdminNote
+                                </div>
+                            }
+                        </div>
+                        <div class="text-end">
+                            <span class="badge badge-return-@ret.Status px-3 py-2 rounded-pill fs-6">
+                                @(ret.Status == "Pending"  ? "⏳ অপেক্ষমান" :
+                                  ret.Status == "Approved" ? "✅ অনুমোদিত"  : "❌ প্রত্যাখ্যাত")
+                            </span>
+                            @if (ret.UpdatedAt.HasValue)
+                            {
+                                <div class="text-muted mt-1" style="font-size:.75rem">
+                                    আপডেট: @ret.UpdatedAt.Value.ToString("dd MMM yyyy")
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<style>
+    .badge-return-Pending  { background:#fef3c7;color:#92400e; }
+    .badge-return-Approved { background:#d1fae5;color:#065f46; }
+    .badge-return-Rejected { background:#fee2e2;color:#991b1b; }
+</style>

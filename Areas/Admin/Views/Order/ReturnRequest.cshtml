@@ -1,0 +1,138 @@
+﻿@{
+    ViewData["Title"] = "রিটার্ন রিকোয়েস্ট";
+}
+
+@{
+    var order = ViewBag.Order as ShopManagementSystem.Models.Order;
+    var product = ViewBag.Product as ShopManagementSystem.Models.Product;
+}
+
+<div class="container my-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a asp-controller="Cart" asp-action="MyOrders">আমার অর্ডার</a></li>
+            <li class="breadcrumb-item active">রিটার্ন রিকোয়েস্ট</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-arrow-return-left text-danger me-2"></i>রিটার্ন রিকোয়েস্ট
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+
+                    <!-- Product info -->
+                    <div class="bg-light rounded-3 p-3 mb-4">
+                        <div class="fw-semibold">@product?.Name</div>
+                        <div class="text-muted small mt-1">
+                            অর্ডার #@order?.Id &nbsp;|&nbsp;
+                            <span class="badge badge-status-@order?.Status rounded-pill px-2">@order?.Status</span>
+                        </div>
+                    </div>
+
+                    <!-- Return reasons info -->
+                    <div class="alert alert-info border-0 py-2 mb-4 small">
+                        <i class="bi bi-info-circle me-2"></i>
+                        রিটার্ন রিকোয়েস্ট গ্রহণযোগ্য কারণ: পণ্য ক্ষতিগ্রস্ত, ভুল পণ্য ডেলিভারি,
+                        অর্ডার থেকে পার্থক্য। রিকোয়েস্টের পর ৩-৫ কার্যদিবসের মধ্যে যোগাযোগ করা হবে।
+                    </div>
+
+                    <form asp-controller="Order" asp-action="ReturnRequest" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="orderId" value="@order?.Id" />
+                        <input type="hidden" name="productId" value="@product?.Id" />
+
+                        <!-- Quick reason select -->
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">রিটার্নের কারণ নির্বাচন করুন <span class="text-danger">*</span></label>
+                            <div class="d-flex flex-column gap-2">
+                                @{
+                                    var reasons = new[]
+                                    {
+                                                                "পণ্যটি ক্ষতিগ্রস্ত অবস্থায় পেয়েছি",
+                                                                "ভুল পণ্য ডেলিভারি হয়েছে",
+                                                                "পণ্যের মান প্রত্যাশার চেয়ে খারাপ",
+                                                                "পণ্যটি অর্ডারের বিবরণের সাথে মিলছে না",
+                                                                "অন্য কারণ"
+                                                                };
+                                }
+                                @foreach (var r in reasons)
+                                {
+                                    <div class="form-check reason-option p-2 border rounded-3"
+                                         onclick="selectReason('@r', this)">
+                                        <input class="form-check-input" type="radio"
+                                               name="_reason_select" value="@r"
+                                               id="reason_@r.GetHashCode()" />
+                                        <label class="form-check-label w-100 small fw-medium"
+                                               for="reason_@r.GetHashCode()" style="cursor:pointer">
+                                            @r
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Full reason textarea -->
+                        <div class="mb-4">
+                            <label class="form-label fw-medium">বিস্তারিত বর্ণনা <span class="text-danger">*</span></label>
+                            <textarea name="reason" id="reasonText" class="form-control" rows="4" required
+                                      placeholder="রিটার্নের কারণ বিস্তারিত লিখুন..."></textarea>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger px-4 fw-semibold">
+                                <i class="bi bi-send me-2"></i>রিটার্ন রিকোয়েস্ট পাঠান
+                            </button>
+                            <a asp-controller="Cart" asp-action="MyOrders"
+                               class="btn btn-outline-secondary">বাতিল</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .reason-option {
+        cursor: pointer;
+        transition: border-color .2s, background .2s;
+    }
+
+        .reason-option:hover {
+            border-color: #dc3545 !important;
+            background: #fff5f5;
+        }
+
+        .reason-option.selected {
+            border-color: #dc3545 !important;
+            background: #fff5f5;
+        }
+
+    .badge-status-Completed {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-status-Shipped {
+        background: #e0e7ff;
+        color: #3730a3;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        function selectReason(text, el) {
+            document.querySelectorAll('.reason-option').forEach(function(opt) {
+                opt.classList.remove('selected');
+            });
+            el.classList.add('selected');
+            document.getElementById('reasonText').value = text === 'অন্য কারণ' ? '' : text;
+            if (text === 'অন্য কারণ') document.getElementById('reasonText').focus();
+        }
+    </script>
+}

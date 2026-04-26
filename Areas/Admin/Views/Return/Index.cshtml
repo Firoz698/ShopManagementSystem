@@ -1,0 +1,302 @@
+﻿@model List<ShopManagementSystem.Models.ReturnRequest>
+@{
+    ViewData["Title"] = "রিটার্ন রিকোয়েস্ট ম্যানেজমেন্ট";
+
+    // প্রতিটি status এর পরবর্তী ধাপ
+    var nextMap = new Dictionary<string, string[]>
+    {
+        { "Pending",  new[] { "Approved", "Rejected" } },
+        { "Approved", new[] { "Refunded" } },
+        { "Rejected", Array.Empty<string>() },
+        { "Refunded", Array.Empty<string>() }
+    };
+
+    string BadgeStyle(string s) => s switch
+    {
+        "Approved" => "background:#d1fae5;color:#065f46",
+        "Rejected" => "background:#fee2e2;color:#991b1b",
+        "Refunded" => "background:#dbeafe;color:#1e40af",
+        _ => "background:#fef3c7;color:#92400e"
+    };
+}
+
+<!-- ── Status Filter ───────────────────────────────────────────────────────── -->
+<div class="d-flex gap-2 mb-4 flex-wrap">
+    <a asp-action="Index" class="btn btn-sm @(ViewBag.Status == null ? "btn-dark" : "btn-outline-dark")">সব</a>
+    @foreach (var s in (string[])ViewBag.StatusList)
+    {
+        <a asp-action="Index" asp-route-status="@s"
+           class="btn btn-sm @(ViewBag.Status == s ? "btn-dark" : "btn-outline-secondary")">
+            @s
+            @if (s == "Pending" && (int)ViewBag.PendingCount > 0)
+            {
+                <span class="badge bg-danger ms-1">@ViewBag.PendingCount</span>
+            }
+        </a>
+    }
+</div>
+
+<!-- ── Table ─────────────────────────────────────────────────────────────── -->
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>ইউজার</th>
+                    <th>পণ্য</th>
+                    <th>অর্ডার</th>
+                    <th>কারণ</th>
+                    <th>তারিখ</th>
+                    <th class="text-center">স্ট্যাটাস</th>
+                    <th class="text-center">অ্যাকশন</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ret in Model)
+                {
+                    var next = nextMap.GetValueOrDefault(ret.Status, Array.Empty<string>());
+
+                    <tr>
+                        <td class="fw-bold small">
+                            <a asp-area="Admin" asp-controller="Return" asp-action="Details"
+                               asp-route-id="@ret.Id" class="text-decoration-none text-dark">
+                                #@ret.Id
+                            </a>
+                        </td>
+                        <td>
+                            <div class="small fw-medium">@ret.User?.FullName</div>
+                            <div class="text-muted" style="font-size:.75rem">@ret.User?.PhoneNumber</div>
+                        </td>
+                        <td class="small fw-medium">@ret.Product?.Name</td>
+                        <td>
+                            <a asp-area="Admin" asp-controller="Order" asp-action="Detail"
+                               asp-route-id="@ret.OrderId" class="text-decoration-none small">
+                                #@ret.OrderId
+                            </a>
+                        </td>
+                        <td class="small text-muted" style="max-width:180px">
+                            <span title="@ret.Reason">
+                                @(ret.Reason.Length > 45 ? ret.Reason[..45] + "…" : ret.Reason)
+                            </span>
+                        </td>
+                        <td class="small text-muted">@ret.CreatedAt.ToString("dd MMM yyyy")</td>
+
+                        <!-- Status badge + next step hint -->
+                        <td class="text-center">
+                            <div class="d-flex flex-column align-items-center gap-1">
+                                <span class="badge rounded-pill px-3 py-1 fw-medium"
+                                      style="@BadgeStyle(ret.Status)">
+                                    @ret.Status
+                                </span>
+                                @if (next.Length > 0)
+                                {
+                                    <small class="text-muted" style="font-size:.68rem">
+                                        <i class="bi bi-arrow-down"></i> @string.Join(" / ", next)
+                                    </small>
+                                }
+                            </div>
+                        </td>
+
+                        <!-- Action -->
+                        <td class="text-center">
+                            <div class="d-flex gap-1 justify-content-center">
+                                <a asp-area="Admin" asp-controller="Return" asp-action="Details"
+                                   asp-route-id="@ret.Id"
+                                   class="btn btn-sm btn-outline-secondary" title="বিস্তারিত">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+
+                                @if (next.Length > 0)
+                                {
+                                    <button class="btn btn-sm btn-outline-primary"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#actionModal"
+                                            data-id="@ret.Id"
+                                            data-current="@ret.Status"
+                                            data-name="@ret.User?.FullName"
+                                            data-product="@ret.Product?.Name"
+                                            data-reason="@ret.Reason"
+                                            data-next="@string.Join(",", next)"
+                                            onclick="openActionModal(this)"
+                                            title="স্ট্যাটাস পরিবর্তন">
+                                        <i class="bi bi-arrow-right-circle"></i>
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small d-flex align-items-center px-1">
+                                        <i class="bi bi-check2-all me-1"></i>সম্পন্ন
+                                    </span>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-5">
+                            <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
+                            কোনো রিটার্ন রিকোয়েস্ট নেই
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer bg-white text-muted small">মোট @Model.Count টি রিকোয়েস্ট</div>
+</div>
+
+<!-- ── Status Flow Modal ──────────────────────────────────────────────────── -->
+<div class="modal fade" id="actionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">স্ট্যাটাস পরিবর্তন</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="UpdateStatus" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" id="modalReturnId" />
+                <div class="modal-body">
+
+                    <!-- Info card -->
+                    <div class="bg-light rounded p-3 mb-3 small">
+                        <div><strong>ইউজার:</strong> <span id="modalUserName"></span></div>
+                        <div><strong>পণ্য:</strong> <span id="modalProductName"></span></div>
+                        <div class="mt-1"><strong>কারণ:</strong> <span id="modalReason"></span></div>
+                    </div>
+
+                    <!-- Flow: current → next -->
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="text-muted small">বর্তমান:</span>
+                        <span id="modalCurrentBadge" class="badge rounded-pill px-3" style="font-size:.8rem"></span>
+                        <i class="bi bi-arrow-right text-muted"></i>
+                        <span class="text-muted small">পরিবর্তন করুন:</span>
+                    </div>
+
+                    <!-- Dynamic next status options -->
+                    <div id="modalNextOptions" class="d-flex gap-2 flex-wrap mb-3"></div>
+
+                    <!-- Admin note -->
+                    <div>
+                        <label class="form-label fw-medium small">অ্যাডমিন নোট (ঐচ্ছিক)</label>
+                        <textarea name="adminNote" class="form-control form-control-sm" rows="2"
+                                  placeholder="ইউজারকে কারণ জানান..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">বাতিল</button>
+                    <button type="submit" class="btn btn-dark btn-sm px-4">
+                        <i class="bi bi-check2 me-1"></i>সেভ করুন
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Custom radio pill buttons */
+    .status-radio-input {
+        display: none;
+    }
+
+    .status-radio-label {
+        cursor: pointer;
+        border-radius: 8px;
+        padding: 8px 18px;
+        border: 2px solid #dee2e6;
+        font-size: .85rem;
+        font-weight: 500;
+        transition: all .15s;
+        user-select: none;
+        display: inline-block;
+    }
+
+        .status-radio-label.approved {
+            color: #065f46;
+            border-color: #a7f3d0;
+        }
+
+        .status-radio-label.rejected {
+            color: #991b1b;
+            border-color: #fecaca;
+        }
+
+        .status-radio-label.refunded {
+            color: #1e40af;
+            border-color: #bfdbfe;
+        }
+
+    .status-radio-input:checked + .status-radio-label.approved {
+        background: #d1fae5;
+        border-color: #065f46;
+    }
+
+    .status-radio-input:checked + .status-radio-label.rejected {
+        background: #fee2e2;
+        border-color: #991b1b;
+    }
+
+    .status-radio-input:checked + .status-radio-label.refunded {
+        background: #dbeafe;
+        border-color: #1e40af;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        const badgeStyles = {
+            Pending:  'background:#fef3c7;color:#92400e',
+            Approved: 'background:#d1fae5;color:#065f46',
+            Rejected: 'background:#fee2e2;color:#991b1b',
+            Refunded: 'background:#dbeafe;color:#1e40af',
+        };
+        const nextLabels = {
+            Approved: { icon: 'bi-check-circle', css: 'approved', label: '✅ অনুমোদন করুন' },
+            Rejected: { icon: 'bi-x-circle',     css: 'rejected', label: '❌ প্রত্যাখ্যান করুন' },
+            Refunded: { icon: 'bi-cash-coin',     css: 'refunded', label: '💰 রিফান্ড সম্পন্ন' },
+        };
+
+        function openActionModal(btn) {
+            document.getElementById('modalReturnId').value          = btn.dataset.id;
+            document.getElementById('modalUserName').textContent    = btn.dataset.name;
+            document.getElementById('modalProductName').textContent = btn.dataset.product;
+            document.getElementById('modalReason').textContent      = btn.dataset.reason;
+
+            // Current badge
+            var cur = btn.dataset.current;
+            var curBadge = document.getElementById('modalCurrentBadge');
+            curBadge.textContent = cur;
+            curBadge.setAttribute('style', (badgeStyles[cur] || '') + ';font-size:.8rem');
+
+            // Build next status radio buttons dynamically
+            var next   = btn.dataset.next.split(',').filter(Boolean);
+            var optBox = document.getElementById('modalNextOptions');
+            optBox.innerHTML = '';
+
+            next.forEach(function (s, idx) {
+                var info = nextLabels[s] || { icon: 'bi-arrow-right', css: '', label: s };
+                var uid  = 'statusOpt_' + s;
+
+                var inp       = document.createElement('input');
+                inp.type      = 'radio';
+                inp.name      = 'status';
+                inp.value     = s;
+                inp.id        = uid;
+                inp.className = 'status-radio-input';
+                if (idx === 0) inp.checked = true;
+
+                var lbl       = document.createElement('label');
+                lbl.htmlFor   = uid;
+                lbl.className = 'status-radio-label ' + info.css;
+                lbl.innerHTML = '<i class="bi ' + info.icon + ' me-1"></i>' + info.label;
+
+                optBox.appendChild(inp);
+                optBox.appendChild(lbl);
+            });
+        }
+    </script>
+}

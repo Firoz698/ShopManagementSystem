@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ShopManagementSystem.Data;
+using ShopManagementSystem.Areas.Admin.Repository.Interfaces;
+using ShopManagementSystem.Interfaces;
 using ShopManagementSystem.ViewModels;
 
 namespace ShopManagementSystem.Areas.Admin.Controllers
@@ -9,30 +9,24 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
     [Area("Admin"), Authorize(Roles = "Admin")]
     public class DashboardController : Controller
     {
-        private readonly ApplicationDbContext _db;
+        private readonly IDashboardRepository _dashboardRepo;
 
-        public DashboardController(ApplicationDbContext db) => _db = db;
+        public DashboardController(IDashboardRepository dashboardRepo)
+        {
+            _dashboardRepo = dashboardRepo;
+        }
 
         public async Task<IActionResult> Index()
         {
             var vm = new AdminDashboardViewModel
             {
-                TotalProducts = await _db.Products.CountAsync(),
-                TotalOrders   = await _db.Orders.CountAsync(),
-                TotalUsers    = await _db.Users.CountAsync(),
-                PendingOrders = await _db.Orders.CountAsync(o => o.Status == "Pending"),
-                TotalRevenue  = await _db.Orders
-                    .Where(o => o.Status == "Completed")
-                    .SumAsync(o => o.TotalAmount),
-                RecentOrders = await _db.Orders
-                    .Include(o => o.User)
-                    .OrderByDescending(o => o.OrderDate)
-                    .Take(10)
-                    .ToListAsync(),
-                LowStockItems = await _db.Products
-                    .Where(p => p.Stock <= 5)
-                    .Take(10)
-                    .ToListAsync()
+                TotalProducts = await _dashboardRepo.GetTotalProductsAsync(),
+                TotalOrders = await _dashboardRepo.GetTotalOrdersAsync(),
+                TotalUsers = await _dashboardRepo.GetTotalUsersAsync(),
+                PendingOrders = await _dashboardRepo.GetPendingOrdersAsync(),
+                TotalRevenue = await _dashboardRepo.GetTotalRevenueAsync(),
+                RecentOrders = await _dashboardRepo.GetRecentOrdersAsync(10),
+                LowStockItems = await _dashboardRepo.GetLowStockItemsAsync(5, 10)
             };
             return View(vm);
         }

@@ -5,33 +5,77 @@
 
 <div class="container my-4">
     <h4 class="fw-bold mb-4"><i class="bi bi-credit-card me-2"></i>চেকআউট</h4>
-    <form asp-action="PlaceOrder" method="post">
+    <form asp-action="PlaceOrder" method="post" id="checkoutForm">
         @Html.AntiForgeryToken()
         <div class="row g-4">
-            <!-- Shipping Info -->
+
+            <!-- ── Shipping Info ──────────────────────────────────────────── -->
             <div class="col-lg-7">
                 <div class="card border-0 shadow-sm mb-3">
                     <div class="card-header bg-dark text-white fw-semibold">
                         <i class="bi bi-geo-alt me-2"></i>শিপিং তথ্য
                     </div>
                     <div class="card-body">
+
+                        <!-- ── ঢাকার ভিতর / বাইরে ── -->
+                        <div class="mb-4">
+                            <label class="form-label fw-medium">ডেলিভারি এলাকা <span class="text-danger">*</span></label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="delivery-zone-option selected-zone"
+                                         onclick="selectZone('ঢাকার ভিতর', this)">
+                                        <input type="radio" name="DeliveryZone"
+                                               value="ঢাকার ভিতর" id="zone_inside"
+                                               class="visually-hidden" checked />
+                                        <label for="zone_inside"
+                                               class="d-flex align-items-center gap-3 p-3 rounded-3 border-2 border w-100"
+                                               style="cursor:pointer">
+                                            <div class="fs-2">🏙️</div>
+                                            <div>
+                                                <div class="fw-bold">ঢাকার ভিতর</div>
+                                                <div class="text-muted small">ডেলিভারি ৳60</div>
+                                                <div class="text-success small fw-medium">১-২ দিনে</div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="delivery-zone-option"
+                                         onclick="selectZone('ঢাকার বাইরে', this)">
+                                        <input type="radio" name="DeliveryZone"
+                                               value="ঢাকার বাইরে" id="zone_outside"
+                                               class="visually-hidden" />
+                                        <label for="zone_outside"
+                                               class="d-flex align-items-center gap-3 p-3 rounded-3 border-2 border w-100"
+                                               style="cursor:pointer">
+                                            <div class="fs-2">🚚</div>
+                                            <div>
+                                                <div class="fw-bold">ঢাকার বাইরে</div>
+                                                <div class="text-muted small">ডেলিভারি ৳120</div>
+                                                <div class="text-warning small fw-medium">৩-৫ দিনে</div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="mb-3">
                             <label class="form-label fw-medium">সম্পূর্ণ ঠিকানা <span class="text-danger">*</span></label>
                             <textarea asp-for="ShippingAddress" class="form-control" rows="3"
                                       placeholder="বাড়ি নং, রাস্তা, এলাকা, শহর..." required></textarea>
                             <span asp-validation-for="ShippingAddress" class="text-danger small"></span>
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label fw-medium">ফোন নম্বর <span class="text-danger">*</span></label>
                             <input asp-for="Phone" class="form-control" placeholder="01XXXXXXXXX" required />
                             <span asp-validation-for="Phone" class="text-danger small"></span>
                         </div>
 
-                        <!-- ── পেমেন্ট পদ্ধতি ──────────────────────────────── -->
+                        <!-- Payment Method -->
                         <div class="mb-3">
                             <label class="form-label fw-medium">পেমেন্ট পদ্ধতি</label>
-
-                            <!-- Cash on Delivery -->
                             <div class="payment-option mb-2" onclick="selectPayment('cod', this)">
                                 <input class="form-check-input visually-hidden" type="radio"
                                        name="PaymentMethod" id="cod" value="Cash on Delivery" checked />
@@ -47,8 +91,6 @@
                                     <span class="ms-auto badge bg-success">বিনামূল্যে</span>
                                 </label>
                             </div>
-
-                            <!-- Online Payment -->
                             <div class="payment-option" onclick="selectPayment('online', this)">
                                 <input class="form-check-input visually-hidden" type="radio"
                                        name="PaymentMethod" id="online" value="Online Payment" />
@@ -61,18 +103,9 @@
                                         <div class="fw-semibold">অনলাইন পেমেন্ট</div>
                                         <div class="text-muted small">bKash · Nagad · Visa · MasterCard</div>
                                     </div>
-                                    <div class="ms-auto d-flex gap-1 flex-wrap align-items-center">
-                                        <img src="https://i.ibb.co/0YtKCnd/bkash.png"
-                                             onerror="this.style.display='none'"
-                                             style="height:22px;object-fit:contain" alt="bKash" />
-                                        <img src="https://i.ibb.co/8KnP5Bh/nagad.png"
-                                             onerror="this.style.display='none'"
-                                             style="height:22px;object-fit:contain" alt="Nagad" />
-                                    </div>
                                 </label>
                             </div>
                         </div>
-                        <!-- ─────────────────────────────────────────────────── -->
 
                         <div class="mb-0">
                             <label class="form-label fw-medium">বিশেষ নোট (ঐচ্ছিক)</label>
@@ -83,7 +116,7 @@
                 </div>
             </div>
 
-            <!-- Order Summary -->
+            <!-- ── Order Summary ──────────────────────────────────────────── -->
             <div class="col-lg-5">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-dark text-white fw-semibold">
@@ -100,7 +133,11 @@
                                              class="rounded" style="width:36px;height:36px;object-fit:cover" />
                                         <div>
                                             <div class="small fw-medium">@item.Name</div>
-                                            <div class="text-muted" style="font-size:.75rem">×@item.Quantity</div>
+                                            @if (!string.IsNullOrEmpty(item.SizeName))
+                                            {
+                                                <div class="text-muted" style="font-size:.72rem">সাইজ: @item.SizeName</div>
+                                            }
+                                            <div class="text-muted" style="font-size:.72rem">×@item.Quantity</div>
                                         </div>
                                     </div>
                                     <span class="fw-semibold small">৳@item.SubTotal.ToString("N0")</span>
@@ -114,12 +151,14 @@
                             <span class="small">৳@Model.Cart.SubTotal.ToString("N0")</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted small">ডেলিভারি</span>
-                            <span class="small">৳@Model.Cart.ShippingFee.ToString("N0")</span>
+                            <span class="text-muted small">ডেলিভারি চার্জ</span>
+                            <span class="small" id="shippingDisplay">৳@Model.Cart.ShippingFee.ToString("N0")</span>
                         </div>
                         <div class="d-flex justify-content-between fw-bold border-top pt-2">
                             <span>মোট পরিশোধ</span>
-                            <span class="text-danger fs-5">৳@Model.Cart.Total.ToString("N0")</span>
+                            <span class="text-danger fs-5" id="totalDisplay">
+                                ৳@Model.Cart.Total.ToString("N0")
+                            </span>
                         </div>
                         <button type="submit" class="btn btn-success w-100 mt-3 fw-semibold">
                             <i class="bi bi-bag-check me-2"></i>অর্ডার নিশ্চিত করুন
@@ -131,19 +170,45 @@
     </form>
 </div>
 
+<style>
+    .delivery-zone-option label {
+        transition: border-color .2s, background .2s;
+        border-color: #dee2e6 !important;
+    }
+    .delivery-zone-option.selected-zone label {
+        border-color: #0d6efd !important;
+        background: #f0f7ff;
+    }
+    .payment-option label {
+        transition: border-color .2s, background .2s;
+        border: 2px solid #dee2e6 !important;
+    }
+    .payment-option label.selected-payment {
+        border-color: #0d6efd !important;
+        background: #f0f7ff;
+    }
+</style>
+
 @section Scripts {
-    <style>
-        .payment-option label {
-            transition: border-color .2s, background-color .2s;
-            border: 2px solid #dee2e6 !important;
+    <script>
+        var subtotal = @Model.Cart.SubTotal;
+
+        // ── Delivery Zone ────────────────────────────────────────────────────────
+        function selectZone(zone, container) {
+            document.querySelectorAll('.delivery-zone-option').forEach(function(el) {
+                el.classList.remove('selected-zone');
+            });
+            container.classList.add('selected-zone');
+            container.querySelector('input[type=radio]').checked = true;
+
+            var fee   = zone === 'ঢাকার বাইরে' ? 120 : 60;
+            var total = subtotal + fee;
+
+            document.getElementById('shippingDisplay').textContent = '৳' + fee.toLocaleString();
+            document.getElementById('totalDisplay').textContent    = '৳' + total.toLocaleString();
         }
 
-            .payment-option label.selected-payment {
-                border-color: #0d6efd !important;
-                background-color: #f0f7ff;
-            }
-    </style>
-    <script>
+        // ── Payment Method ───────────────────────────────────────────────────────
         function selectPayment(id, container) {
             document.querySelectorAll('.payment-option label').forEach(function(el) {
                 el.classList.remove('selected-payment');

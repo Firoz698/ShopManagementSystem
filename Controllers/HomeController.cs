@@ -1,37 +1,25 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ShopManagementSystem.Data;
+﻿using Microsoft.AspNetCore.Mvc;
+using ShopManagementSystem.Repository.Interfaces;
 using ShopManagementSystem.ViewModels;
 
 namespace ShopManagementSystem.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ApplicationDbContext _db;
+        private readonly IHomeRepository _homeRepo;
 
-        public HomeController(ApplicationDbContext db) => _db = db;
+        public HomeController(IHomeRepository homeRepo)
+        {
+            _homeRepo = homeRepo;
+        }
 
         public async Task<IActionResult> Index()
         {
             var vm = new HomeViewModel
             {
-                Sliders = await _db.Sliders
-                    .Where(s => s.IsActive)
-                    .OrderBy(s => s.SortOrder)
-                    .ToListAsync(),
-
-                Categories = await _db.Categories
-                    .Where(c => c.IsActive)
-                    .Take(8)
-                    .ToListAsync(),
-
-                Products = await _db.Products
-                    .Where(p => p.IsActive)
-                    .Include(p => p.Images)
-                    .Include(p => p.Category)
-                    .OrderByDescending(p => p.CreatedAt)
-                    .Take(8)
-                    .ToListAsync()
+                Sliders = await _homeRepo.GetActiveSlidersAsync(),
+                Categories = await _homeRepo.GetActiveCategoriesAsync(8),
+                Products = await _homeRepo.GetLatestProductsAsync(8)
             };
             return View(vm);
         }

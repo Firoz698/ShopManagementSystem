@@ -1,7 +1,15 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using ShopManagementSystem.Areas.Admin.Repository.Implementations;
+using ShopManagementSystem.Areas.Admin.Repository.Interfaces;
 using ShopManagementSystem.Data;
+using ShopManagementSystem.Generic.Repository.Implementations;
+using ShopManagementSystem.Generic.Repository.Interfaces;
+using ShopManagementSystem.Implementations;
+using ShopManagementSystem.Interfaces;
 using ShopManagementSystem.Models;
+using ShopManagementSystem.Repository.Implementations;
+using ShopManagementSystem.Repository.Interfaces;
 using ShopManagementSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,9 +39,33 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 
+// ── Generic + Specific ───────────────────────────────────────────
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<ISslCommerzService, SslCommerzService>();
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IChatRepository, ChatRepository>();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<IHomeRepository, HomeRepository>();
+builder.Services.AddScoped<IWishlistRepository, WishlistRepository>();
+
+//----For Admin
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IAdminChatRepository, AdminChatRepository>();
+builder.Services.AddScoped<IAdminProductRepository, AdminProductRepository>();
+builder.Services.AddScoped<IAdminUserRepository, AdminUserRepository>();
+builder.Services.AddScoped<IReturnRepository, ReturnRepository>();
+builder.Services.AddScoped<ISliderRepository, SliderRepository>();
+builder.Services.AddScoped<IAdminOrderRepository, AdminOrderRepository>();
+builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
+
+
+
+builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession(options =>
 {
@@ -88,6 +120,7 @@ app.UseRouting();
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapHub<ShopManagementSystem.Hubs.ChatHub>("/chatHub");
 
 app.MapControllerRoute(
     name: "areas",

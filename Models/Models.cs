@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ColumnAttribute = System.ComponentModel.DataAnnotations.Schema.ColumnAttribute;
 
 namespace ShopManagementSystem.Models
 {
@@ -16,7 +17,6 @@ namespace ShopManagementSystem.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        // Navigation
         public ICollection<Order> Orders { get; set; } = new List<Order>();
         public ICollection<Cart> CartItems { get; set; } = new List<Cart>();
         public ICollection<Wishlist> Wishlist { get; set; } = new List<Wishlist>();
@@ -55,11 +55,23 @@ namespace ShopManagementSystem.Models
         [MaxLength(200)]
         public string Slug { get; set; } = string.Empty;
 
-        [Required]
-        [Precision(18, 2)]
+        [MaxLength(50)]
+        public string? ProductCode { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? PurchasePrice { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal ProductVat { get; set; } = 0;
+
+        public bool IsDiscountFixed { get; set; } = true;
+        public DateTime? DiscountStartDate { get; set; }
+        public DateTime? DiscountEndDate { get; set; }
+
+        [Required, Column(TypeName = "decimal(18,2)")]
         public decimal Price { get; set; }
 
-        [Precision(18, 2)]
+        [Column(TypeName = "decimal(18,2)")]
         public decimal? DiscountPrice { get; set; }
 
         [Required]
@@ -69,15 +81,39 @@ namespace ShopManagementSystem.Models
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        // Navigation
         [ForeignKey("CategoryId")]
         public Category? Category { get; set; }
 
         public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
+        public ICollection<ProductSize> Sizes { get; set; } = new List<ProductSize>();
         public ICollection<Cart> CartItems { get; set; } = new List<Cart>();
         public ICollection<Wishlist> Wishlists { get; set; } = new List<Wishlist>();
         public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
         public ICollection<Review> Reviews { get; set; } = new List<Review>();
+    }
+
+    // ── Product Size ─────────────────────────────────────────────────────────────
+    public class ProductSize
+    {
+        public int Id { get; set; }
+
+        [Required]
+        public int ProductId { get; set; }
+
+        [Required, MaxLength(100)]
+        public string SizeName { get; set; } = string.Empty;
+
+        [MaxLength(50)]
+        public string? SizeCode { get; set; }
+
+        [Required, Column(TypeName = "decimal(18,2)")]
+        public decimal SalesPrice { get; set; }
+
+        public int Stock { get; set; } = 0;
+        public bool IsActive { get; set; } = true;
+
+        [ForeignKey("ProductId")]
+        public Product? Product { get; set; }
     }
 
     // ── Product Image ────────────────────────────────────────────────────────────
@@ -130,6 +166,9 @@ namespace ShopManagementSystem.Models
         [Required]
         public int ProductId { get; set; }
 
+        // ✅ nullable — Size না থাকলে null হবে, FK error হবে না
+        public int? ProductSizeId { get; set; }
+
         [Required, Range(1, 999)]
         public int Quantity { get; set; } = 1;
 
@@ -140,6 +179,9 @@ namespace ShopManagementSystem.Models
 
         [ForeignKey("ProductId")]
         public Product? Product { get; set; }
+
+        [ForeignKey("ProductSizeId")]
+        public ProductSize? ProductSize { get; set; }
     }
 
     // ── Wishlist ────────────────────────────────────────────────────────────────
@@ -178,6 +220,10 @@ namespace ShopManagementSystem.Models
 
         [MaxLength(50)]
         public string PaymentMethod { get; set; } = "Cash on Delivery";
+
+        // ✅ নতুন — ঢাকার ভিতর / ঢাকার বাইরে
+        [MaxLength(50)]
+        public string DeliveryZone { get; set; } = "ঢাকার ভিতর";
 
         [MaxLength(50)]
         public string Status { get; set; } = "Pending";
@@ -239,5 +285,61 @@ namespace ShopManagementSystem.Models
 
         [ForeignKey("ProductId")]
         public Product? Product { get; set; }
+    }
+
+    // ── Return Request ───────────────────────────────────────────────────────────
+    public class ReturnRequest
+    {
+        public int Id { get; set; }
+
+        [Required]
+        public int OrderId { get; set; }
+
+        [Required]
+        public int ProductId { get; set; }
+
+        [Required]
+        public string UserId { get; set; } = string.Empty;
+
+        [Required, MaxLength(500)]
+        public string Reason { get; set; } = string.Empty;
+
+        [MaxLength(50)]
+        public string Status { get; set; } = "Pending";
+
+        public string? AdminNote { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime? UpdatedAt { get; set; }
+
+        [ForeignKey("OrderId")]
+        public Order? Order { get; set; }
+
+        [ForeignKey("ProductId")]
+        public Product? Product { get; set; }
+
+        [ForeignKey("UserId")]
+        public ApplicationUser? User { get; set; }
+    }
+
+    // ── Payment Transaction ──────────────────────────────────────────────────────
+    public class PaymentTransaction
+    {
+        public int Id { get; set; }
+        public int OrderId { get; set; }
+        public string TransactionId { get; set; } = string.Empty;
+        public string ValidationId { get; set; } = string.Empty;
+        public string Status { get; set; } = "Pending";
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal Amount { get; set; }
+
+        public string Currency { get; set; } = "BDT";
+        public string PaymentMethod { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime? UpdatedAt { get; set; }
+
+        [ForeignKey("OrderId")]
+        public Order? Order { get; set; }
     }
 }

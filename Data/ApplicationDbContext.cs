@@ -18,12 +18,55 @@ namespace ShopManagementSystem.Data
         public DbSet<Order>        Orders       { get; set; }
         public DbSet<OrderDetail>  OrderDetails { get; set; }
         public DbSet<Review>       Reviews      { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<ChatSession> ChatSessions { get; set; }
+
+        public DbSet<ProductSize> ProductSizes { get; set; }
 
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
+        public DbSet<ReturnRequest> ReturnRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<ReturnRequest>()
+                .HasIndex(r => new { r.OrderId, r.ProductId, r.UserId });
+
+            builder.Entity<ChatMessage>()
+                .HasOne(c => c.Sender)
+                .WithMany()
+                .HasForeignKey(c => c.SenderId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<ChatSession>()
+                .HasOne(cs => cs.User)
+                .WithMany()
+                .HasForeignKey(cs => cs.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ChatSession>()
+                .HasMany(cs => cs.Messages)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ChatSession>()
+                .HasIndex(cs => cs.UserId)
+                .IsUnique();
+
+
+            builder.Entity<ProductSize>()
+                .HasOne(ps => ps.Product)
+                .WithMany(p => p.Sizes)
+                .HasForeignKey(ps => ps.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Cart>()
+                .HasOne(c => c.ProductSize)
+                .WithMany()
+                .HasForeignKey(c => c.ProductSizeId)
+                .OnDelete(DeleteBehavior.SetNull);
+
 
             builder.Entity<PaymentTransaction>()
                 .HasOne(p => p.Order)

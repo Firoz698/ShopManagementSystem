@@ -1,5 +1,7 @@
 @model List<ShopManagementSystem.Models.Order>
-@{ ViewData["Title"] = "আমার অর্ডার"; }
+@{
+    ViewData["Title"] = "আমার অর্ডার";
+}
 
 <div class="container my-4">
     <h4 class="fw-bold mb-4"><i class="bi bi-bag-check me-2"></i>আমার অর্ডার</h4>
@@ -16,49 +18,197 @@
     {
         @foreach (var order in Model)
         {
-            <div class="card border-0 shadow-sm mb-3">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="card border-0 shadow-sm mb-4">
+                <!-- Card Header -->
+                <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2 py-3">
                     <div>
                         <span class="fw-bold">অর্ডার #@order.Id</span>
                         <span class="text-muted small ms-2">@order.OrderDate.ToString("dd MMM yyyy, hh:mm tt")</span>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <span class="badge badge-status-@order.Status px-3 py-2 rounded-pill">@order.Status</span>
-                        <span class="fw-bold text-danger">৳@order.TotalAmount.ToString("N0")</span>
+                        <span class="badge badge-status-@order.Status px-3 py-2 rounded-pill fw-medium">
+                            @order.Status
+                        </span>
+                        <span class="fw-bold text-danger fs-6">৳@order.TotalAmount.ToString("N0")</span>
                     </div>
                 </div>
+
+                <!-- Order Items -->
                 <div class="card-body py-3">
-                    <div class="row g-2">
-                        @foreach (var d in order.OrderDetails)
-                        {
-                            <div class="col-12">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div>
-                                        <div class="fw-medium small">@d.Product?.Name</div>
-                                        <div class="text-muted" style="font-size:.8rem">
-                                            ৳@d.UnitPrice.ToString("N0") × @d.Quantity =
-                                            <strong>৳@((d.UnitPrice * d.Quantity).ToString("N0"))</strong>
-                                        </div>
-                                    </div>
+                    @foreach (var d in order.OrderDetails)
+                    {
+                        <div class="d-flex align-items-start gap-3 mb-3 pb-3 border-bottom">
+                            <!-- Product Info -->
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold small">@d.Product?.Name</div>
+                                <div class="text-muted" style="font-size:.8rem">
+                                    ৳@d.UnitPrice.ToString("N0") × @d.Quantity =
+                                    <strong>৳@((d.UnitPrice * d.Quantity).ToString("N0"))</strong>
                                 </div>
                             </div>
-                        }
-                    </div>
-                    <div class="mt-2 text-muted small">
+
+                            <!-- Action Buttons -->
+                            <div class="d-flex flex-column gap-1 flex-shrink-0">
+
+                                @* ── Review Button (Completed অর্ডারে) ── *@
+                                @if (order.Status == "Completed")
+                                {
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-warning"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#reviewModal"
+                                            data-product-id="@d.ProductId"
+                                            data-order-id="@order.Id"
+                                            data-product-name="@d.Product?.Name"
+                                            onclick="openReviewModal(this)">
+                                        <i class="bi bi-star me-1"></i>রিভিউ দিন
+                                    </button>
+                                }
+
+                                @* ── Return Button (Completed বা Shipped অর্ডারে) ── *@
+                                @if (order.Status == "Completed" || order.Status == "Shipped")
+                                {
+                                    <a asp-area="Admin"
+                                       asp-controller="Order"
+                                       asp-action="ReturnRequest"
+                                       asp-route-orderId="@order.Id"
+                                       asp-route-productId="@d.ProductId"
+                                       class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-arrow-return-left me-1"></i>রিটার্ন
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Shipping info -->
+                    <div class="text-muted small mt-1">
                         <i class="bi bi-geo-alt me-1"></i>@order.ShippingAddress &nbsp;|&nbsp;
                         <i class="bi bi-telephone me-1"></i>@order.Phone &nbsp;|&nbsp;
                         <i class="bi bi-cash-coin me-1"></i>@order.PaymentMethod
                     </div>
                 </div>
+
+                <!-- My Returns link (Completed/Shipped) -->
+                @if (order.Status == "Completed" || order.Status == "Shipped")
+                {
+                    <div class="card-footer bg-white border-0 pt-0 pb-2 px-3">
+                        <a asp-controller="Order" asp-action="MyReturns"
+                           class="text-muted small text-decoration-none">
+                            <i class="bi bi-clock-history me-1"></i>রিটার্ন হিস্ট্রি দেখুন
+                        </a>
+                    </div>
+                }
             </div>
         }
     }
 </div>
 
+<!-- ── Review Modal ─────────────────────────────────────────────────────────── -->
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-star-fill text-warning me-2"></i>রিভিউ লিখুন
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-controller="Order" asp-action="SubmitReview" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="productId" id="modalProductId" />
+                <input type="hidden" name="orderId" id="modalOrderId" />
+                <div class="modal-body">
+                    <p class="text-muted small mb-3" id="modalProductName"></p>
+
+                    <!-- Star Rating -->
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">রেটিং দিন</label>
+                        <div class="d-flex gap-2 star-rating" id="starRating">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="bi bi-star-fill fs-4 star-btn text-muted"
+                                   data-value="@i" style="cursor:pointer"
+                                   onclick="setRating(@i)"></i>
+                            }
+                        </div>
+                        <input type="hidden" name="rating" id="ratingInput" value="5" />
+                    </div>
+
+                    <!-- Comment -->
+                    <div class="mb-0">
+                        <label class="form-label fw-medium">আপনার মন্তব্য</label>
+                        <textarea name="comment" class="form-control" rows="3"
+                                  placeholder="পণ্যের মান, ডেলিভারি অভিজ্ঞতা শেয়ার করুন..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">বাতিল</button>
+                    <button type="submit" class="btn btn-warning btn-sm fw-semibold px-4">
+                        <i class="bi bi-send me-1"></i>রিভিউ জমা দিন
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <style>
-    .badge-status-Pending    { background:#fef3c7;color:#92400e; }
-    .badge-status-Processing { background:#dbeafe;color:#1e40af; }
-    .badge-status-Shipped    { background:#e0e7ff;color:#3730a3; }
-    .badge-status-Completed  { background:#d1fae5;color:#065f46; }
-    .badge-status-Cancelled  { background:#fee2e2;color:#991b1b; }
+    .badge-status-Pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge-status-Processing {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .badge-status-Shipped {
+        background: #e0e7ff;
+        color: #3730a3;
+    }
+
+    .badge-status-Completed {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-status-Cancelled {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .star-btn.active {
+        color: #ffc107 !important;
+    }
+
+    .star-btn:hover {
+        color: #ffc107 !important;
+        transform: scale(1.15);
+        transition: .15s;
+    }
 </style>
+
+@section Scripts {
+    <script>
+        // Review Modal open
+        function openReviewModal(btn) {
+            document.getElementById('modalProductId').value  = btn.dataset.productId;
+            document.getElementById('modalOrderId').value    = btn.dataset.orderId;
+            document.getElementById('modalProductName').textContent = '📦 ' + btn.dataset.productName;
+            setRating(5); // default 5 stars
+        }
+
+        // Star rating
+        function setRating(val) {
+            document.getElementById('ratingInput').value = val;
+            document.querySelectorAll('.star-btn').forEach(function(star) {
+                star.classList.toggle('active', parseInt(star.dataset.value) <= val);
+            });
+        }
+
+        // Page load এ ৫ তারা active দেখান
+        document.addEventListener('DOMContentLoaded', function() { setRating(5); });
+    </script>
+}

@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ShopManagementSystem.Data;
+using ShopManagementSystem.Interfaces;
 using ShopManagementSystem.Models;
 
 namespace ShopManagementSystem.Controllers
@@ -10,50 +9,52 @@ namespace ShopManagementSystem.Controllers
     [Authorize]
     public class WishlistController : Controller
     {
-        private readonly ApplicationDbContext         _db;
+        private readonly IWishlistRepository _wishlistRepo;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public WishlistController(ApplicationDbContext db, UserManager<ApplicationUser> userManager)
+        public WishlistController(IWishlistRepository wishlistRepo, UserManager<ApplicationUser> userManager)
         {
-            _db = db; _userManager = userManager;
+            _wishlistRepo = wishlistRepo;
+            _userManager = userManager;
         }
 
         private string UserId => _userManager.GetUserId(User)!;
 
+        // GET /Wishlist
         public async Task<IActionResult> Index()
         {
-            var items = await _db.Wishlists
-                .Where(w => w.UserId == UserId)
-                .Include(w => w.Product).ThenInclude(p => p!.Images)
-                .Include(w => w.Product).ThenInclude(p => p!.Category)
-                .OrderByDescending(w => w.AddedAt)
-                .ToListAsync();
+            var items = await _wishlistRepo.GetWishlistItemsAsync(UserId);
             return View(items);
         }
 
+        // POST /Wishlist/Toggle — থাকলে সরায়, না থাকলে যোগ করে
         [HttpPost]
         public async Task<IActionResult> Toggle(int productId)
         {
-            var item = await _db.Wishlists.FirstOrDefaultAsync(w => w.UserId == UserId && w.ProductId == productId);
+            var item = await _wishlistRepo.GetByProductIdAsync(UserId, productId);
+
             if (item == null)
             {
-                _db.Wishlists.Add(new Wishlist { UserId = UserId, ProductId = productId });
+                await _wishlistRepo.AddAsync(UserId, productId);
                 TempData["Success"] = "উইশলিস্টে যোগ করা হয়েছে।";
             }
             else
             {
-                _db.Wishlists.Remove(item);
+                await _wishlistRepo.RemoveAsync(item);
                 TempData["Success"] = "উইশলিস্ট থেকে সরানো হয়েছে।";
             }
-            await _db.SaveChangesAsync();
+
             return RedirectToAction("Detail", "Product", new { id = productId });
         }
 
+        // POST /Wishlist/Remove
         [HttpPost]
         public async Task<IActionResult> Remove(int id)
         {
-            var item = await _db.Wishlists.FirstOrDefaultAsync(w => w.Id == id && w.UserId == UserId);
-            if (item != null) { _db.Wishlists.Remove(item); await _db.SaveChangesAsync(); }
+            var item = await _wishlistRepo.GetByIdAsync(id, UserId);
+            if (item != null)
+                await _wishlistRepo.RemoveAsync(item);
+
             return RedirectToAction("Index");
         }
     }

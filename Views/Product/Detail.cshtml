@@ -1,5 +1,7 @@
 @model ProductDetailViewModel
-@{ ViewData["Title"] = Model.Product.Name; }
+@{
+    ViewData["Title"] = Model.Product.Name;
+}
 
 <div class="container my-4">
     <!-- Breadcrumb -->
@@ -12,36 +14,41 @@
     </nav>
 
     <div class="row g-4 mb-5">
-        <!-- Images -->
+        <!-- ── Images ──────────────────────────────────────────────────────── -->
         <div class="col-lg-5">
-            @{
-                var images = Model.Product.Images.ToList();
-                var primary = images.FirstOrDefault(i => i.IsPrimary) ?? images.FirstOrDefault();
-            }
             <div class="card border-0 shadow-sm p-2">
-                <img id="mainImg" src="@(primary?.ImageUrl ?? "https://via.placeholder.com/500x400/f8f9fa/6c757d?text=No+Image")"
-                     class="img-fluid rounded-2" style="height:380px;object-fit:contain;width:100%"
+                <img id="mainImg"
+                     src="@(Model.Product.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? Model.Product.Images.FirstOrDefault()?.ImageUrl ?? "https://via.placeholder.com/500x400/f8f9fa/6c757d?text=No+Image")"
+                     class="img-fluid rounded-2"
+                     style="height:380px;object-fit:contain;width:100%"
                      alt="@Model.Product.Name" />
             </div>
-            @if (images.Count > 1)
+            @if (Model.Product.Images.Count > 1)
             {
                 <div class="d-flex gap-2 mt-2 flex-wrap">
-                    @foreach (var img in images)
+                    @foreach (var img in Model.Product.Images)
                     {
-                        <img src="@img.ImageUrl" onclick="document.getElementById('mainImg').src='@img.ImageUrl'"
-                             class="rounded border cursor-pointer" style="width:64px;height:64px;object-fit:cover;cursor:pointer"
+                        <img src="@img.ImageUrl"
+                             onclick="document.getElementById('mainImg').src='@img.ImageUrl';setActiveThumb(this)"
+                             class="rounded border thumb-img @(img.IsPrimary ? "border-dark border-2" : "")"
+                             style="width:64px;height:64px;object-fit:cover;cursor:pointer"
                              alt="thumb" />
                     }
                 </div>
             }
         </div>
 
-        <!-- Details -->
+        <!-- ── Details ─────────────────────────────────────────────────────── -->
         <div class="col-lg-7">
             <div class="small text-muted mb-1">@Model.Product.Category?.Name</div>
-            <h2 class="fw-bold mb-2">@Model.Product.Name</h2>
+            <h2 class="fw-bold mb-1">@Model.Product.Name</h2>
 
-            <!-- Rating summary -->
+            @if (!string.IsNullOrEmpty(Model.Product.ProductCode))
+            {
+                <div class="text-muted small mb-2">কোড: <code>@Model.Product.ProductCode</code></div>
+            }
+
+            <!-- Rating -->
             <div class="d-flex align-items-center gap-2 mb-3">
                 @for (int i = 1; i <= 5; i++)
                 {
@@ -51,25 +58,65 @@
             </div>
 
             <!-- Price -->
-            <div class="mb-3">
-                @if (Model.Product.DiscountPrice.HasValue)
+            <div id="priceSection" class="mb-3">
+                @if (Model.Product.DiscountPrice.HasValue && IsDiscountActive(Model.Product))
                 {
                     <div class="d-flex align-items-center gap-3">
-                        <span class="fs-3 fw-bold text-danger">৳@Model.Product.DiscountPrice.Value.ToString("N0")</span>
-                        <span class="fs-5 text-muted text-decoration-line-through">৳@Model.Product.Price.ToString("N0")</span>
-                        <span class="badge bg-danger">
-                            @(Math.Round((1 - Model.Product.DiscountPrice.Value / Model.Product.Price) * 100))% ছাড়
+                        <span id="displayPrice" class="fs-3 fw-bold text-danger">
+                            ৳@Model.Product.DiscountPrice.Value.ToString("N0")
                         </span>
+                        <span class="fs-5 text-muted text-decoration-line-through">
+                            ৳@Model.Product.Price.ToString("N0")
+                        </span>
+                        @{
+                            var discPct = Math.Round((1 - Model.Product.DiscountPrice.Value / Model.Product.Price) * 100);
+                        }
+                        <span class="badge bg-danger">@discPct% ছাড়</span>
                     </div>
                 }
                 else
                 {
-                    <span class="fs-3 fw-bold">৳@Model.Product.Price.ToString("N0")</span>
+                    <span id="displayPrice" class="fs-3 fw-bold">৳@Model.Product.Price.ToString("N0")</span>
+                }
+                @if (Model.Product.ProductVat > 0)
+                {
+                    <div class="text-muted small mt-1">
+                        <i class="bi bi-info-circle me-1"></i>VAT @Model.Product.ProductVat% অন্তর্ভুক্ত
+                    </div>
                 }
             </div>
 
-            <!-- Stock badge -->
-            <div class="mb-3">
+            <!-- ── Size Selection ───────────────────────────────────────────── -->
+            @if (Model.Product.Sizes.Any(s => s.IsActive))
+            {
+                <div class="mb-3">
+                    <label class="form-label fw-medium">সাইজ নির্বাচন করুন <span class="text-danger">*</span></label>
+                    <div class="d-flex flex-wrap gap-2" id="sizeOptions">
+                        @foreach (var size in Model.Product.Sizes.Where(s => s.IsActive))
+                        {
+                            <button type="button"
+                                    class="btn btn-outline-dark size-btn"
+                                    data-size-id="@size.Id"
+                                    data-size-price="@size.SalesPrice"
+                                    data-size-stock="@size.Stock"
+                                    onclick="selectSize(this)"
+                                    @(size.Stock == 0 ? "disabled" : "")>
+                                @size.SizeName
+                                @if (size.Stock == 0)
+                                {
+                                    <span class="d-block" style="font-size:.65rem">শেষ</span>
+                                }
+                            </button>
+                        }
+                    </div>
+                    <div id="sizeError" class="text-danger small mt-1" style="display:none">
+                        অনুগ্রহ করে একটি সাইজ নির্বাচন করুন
+                    </div>
+                </div>
+            }
+
+            <!-- Stock -->
+            <div class="mb-3" id="stockBadge">
                 @if (Model.Product.Stock > 0)
                 {
                     <span class="badge bg-success-subtle text-success px-3 py-2">
@@ -84,21 +131,20 @@
                 }
             </div>
 
-            <!-- Add to cart -->
+            <!-- ── Add to Cart (Ajax) ─────────────────────────────────────── -->
             @if (Model.Product.Stock > 0)
             {
-                <form asp-controller="Cart" asp-action="Add" method="post" class="d-flex gap-2 mb-3">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="productId" value="@Model.Product.Id" />
-                    <div class="input-group" style="width:120px">
-                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="changeQty(-1)">−</button>
-                        <input type="number" name="quantity" id="qtyInput" value="1" min="1" max="@Model.Product.Stock"
-                               class="form-control text-center" />
-                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="changeQty(1)">+</button>
+                <div class="d-flex gap-2 mb-3" id="addCartSection">
+                    <div class="input-group" style="width:130px">
+                        <button type="button" class="btn btn-outline-secondary" onclick="changeQty(-1)">−</button>
+                        <input type="number" id="qtyInput" value="1" min="1"
+                               max="@Model.Product.Stock" class="form-control text-center" />
+                        <button type="button" class="btn btn-outline-secondary" onclick="changeQty(1)">+</button>
                     </div>
+
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-                        <button type="submit" class="btn btn-dark px-4">
+                        <button type="button" class="btn btn-dark px-4" onclick="addMainToCart(@Model.Product.Id)">
                             <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ করুন
                         </button>
                     }
@@ -108,10 +154,17 @@
                             <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ করুন
                         </a>
                     }
-                </form>
+                </div>
+
+                <!-- Ajax feedback -->
+                <div id="cartFeedback" class="alert py-2 small" style="display:none"></div>
+            }
+            else
+            {
+                <button class="btn btn-secondary btn-lg" disabled>স্টক নেই</button>
             }
 
-            <!-- Wishlist toggle -->
+            <!-- Wishlist -->
             @if (User.Identity?.IsAuthenticated == true)
             {
                 <form asp-controller="Wishlist" asp-action="Toggle" method="post" class="d-inline">
@@ -134,12 +187,10 @@
         </div>
     </div>
 
-    <!-- ── Reviews ─────────────────────────────────────────────────────────── -->
-    <div class="row">
+    <!-- ── Reviews ──────────────────────────────────────────────────────────── -->
+    <div class="row mb-5">
         <div class="col-lg-8">
             <h5 class="fw-bold mb-3">রিভিউ ও রেটিং</h5>
-
-            <!-- Write review -->
             @if (User.Identity?.IsAuthenticated == true && !Model.UserReviewed)
             {
                 <div class="card border-0 shadow-sm mb-4">
@@ -150,7 +201,7 @@
                             <input type="hidden" name="ProductId" value="@Model.Product.Id" />
                             <div class="mb-3">
                                 <label class="form-label small fw-medium">রেটিং</label>
-                                <select name="Rating" class="form-select form-select-sm" style="width:150px" required>
+                                <select name="Rating" class="form-select form-select-sm" style="width:160px" required>
                                     <option value="5">⭐⭐⭐⭐⭐ চমৎকার</option>
                                     <option value="4">⭐⭐⭐⭐ ভালো</option>
                                     <option value="3">⭐⭐⭐ মোটামুটি</option>
@@ -159,26 +210,23 @@
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label small fw-medium">মন্তব্য</label>
                                 <textarea name="Comment" class="form-control" rows="3"
-                                          placeholder="আপনার অভিজ্ঞতা শেয়ার করুন..."></textarea>
+                                      placeholder="আপনার অভিজ্ঞতা শেয়ার করুন..."></textarea>
                             </div>
                             <button type="submit" class="btn btn-dark btn-sm">রিভিউ জমা দিন</button>
                         </form>
                     </div>
                 </div>
             }
-
-            <!-- Review list -->
             @if (!Model.Reviews.Any())
             {
-                <p class="text-muted">এখনো কোনো রিভিউ নেই। প্রথম রিভিউ দিন!</p>
+                <p class="text-muted small">এখনো কোনো রিভিউ নেই।</p>
             }
             @foreach (var r in Model.Reviews)
             {
                 <div class="card border-0 shadow-sm mb-2">
                     <div class="card-body py-3">
-                        <div class="d-flex justify-content-between align-items-start">
+                        <div class="d-flex justify-content-between">
                             <div>
                                 <span class="fw-semibold small">@r.User?.FullName</span>
                                 <div class="d-flex gap-1 my-1">
@@ -200,24 +248,49 @@
         </div>
     </div>
 
-    <!-- ── Related Products ────────────────────────────────────────────────── -->
+    <!-- ── Related Products ─────────────────────────────────────────────────── -->
     @if (Model.RelatedItems.Any())
     {
-        <h5 class="fw-bold mt-5 mb-3">সম্পর্কিত পণ্য</h5>
+        <h5 class="fw-bold mb-3">সম্পর্কিত পণ্য</h5>
         <div class="row g-3">
             @foreach (var p in Model.RelatedItems)
             {
                 var img2 = p.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? p.Images.FirstOrDefault()?.ImageUrl;
+                var relPrice = p.DiscountPrice ?? p.Price;
                 <div class="col-6 col-md-3">
-                    <div class="card border-0 shadow-sm h-100">
+                    <div class="card border-0 shadow-sm h-100 product-card">
                         <a asp-controller="Product" asp-action="Detail" asp-route-id="@p.Id">
                             <img src="@img2" class="card-img-top product-thumb"
                                  onerror="this.src='https://via.placeholder.com/300x220/f8f9fa/6c757d?text=No+Image'"
                                  alt="@p.Name" />
                         </a>
                         <div class="card-body p-2">
-                            <div class="small fw-medium product-title">@p.Name</div>
-                            <div class="small fw-bold text-danger mt-1">৳@((p.DiscountPrice ?? p.Price).ToString("N0"))</div>
+                            <div class="small fw-semibold product-title">@p.Name</div>
+                            <div class="small fw-bold text-danger mt-1">৳@relPrice.ToString("N0")</div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 pt-0 pb-2 px-2">
+                            @if (p.Stock > 0)
+                            {
+                                @if (User.Identity?.IsAuthenticated == true)
+                                {
+                                    <button type="button"
+                                            class="btn btn-dark btn-sm w-100"
+                                            onclick="addRelatedToCart(@p.Id, this)">
+                                        <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ
+                                    </button>
+                                }
+                                else
+                                {
+                                    <a asp-controller="Account" asp-action="Login"
+                                       class="btn btn-dark btn-sm w-100">
+                                        <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ
+                                    </a>
+                                }
+                            }
+                            else
+                            {
+                                <button class="btn btn-secondary btn-sm w-100" disabled>স্টক নেই</button>
+                            }
                         </div>
                     </div>
                 </div>
@@ -228,11 +301,152 @@
 
 @section Scripts {
     <script>
+        // ── Hidden CSRF token ────────────────────────────────────────────────────
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+
+        // ── Qty control ──────────────────────────────────────────────────────────
         function changeQty(delta) {
             var input = document.getElementById('qtyInput');
             var val = parseInt(input.value) + delta;
-            var max = parseInt(input.max);
-            input.value = Math.max(1, Math.min(val, max));
+            input.value = Math.max(1, Math.min(val, parseInt(input.max)));
+        }
+
+        // ── Size selection ───────────────────────────────────────────────────────
+        var selectedSizeId    = null;
+        var selectedSizePrice = null;
+
+        function selectSize(btn) {
+            document.querySelectorAll('.size-btn').forEach(function(b) {
+                b.classList.remove('btn-dark');
+                b.classList.add('btn-outline-dark');
+            });
+            btn.classList.remove('btn-outline-dark');
+            btn.classList.add('btn-dark');
+
+            selectedSizeId    = btn.dataset.sizeId;
+            selectedSizePrice = parseFloat(btn.dataset.sizePrice);
+            var stock         = parseInt(btn.dataset.sizeStock);
+
+            // Price update
+            document.getElementById('displayPrice').textContent = '৳' + selectedSizePrice.toLocaleString('bn-BD');
+
+            // Stock update
+            document.getElementById('qtyInput').max = stock;
+            document.getElementById('stockBadge').innerHTML =
+                '<span class="badge bg-success-subtle text-success px-3 py-2">' +
+                '<i class="bi bi-check-circle me-1"></i>স্টকে আছে (' + stock + ' টি)</span>';
+
+            document.getElementById('sizeError').style.display = 'none';
+        }
+
+        // ── Thumbnail active ─────────────────────────────────────────────────────
+        function setActiveThumb(img) {
+            document.querySelectorAll('.thumb-img').forEach(function(t) {
+                t.classList.remove('border-dark', 'border-2');
+            });
+            img.classList.add('border-dark', 'border-2');
+        }
+
+        // ── Main Product কার্টে যোগ (size validation সহ) ────────────────────────
+        function addMainToCart(productId) {
+            var hasSizes = document.querySelectorAll('.size-btn').length > 0;
+            var sizeId   = null;
+
+            if (hasSizes) {
+                sizeId = selectedSizeId;
+                if (!sizeId) {
+                    document.getElementById('sizeError').style.display = 'block';
+                    return;
+                }
+            }
+
+            var quantity = parseInt(document.getElementById('qtyInput')?.value || 1);
+            doAddToCart(productId, sizeId, quantity, null);
+        }
+
+        // ── Related Product কার্টে যোগ (size validation নেই) ────────────────────
+        function addRelatedToCart(productId, btnEl) {
+            doAddToCart(productId, null, 1, btnEl);
+        }
+
+        // ── Shared fetch logic ───────────────────────────────────────────────────
+        function doAddToCart(productId, sizeId, quantity, btnEl) {
+            if (btnEl) {
+                btnEl.disabled = true;
+                btnEl.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>যোগ হচ্ছে...';
+            }
+
+            var formData = new FormData();
+            formData.append('productId', productId);
+            formData.append('quantity',  quantity);
+            formData.append('__RequestVerificationToken', token);
+            if (sizeId) formData.append('productSizeId', sizeId);
+
+            fetch('/Cart/AddAjax', {
+                method: 'POST',
+                body: formData
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    // ── Cart badge update ────────────────────────────────────────
+                    var badge = document.querySelector('.navbar .badge');
+                    if (badge) {
+                        badge.textContent = data.cartCount;
+                    } else {
+                        var cartIcon = document.querySelector('a[href="/Cart"] i');
+                        if (cartIcon) {
+                            var sp = document.createElement('span');
+                            sp.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark';
+                            sp.textContent = data.cartCount;
+                            cartIcon.parentElement.style.position = 'relative';
+                            cartIcon.parentElement.appendChild(sp);
+                        }
+                    }
+
+                    // ── Main product feedback ────────────────────────────────────
+                    var fb = document.getElementById('cartFeedback');
+                    if (fb && !btnEl) {
+                        fb.className = 'alert alert-success py-2 small';
+                        fb.textContent = '✅ কার্টে যোগ হয়েছে!';
+                        fb.style.display = 'block';
+                        setTimeout(function() { fb.style.display = 'none'; }, 3000);
+                    }
+
+                    // ── Related product button feedback ──────────────────────────
+                    if (btnEl) {
+                        btnEl.disabled = false;
+                        btnEl.innerHTML = '<i class="bi bi-check-circle me-1 text-success"></i>যোগ হয়েছে!';
+                        setTimeout(function() {
+                            btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>কার্টে যোগ';
+                        }, 2000);
+                    }
+                } else {
+                    alert(data.message || 'কার্টে যোগ করা যায়নি।');
+                    if (btnEl) {
+                        btnEl.disabled = false;
+                        btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>কার্টে যোগ';
+                    }
+                }
+            })
+            .catch(function() {
+                alert('সংযোগ সমস্যা। আবার চেষ্টা করুন।');
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>কার্টে যোগ';
+                }
+            });
         }
     </script>
+}
+
+@functions {
+    bool IsDiscountActive(ShopManagementSystem.Models.Product p)
+    {
+        if (!p.DiscountPrice.HasValue) return false;
+        var now = DateTime.Now;
+        if (p.DiscountStartDate.HasValue && now < p.DiscountStartDate.Value) return false;
+        if (p.DiscountEndDate.HasValue && now > p.DiscountEndDate.Value) return false;
+        return true;
+    }
 }

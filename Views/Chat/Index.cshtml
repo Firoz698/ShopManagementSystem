@@ -1,0 +1,264 @@
+﻿@model List<ShopManagementSystem.Models.ChatMessage>
+@{ ViewData["Title"] = "সাপোর্ট চ্যাট"; }
+
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm" style="height:75vh; display:flex; flex-direction:column;">
+
+                <!-- Header -->
+                <div class="card-header bg-dark text-white d-flex align-items-center gap-3 py-3">
+                    <div class="rounded-circle bg-success d-flex align-items-center justify-content-center"
+                         style="width:42px;height:42px;flex-shrink:0">
+                        <i class="bi bi-headset fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold">ShopMS সাপোর্ট</div>
+                        <div class="small opacity-75" id="adminStatus">
+                            <span class="badge bg-success rounded-pill px-2 py-1">● অনলাইন</span>
+                        </div>
+                    </div>
+                    <div class="ms-auto small opacity-75">
+                        <i class="bi bi-lock-fill me-1"></i>সুরক্ষিত চ্যাট
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div class="card-body p-3 overflow-auto flex-grow-1" id="messageArea"
+                     style="background:#f8f9fa;">
+
+                    <!-- Welcome message -->
+                    <div class="text-center mb-3">
+                        <span class="badge bg-secondary rounded-pill px-3 py-2 small">
+                            চ্যাট শুরু হয়েছে
+                        </span>
+                    </div>
+
+                    @if (!Model.Any())
+                    {
+                        <div class="text-center text-muted py-4" id="emptyChat">
+                            <i class="bi bi-chat-dots display-4 d-block mb-2 opacity-25"></i>
+                            <p class="small">আমাদের সাথে চ্যাট করুন। আমরা সাহায্য করতে প্রস্তুত!</p>
+                        </div>
+                    }
+
+                    <!-- Previous messages -->
+                    @foreach (var msg in Model)
+                    {
+                        @if (msg.IsFromAdmin)
+                        {
+                            <!-- Admin message — left side -->
+                            <div class="d-flex gap-2 mb-3">
+                                <div class="rounded-circle bg-dark text-white d-flex align-items-center
+                                            justify-content-center flex-shrink-0"
+                                     style="width:32px;height:32px;font-size:.75rem">A</div>
+                                <div>
+                                    <div class="bg-white rounded-3 px-3 py-2 shadow-sm"
+                                         style="max-width:400px; border-radius:4px 18px 18px 18px !important">
+                                        <div class="small">@msg.Message</div>
+                                    </div>
+                                    <div class="text-muted mt-1" style="font-size:.7rem">
+                                        @msg.SentAt.ToString("dd MMM, hh:mm tt")
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- User message — right side -->
+                            <div class="d-flex gap-2 mb-3 justify-content-end">
+                                <div>
+                                    <div class="bg-dark text-white rounded-3 px-3 py-2"
+                                         style="max-width:400px; border-radius:18px 4px 18px 18px !important">
+                                        <div class="small">@msg.Message</div>
+                                    </div>
+                                    <div class="text-muted mt-1 text-end" style="font-size:.7rem">
+                                        @msg.SentAt.ToString("dd MMM, hh:mm tt")
+                                        <i class="bi bi-check2-all text-primary ms-1"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+
+                <!-- Typing indicator -->
+                <div id="typingIndicator" class="px-3 py-1" style="display:none; background:#f8f9fa">
+                    <span class="text-muted small">
+                        <span class="typing-dots">
+                            <span></span><span></span><span></span>
+                        </span>
+                        অ্যাডমিন টাইপ করছেন...
+                    </span>
+                </div>
+
+                <!-- Input area -->
+                <div class="card-footer bg-white border-top p-3">
+                    <div class="d-flex gap-2">
+                        <input type="text" id="messageInput" class="form-control"
+                               placeholder="মেসেজ লিখুন..."
+                               maxlength="1000"
+                               onkeypress="if(event.key==='Enter') sendMessage()" />
+                        <button class="btn btn-dark px-4 flex-shrink-0" onclick="sendMessage()">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </div>
+                    <div class="text-muted mt-1" style="font-size:.72rem">
+                        <i class="bi bi-shield-check me-1 text-success"></i>
+                        আপনার মেসেজ সুরক্ষিত। সাধারণত ৫-১০ মিনিটের মধ্যে উত্তর পাওয়া যায়।
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.typing-dots span {
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: #6c757d;
+    border-radius: 50%;
+    margin: 0 1px;
+    animation: bounce 1.2s infinite;
+}
+.typing-dots span:nth-child(2) { animation-delay: .2s; }
+.typing-dots span:nth-child(3) { animation-delay: .4s; }
+@@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+}
+#messageArea::-webkit-scrollbar { width: 4px; }
+#messageArea::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 4px; }
+</style>
+
+@section Scripts {
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+<script>
+const userId = '@@_userManager.GetUserId(User)';
+
+// SignalR connection
+const connection = new signalR.HubConnectionBuilder()
+    .withUrl("/chatHub")
+    .withAutomaticReconnect()
+    .build();
+
+// ── Events ─────────────────────────────────────────────────────────────────
+
+// Admin এর মেসেজ পাওয়া
+connection.on("ReceiveMessage", function(data) {
+    if (data.isFromAdmin) {
+        appendAdminMessage(data);
+        // Notification sound
+        playNotificationSound();
+    }
+});
+
+// নিজের মেসেজ confirm
+connection.on("MessageSent", function(data) {
+    // already appended
+});
+
+// Admin typing indicator
+connection.on("AdminTyping", function() {
+    document.getElementById('typingIndicator').style.display = 'block';
+    clearTimeout(window._typingTimer);
+    window._typingTimer = setTimeout(function() {
+        document.getElementById('typingIndicator').style.display = 'none';
+    }, 3000);
+});
+
+// ── Connect ────────────────────────────────────────────────────────────────
+connection.start()
+    .then(function() {
+        console.log("Chat connected");
+        scrollToBottom();
+    })
+    .catch(function(err) {
+        console.error("Chat error:", err);
+    });
+
+// ── Send Message ───────────────────────────────────────────────────────────
+function sendMessage() {
+    var input = document.getElementById('messageInput');
+    var msg   = input.value.trim();
+    if (!msg) return;
+
+    // Optimistic UI — নিজের মেসেজ আগেই দেখাও
+    appendUserMessage(msg, new Date().toLocaleTimeString('bn-BD', {hour:'2-digit', minute:'2-digit', hour12:true}));
+    input.value = '';
+
+    // Empty chat hide
+    var emptyChat = document.getElementById('emptyChat');
+    if (emptyChat) emptyChat.style.display = 'none';
+
+    connection.invoke("SendMessageToAdmin", msg).catch(function(err) {
+        console.error("Send error:", err);
+    });
+}
+
+// ── Append Messages ────────────────────────────────────────────────────────
+function appendUserMessage(text, time) {
+    var area = document.getElementById('messageArea');
+    var div  = document.createElement('div');
+    div.className = 'd-flex gap-2 mb-3 justify-content-end';
+    div.innerHTML = `
+        <div>
+            <div class="bg-dark text-white rounded-3 px-3 py-2"
+                 style="max-width:400px;border-radius:18px 4px 18px 18px !important">
+                <div class="small">${escapeHtml(text)}</div>
+            </div>
+            <div class="text-muted mt-1 text-end" style="font-size:.7rem">
+                ${time} <i class="bi bi-check2 text-secondary ms-1"></i>
+            </div>
+        </div>`;
+    area.appendChild(div);
+    scrollToBottom();
+}
+
+function appendAdminMessage(data) {
+    var area = document.getElementById('messageArea');
+    var div  = document.createElement('div');
+    div.className = 'd-flex gap-2 mb-3';
+    div.innerHTML = `
+        <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center flex-shrink-0"
+             style="width:32px;height:32px;font-size:.75rem">A</div>
+        <div>
+            <div class="bg-white rounded-3 px-3 py-2 shadow-sm"
+                 style="max-width:400px;border-radius:4px 18px 18px 18px !important">
+                <div class="small">${escapeHtml(data.message)}</div>
+            </div>
+            <div class="text-muted mt-1" style="font-size:.7rem">${data.sentAt}</div>
+        </div>`;
+    document.getElementById('typingIndicator').style.display = 'none';
+    area.appendChild(div);
+    scrollToBottom();
+}
+
+function scrollToBottom() {
+    var area = document.getElementById('messageArea');
+    area.scrollTop = area.scrollHeight;
+}
+
+function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(text));
+    return div.innerHTML;
+}
+
+function playNotificationSound() {
+    try {
+        var ctx  = new (window.AudioContext || window.webkitAudioContext)();
+        var osc  = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 800;
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.3);
+    } catch(e) {}
+}
+</script>
+}

@@ -76,25 +76,69 @@ namespace ShopManagementSystem.ViewModels
     }
 
     // ── Cart / Checkout ──────────────────────────────────────────────────────────
+    //public class CartViewModel
+    //{
+    //    public List<CartItemViewModel> Items      { get; set; } = new();
+    //    public decimal                 SubTotal   => Items.Sum(i => i.SubTotal);
+    //    public decimal                 ShippingFee { get; set; } = 60;
+    //    public decimal                 Total      => SubTotal + ShippingFee;
+    //}
+
+
     public class CartViewModel
     {
-        public List<CartItemViewModel> Items      { get; set; } = new();
-        public decimal                 SubTotal   => Items.Sum(i => i.SubTotal);
-        public decimal                 ShippingFee { get; set; } = 60;
-        public decimal                 Total      => SubTotal + ShippingFee;
+        public List<CartItemViewModel> Items { get; set; } = new();
+        public string DeliveryZone { get; set; } = "ঢাকার ভিতর";
+        public decimal SubTotal => Items.Sum(i => i.SubTotal);
+        public decimal ShippingFee => DeliveryZone == "ঢাকার বাইরে" ? 120 : 60;
+        public decimal Total => SubTotal + ShippingFee;
     }
+
+    //public class CartItemViewModel
+    //{
+    //    public int     CartId    { get; set; }
+    //    public int     ProductId { get; set; }
+    //    public string  Name      { get; set; } = string.Empty;
+    //    public string? ImageUrl  { get; set; }
+    //    public decimal Price     { get; set; }
+    //    public int     Quantity  { get; set; }
+    //    public int     Stock     { get; set; }
+    //    public decimal SubTotal  => Price * Quantity;
+    //}
+
 
     public class CartItemViewModel
     {
-        public int     CartId    { get; set; }
-        public int     ProductId { get; set; }
-        public string  Name      { get; set; } = string.Empty;
-        public string? ImageUrl  { get; set; }
-        public decimal Price     { get; set; }
-        public int     Quantity  { get; set; }
-        public int     Stock     { get; set; }
-        public decimal SubTotal  => Price * Quantity;
+        public int CartId { get; set; }
+        public int ProductId { get; set; }
+        public int? ProductSizeId { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? SizeName { get; set; }
+        public string? ImageUrl { get; set; }
+        public decimal Price { get; set; }
+        public int Quantity { get; set; }
+        public int Stock { get; set; }
+        public decimal SubTotal => Price * Quantity;
     }
+
+    //public class CheckoutViewModel
+    //{
+    //    [Required, Display(Name = "Shipping Address")]
+    //    public string ShippingAddress { get; set; } = string.Empty;
+
+    //    [Required, Phone]
+    //    public string Phone { get; set; } = string.Empty;
+
+    //    [Display(Name = "Payment Method")]
+    //    public string PaymentMethod { get; set; } = "Cash on Delivery";
+
+    //    public string? Notes { get; set; }
+
+    //    public CartViewModel Cart { get; set; } = new();
+    //}
+
+
+
 
     public class CheckoutViewModel
     {
@@ -107,10 +151,16 @@ namespace ShopManagementSystem.ViewModels
         [Display(Name = "Payment Method")]
         public string PaymentMethod { get; set; } = "Cash on Delivery";
 
-        public string? Notes { get; set; }
+        // ── নতুন ──────────────────────────────────────────────────────────────────
+        [Required, Display(Name = "Delivery Zone")]
+        public string DeliveryZone { get; set; } = "ঢাকার ভিতর";
 
+        public string? Notes { get; set; }
         public CartViewModel Cart { get; set; } = new();
     }
+
+
+
 
     // ── Review ───────────────────────────────────────────────────────────────────
     public class ReviewViewModel
@@ -137,28 +187,77 @@ namespace ShopManagementSystem.ViewModels
         public List<Product> LowStockItems { get; set; } = new();
     }
 
+    //public class ProductCreateViewModel
+    //{
+    //    [Required, MaxLength(200)]
+    //    public string Name { get; set; } = string.Empty;
+
+    //    [Required]
+    //    public int CategoryId { get; set; }
+
+    //    [Required, Column]
+    //    public decimal Price { get; set; }
+
+    //    public decimal? DiscountPrice { get; set; }
+
+    //    [Required]
+    //    public int Stock { get; set; }
+
+    //    public string? Description { get; set; }
+    //    public bool IsActive { get; set; } = true;
+
+    //    public List<IFormFile>? Images { get; set; }
+    //    public List<int>?       RemoveImageIds { get; set; }
+    //}
+
+
     public class ProductCreateViewModel
     {
+        public int Id { get; set; }
+
         [Required, MaxLength(200)]
         public string Name { get; set; } = string.Empty;
+
+        [MaxLength(50)]
+        public string? ProductCode { get; set; }
 
         [Required]
         public int CategoryId { get; set; }
 
-        [Required, Column]
+        [Required]
         public decimal Price { get; set; }
 
         public decimal? DiscountPrice { get; set; }
+        public decimal? PurchasePrice { get; set; }
+        public decimal ProductVat { get; set; } = 0;
+        public bool IsDiscountFixed { get; set; } = true;
+        public DateTime? DiscountStartDate { get; set; }
+        public DateTime? DiscountEndDate { get; set; }
 
         [Required]
         public int Stock { get; set; }
-
         public string? Description { get; set; }
         public bool IsActive { get; set; } = true;
 
         public List<IFormFile>? Images { get; set; }
-        public List<int>?       RemoveImageIds { get; set; }
+        public List<int>? RemoveImageIds { get; set; }
+
+        // Size entries
+        public List<ProductSizeEntry> Sizes { get; set; } = new();
     }
+
+
+    public class ProductSizeEntry
+    {
+        public int? Id { get; set; } // edit এর জন্য
+        public string SizeName { get; set; } = string.Empty;
+        public string? SizeCode { get; set; }
+        public decimal SalesPrice { get; set; }
+        public int Stock { get; set; }
+        public bool IsActive { get; set; } = true;
+        public bool IsRemove { get; set; } = false;
+    }
+
 
     public class OrderAdminViewModel
     {

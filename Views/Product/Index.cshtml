@@ -6,57 +6,65 @@
 
         <!-- ── Sidebar Filters ─────────────────────────────────────────────── -->
         <div class="col-lg-3">
-            <form method="get" asp-controller="Product" asp-action="Index">
+            <form method="get" asp-controller="Product" asp-action="Index" id="filterForm">
                 <div class="card border-0 shadow-sm mb-3">
                     <div class="card-header bg-dark text-white fw-semibold">
                         <i class="bi bi-funnel me-2"></i>ফিল্টার
                     </div>
                     <div class="card-body">
-                        <!-- Search -->
+
+                        <!-- সার্চ -->
                         <div class="mb-3">
                             <label class="form-label fw-medium small">সার্চ</label>
-                            <input type="text" name="search" class="form-control form-control-sm"
-                                   placeholder="প্রোডাক্টের নাম..." value="@Model.SearchTerm" />
+                            <input type="text" name="search" id="searchInput"
+                                   class="form-control form-control-sm"
+                                   placeholder="প্রোডাক্টের নাম..."
+                                   value="@Model.SearchTerm" />
                         </div>
 
-                        <!-- Categories -->
+                        <!-- ক্যাটাগরি — click করলেই submit -->
                         <div class="mb-3">
                             <label class="form-label fw-medium small">ক্যাটাগরি</label>
+                            <div class="form-check">
+                                <input class="form-check-input auto-filter" type="radio"
+                                       name="categoryId" value="" id="catAll"
+                                       @(Model.CategoryId == null ? "checked" : "") />
+                                <label class="form-check-label small" for="catAll">সব ক্যাটাগরি</label>
+                            </div>
                             @foreach (var cat in Model.Categories)
                             {
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="categoryId"
-                                           value="@cat.Id" id="cat@cat.Id"
+                                    <input class="form-check-input auto-filter" type="radio"
+                                           name="categoryId" value="@cat.Id" id="cat@cat.Id"
                                            @(Model.CategoryId == cat.Id ? "checked" : "") />
                                     <label class="form-check-label small" for="cat@cat.Id">@cat.Name</label>
                                 </div>
                             }
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="categoryId" value=""
-                                       id="catAll" @(Model.CategoryId == null ? "checked" : "") />
-                                <label class="form-check-label small" for="catAll">সব ক্যাটাগরি</label>
-                            </div>
                         </div>
 
-                        <!-- Price Range -->
+                        <!-- মূল্য পরিসর -->
                         <div class="mb-3">
                             <label class="form-label fw-medium small">মূল্য পরিসর (৳)</label>
                             <div class="row g-2">
                                 <div class="col-6">
-                                    <input type="number" name="minPrice" class="form-control form-control-sm"
-                                           placeholder="সর্বনিম্ন" value="@Model.MinPrice" min="0" />
+                                    <input type="number" name="minPrice" id="minPrice"
+                                           class="form-control form-control-sm"
+                                           placeholder="সর্বনিম্ন"
+                                           value="@Model.MinPrice" min="0" />
                                 </div>
                                 <div class="col-6">
-                                    <input type="number" name="maxPrice" class="form-control form-control-sm"
-                                           placeholder="সর্বোচ্চ" value="@Model.MaxPrice" min="0" />
+                                    <input type="number" name="maxPrice" id="maxPrice"
+                                           class="form-control form-control-sm"
+                                           placeholder="সর্বোচ্চ"
+                                           value="@Model.MaxPrice" min="0" />
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Sort -->
+                        <!-- সাজানো — change করলেই submit -->
                         <div class="mb-3">
                             <label class="form-label fw-medium small">সাজানো</label>
-                            <select name="sortBy" class="form-select form-select-sm">
+                            <select name="sortBy" class="form-select form-select-sm auto-filter">
                                 <option value="">নতুন আগে</option>
                                 <option value="price_asc"  @@(Model.SortBy == "price_asc"  ? "selected" : "")>মূল্য: কম থেকে বেশি</option>
                                 <option value="price_desc" @@(Model.SortBy == "price_desc" ? "selected" : "")>মূল্য: বেশি থেকে কম</option>
@@ -64,8 +72,14 @@
                             </select>
                         </div>
 
-                        <button type="submit" class="btn btn-dark btn-sm w-100">ফিল্টার করুন</button>
-                        <a asp-controller="Product" asp-action="Index" class="btn btn-outline-secondary btn-sm w-100 mt-2">রিসেট</a>
+                        <!-- মূল্য ফিল্টার বাটন (শুধু price range এর জন্য) -->
+                        <button type="submit" class="btn btn-dark btn-sm w-100">
+                            <i class="bi bi-search me-1"></i>সার্চ করুন
+                        </button>
+                        <a asp-controller="Product" asp-action="Index"
+                           class="btn btn-outline-secondary btn-sm w-100 mt-2">
+                            <i class="bi bi-x-circle me-1"></i>রিসেট
+                        </a>
                     </div>
                 </div>
             </form>
@@ -75,9 +89,19 @@
         <div class="col-lg-9">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div class="text-muted small">
-                    মোট <strong>@Model.TotalCount</strong>টি প্রোডাক্ট পাওয়া গেছে
+                    মোট <strong>@Model.TotalCount</strong>টি প্রোডাক্ট
                     @if (!string.IsNullOrEmpty(Model.SearchTerm))
-                    { <span>"@Model.SearchTerm"</span> }
+                    {
+                        <span class="badge bg-secondary ms-1">"@Model.SearchTerm"</span>
+                    }
+                    @if (Model.CategoryId != null)
+                    {
+                        var selCat = Model.Categories.FirstOrDefault(c => c.Id == Model.CategoryId);
+                        if (selCat != null)
+                        {
+                            <span class="badge bg-dark ms-1">@selCat.Name</span>
+                        }
+                    }
                 </div>
             </div>
 
@@ -86,7 +110,9 @@
                 <div class="text-center py-5 text-muted">
                     <i class="bi bi-search display-3 d-block mb-3 opacity-25"></i>
                     <h5>কোনো প্রোডাক্ট পাওয়া যায়নি</h5>
-                    <p>ভিন্ন কীওয়ার্ড বা ফিল্টার ব্যবহার করুন।</p>
+                    <a asp-controller="Product" asp-action="Index" class="btn btn-outline-dark btn-sm mt-2">
+                        সব প্রোডাক্ট দেখুন
+                    </a>
                 </div>
             }
             else
@@ -94,7 +120,12 @@
                 <div class="row g-3">
                     @foreach (var p in Model.Products)
                     {
-                        var img = p.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? p.Images.FirstOrDefault()?.ImageUrl;
+                        var img      = p.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? p.Images.FirstOrDefault()?.ImageUrl;
+                        var hasSizes = p.Sizes.Any(s => s.IsActive && s.Stock > 0);
+                        var minPrice = hasSizes
+                            ? p.Sizes.Where(s => s.IsActive && s.Stock > 0).Min(s => s.SalesPrice)
+                            : (p.DiscountPrice ?? p.Price);
+
                         <div class="col-6 col-md-4">
                             <div class="card product-card h-100 border-0 shadow-sm position-relative">
                                 @if (p.DiscountPrice.HasValue)
@@ -112,8 +143,12 @@
                                         <a asp-controller="Product" asp-action="Detail" asp-route-id="@p.Id"
                                            class="text-decoration-none text-dark">@p.Name</a>
                                     </h6>
-                                    <div class="d-flex align-items-center gap-2 mb-2">
-                                        @if (p.DiscountPrice.HasValue)
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        @if (hasSizes)
+                                        {
+                                            <span class="fw-bold">৳@minPrice.ToString("N0") থেকে</span>
+                                        }
+                                        else if (p.DiscountPrice.HasValue)
                                         {
                                             <span class="fw-bold text-danger">৳@p.DiscountPrice.Value.ToString("N0")</span>
                                             <span class="text-muted small text-decoration-line-through">৳@p.Price.ToString("N0")</span>
@@ -123,30 +158,40 @@
                                             <span class="fw-bold">৳@p.Price.ToString("N0")</span>
                                         }
                                     </div>
-                                    @if (p.Stock <= 5 && p.Stock > 0)
+                                    @if (p.Stock <= 5 && p.Stock > 0 && !hasSizes)
                                     {
-                                        <small class="text-warning"><i class="bi bi-exclamation-circle me-1"></i>মাত্র @p.Stock টি বাকি</small>
+                                        <small class="text-warning">
+                                            <i class="bi bi-exclamation-circle me-1"></i>মাত্র @p.Stock টি বাকি
+                                        </small>
                                     }
                                 </div>
                                 <div class="card-footer bg-transparent border-0 pt-0 pb-3 px-3">
-                                    @if (p.Stock > 0)
+                                    @if (p.Stock > 0 || hasSizes)
                                     {
-                                        <form asp-controller="Cart" asp-action="Add" method="post">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="productId" value="@p.Id" />
-                                            @if (User.Identity?.IsAuthenticated == true)
+                                        @if (User.Identity?.IsAuthenticated == true)
+                                        {
+                                            @if (hasSizes)
                                             {
-                                                <button class="btn btn-dark btn-sm w-100">
-                                                    <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ
-                                                </button>
+                                                <a asp-controller="Product" asp-action="Detail" asp-route-id="@p.Id"
+                                                   class="btn btn-dark btn-sm w-100">
+                                                    <i class="bi bi-eye me-1"></i>সাইজ দেখুন
+                                                </a>
                                             }
                                             else
                                             {
-                                                <a asp-controller="Account" asp-action="Login" class="btn btn-dark btn-sm w-100">
+                                                <button class="btn btn-dark btn-sm w-100"
+                                                        onclick="quickAddToCart(@p.Id, this)">
                                                     <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ
-                                                </a>
+                                                </button>
                                             }
-                                        </form>
+                                        }
+                                        else
+                                        {
+                                            <a asp-controller="Account" asp-action="Login"
+                                               class="btn btn-dark btn-sm w-100">
+                                                <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ
+                                            </a>
+                                        }
                                     }
                                     else
                                     {
@@ -163,10 +208,29 @@
                 {
                     <nav class="mt-4">
                         <ul class="pagination justify-content-center">
+                            @if (Model.Page > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="?search=@Model.SearchTerm&categoryId=@Model.CategoryId&minPrice=@Model.MinPrice&maxPrice=@Model.MaxPrice&sortBy=@Model.SortBy&page=@(Model.Page - 1)">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                            }
                             @for (int i = 1; i <= Model.TotalPages; i++)
                             {
                                 <li class="page-item @(i == Model.Page ? "active" : "")">
-                                    <a class="page-link" href="?search=@Model.SearchTerm&categoryId=@Model.CategoryId&minPrice=@Model.MinPrice&maxPrice=@Model.MaxPrice&sortBy=@Model.SortBy&page=@i">@i</a>
+                                    <a class="page-link"
+                                       href="?search=@Model.SearchTerm&categoryId=@Model.CategoryId&minPrice=@Model.MinPrice&maxPrice=@Model.MaxPrice&sortBy=@Model.SortBy&page=@i">
+                                        @i
+                                    </a>
+                                </li>
+                            }
+                            @if (Model.Page < Model.TotalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="?search=@Model.SearchTerm&categoryId=@Model.CategoryId&minPrice=@Model.MinPrice&maxPrice=@Model.MaxPrice&sortBy=@Model.SortBy&page=@(Model.Page + 1)">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
                                 </li>
                             }
                         </ul>
@@ -176,3 +240,90 @@
         </div>
     </div>
 </div>
+
+<!-- ── Cart Success Toast ──────────────────────────────────────────────────── -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index:9999">
+    <div id="cartToast" class="toast align-items-center text-bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body fw-medium">
+                <i class="bi bi-check-circle me-2"></i>কার্টে যোগ হয়েছে!
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // ── Auto-filter: category radio & sort select click/change করলেই submit ──
+    document.querySelectorAll('.auto-filter').forEach(function (el) {
+        el.addEventListener('change', function () {
+            document.getElementById('filterForm').submit();
+        });
+    });
+
+    // ── Search: Enter চাপলে submit ────────────────────────────────────────────
+    document.getElementById('searchInput').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('filterForm').submit();
+        }
+    });
+
+    // ── Quick Add to Cart ─────────────────────────────────────────────────────
+    const _token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+
+    function quickAddToCart(productId, btnEl) {
+        if (btnEl) {
+            btnEl.disabled = true;
+            btnEl.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        }
+
+        var formData = new FormData();
+        formData.append('productId', productId);
+        formData.append('quantity',  1);
+        formData.append('__RequestVerificationToken', _token);
+
+        fetch('/Cart/AddAjax', { method: 'POST', body: formData })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (data.success) {
+                updateCartBadge(data.cartCount);
+                new bootstrap.Toast(document.getElementById('cartToast'), { delay: 2500 }).show();
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.innerHTML = '<i class="bi bi-check-circle me-1 text-success"></i>যোগ হয়েছে!';
+                    setTimeout(function () {
+                        btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>কার্টে যোগ';
+                    }, 2000);
+                }
+            } else {
+                alert(data.message || 'কার্টে যোগ করা যায়নি।');
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>কার্টে যোগ';
+                }
+            }
+        })
+        .catch(function () {
+            if (btnEl) {
+                btnEl.disabled = false;
+                btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>কার্টে যোগ';
+            }
+        });
+    }
+
+    function updateCartBadge(count) {
+        var badge = document.querySelector('.navbar .badge.rounded-pill');
+        if (badge) { badge.textContent = count; return; }
+        var cartLink = document.querySelector('a[href="/Cart"]');
+        if (cartLink) {
+            cartLink.style.position = 'relative';
+            var sp = document.createElement('span');
+            sp.className   = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark';
+            sp.textContent = count;
+            cartLink.appendChild(sp);
+        }
+    }
+</script>
+}

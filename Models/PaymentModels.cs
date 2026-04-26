@@ -1,21 +1,21 @@
 namespace ShopManagementSystem.Models
 {
     // ── SSLCommerz Payment Record ────────────────────────────────────────────────
-    public class PaymentTransaction
-    {
-        public int    Id             { get; set; }
-        public int    OrderId        { get; set; }
-        public string TransactionId  { get; set; } = string.Empty;
-        public string ValidationId   { get; set; } = string.Empty;
-        public string Status         { get; set; } = "Pending"; // Pending | Success | Failed | Cancelled
-        public decimal Amount        { get; set; }
-        public string Currency       { get; set; } = "BDT";
-        public string PaymentMethod  { get; set; } = string.Empty; // VISA, bKash, Nagad etc.
-        public DateTime CreatedAt    { get; set; } = DateTime.Now;
-        public DateTime? UpdatedAt   { get; set; }
+    //public class PaymentTransaction
+    //{
+    //    public int    Id             { get; set; }
+    //    public int    OrderId        { get; set; }
+    //    public string TransactionId  { get; set; } = string.Empty;
+    //    public string ValidationId   { get; set; } = string.Empty;
+    //    public string Status         { get; set; } = "Pending"; // Pending | Success | Failed | Cancelled
+    //    public decimal Amount        { get; set; }
+    //    public string Currency       { get; set; } = "BDT";
+    //    public string PaymentMethod  { get; set; } = string.Empty; // VISA, bKash, Nagad etc.
+    //    public DateTime CreatedAt    { get; set; } = DateTime.Now;
+    //    public DateTime? UpdatedAt   { get; set; }
 
-        public Order? Order { get; set; }
-    }
+    //    public Order? Order { get; set; }
+    //}
 
     // ── SSLCommerz IPN Response ──────────────────────────────────────────────────
     public class SslIpnResponse
