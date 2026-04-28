@@ -65,6 +65,8 @@ builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 
 
 
+
+
 builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession(options =>
