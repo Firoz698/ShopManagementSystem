@@ -30,6 +30,14 @@
                             @order.Status
                         </span>
                         <span class="fw-bold text-danger fs-6">৳@order.TotalAmount.ToString("N0")</span>
+
+                        @if (order.Status == "Pending" || order.Status == "Processing")
+                        {
+                            <a asp-controller="Order" asp-action="CancelOrder" asp-route-orderId="@order.Id"
+                               class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-x-circle me-1"></i>বাতিল করুন
+                            </a>
+                        }
                     </div>
                 </div>
 
@@ -87,6 +95,14 @@
                         <i class="bi bi-telephone me-1"></i>@order.Phone &nbsp;|&nbsp;
                         <i class="bi bi-cash-coin me-1"></i>@order.PaymentMethod
                     </div>
+
+                    @* ── Cancel হলে কারণ দেখাবে ── *@
+                    @if (order.Status == "Cancelled" && !string.IsNullOrEmpty(order.CancelReason))
+                    {
+                        <div class="text-danger small mt-2">
+                            <i class="bi bi-info-circle me-1"></i>বাতিলের কারণ: @order.CancelReason
+                        </div>
+                    }
                 </div>
 
                 <!-- My Returns link (Completed/Shipped) -->
@@ -194,8 +210,8 @@
     <script>
         // Review Modal open
         function openReviewModal(btn) {
-            document.getElementById('modalProductId').value  = btn.dataset.productId;
-            document.getElementById('modalOrderId').value    = btn.dataset.orderId;
+            document.getElementById('modalProductId').value = btn.dataset.productId;
+            document.getElementById('modalOrderId').value = btn.dataset.orderId;
             document.getElementById('modalProductName').textContent = '📦 ' + btn.dataset.productName;
             setRating(5); // default 5 stars
         }

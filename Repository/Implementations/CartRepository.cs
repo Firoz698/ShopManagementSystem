@@ -125,13 +125,17 @@ namespace ShopManagementSystem.Implementations
                 DeliveryZone = vm.DeliveryZone,
                 Notes = vm.Notes,
                 TotalAmount = total,
-                Status = "Pending"
+                Status = "Pending",
+
+                // ── নতুন: manual payment details ──
+                PaymentMethodSettingId = vm.PaymentMethodSettingId,
+                SenderNumber = vm.SenderNumber,
+                PaymentTransactionId = vm.TransactionId
             };
             _db.Orders.Add(order);
             await _db.SaveChangesAsync();
             return order;
         }
-
         // Cart item গুলো থেকে OrderDetails তৈরি করে
         public async Task AddOrderDetailsAsync(int orderId, List<Cart> items)
         {

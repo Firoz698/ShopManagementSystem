@@ -3,32 +3,6 @@ using ShopManagementSystem.Models;
 
 namespace ShopManagementSystem.ViewModels
 {
-    // ── Auth ─────────────────────────────────────────────────────────────────────
-    public class RegisterViewModel
-    {
-        [Required, MaxLength(150)]
-        [Display(Name = "Full Name")]
-        public string FullName { get; set; } = string.Empty;
-
-        [Required, EmailAddress]
-        public string Email { get; set; } = string.Empty;
-
-        [Required, Phone]
-        [Display(Name = "Phone Number")]
-        public string PhoneNumber { get; set; } = string.Empty;
-
-        [MaxLength(300)]
-        public string? Address { get; set; }
-
-        [Required, MinLength(6)]
-        [DataType(DataType.Password)]
-        public string Password { get; set; } = string.Empty;
-
-        [Required, Compare("Password")]
-        [DataType(DataType.Password)]
-        [Display(Name = "Confirm Password")]
-        public string ConfirmPassword { get; set; } = string.Empty;
-    }
 
     public class LoginViewModel
     {
@@ -54,27 +28,27 @@ namespace ShopManagementSystem.ViewModels
 
     public class ProductListViewModel
     {
-        public List<Product>  Products       { get; set; } = new();
-        public List<Category> Categories     { get; set; } = new();
-        public int?           CategoryId     { get; set; }
-        public string?        SearchTerm     { get; set; }
-        public decimal?       MinPrice       { get; set; }
-        public decimal?       MaxPrice       { get; set; }
-        public string?        SortBy         { get; set; }
-        public int            TotalCount     { get; set; }
-        public int            Page           { get; set; } = 1;
-        public int            PageSize       { get; set; } = 12;
-        public int            TotalPages     => (int)Math.Ceiling((double)TotalCount / PageSize);
+        public List<Product> Products { get; set; } = new();
+        public List<Category> Categories { get; set; } = new();
+        public int? CategoryId { get; set; }
+        public string? SearchTerm { get; set; }
+        public decimal? MinPrice { get; set; }
+        public decimal? MaxPrice { get; set; }
+        public string? SortBy { get; set; }
+        public int TotalCount { get; set; }
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 12;
+        public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
     }
 
     public class ProductDetailViewModel
     {
-        public Product        Product       { get; set; } = null!;
-        public List<Review>   Reviews       { get; set; } = new();
-        public List<Product>  RelatedItems  { get; set; } = new();
-        public bool           IsInWishlist  { get; set; }
-        public double         AvgRating     { get; set; }
-        public bool           UserReviewed  { get; set; }
+        public Product Product { get; set; } = null!;
+        public List<Review> Reviews { get; set; } = new();
+        public List<Product> RelatedItems { get; set; } = new();
+        public bool IsInWishlist { get; set; }
+        public double AvgRating { get; set; }
+        public bool UserReviewed { get; set; }
     }
 
 
@@ -171,6 +145,19 @@ namespace ShopManagementSystem.ViewModels
 
         public string? Notes { get; set; }
         public CartViewModel Cart { get; set; } = new();
+
+        // ── নতুন: Manual Payment (bKash/Nagad/Rocket/Bank) ──────────────────────────
+        [Display(Name = "Payment Method")]
+        public int? PaymentMethodSettingId { get; set; }
+
+        [Display(Name = "Sender Number")]
+        public string? SenderNumber { get; set; }
+
+        [Display(Name = "Transaction ID")]
+        public string? TransactionId { get; set; }
+
+        // শুধু View তে dropdown/list দেখানোর জন্য — POST এ bind হবে না
+        public List<PaymentMethodSetting>? AvailablePaymentMethods { get; set; }
     }
 
 

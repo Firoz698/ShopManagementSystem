@@ -7,123 +7,166 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
     <style>
-        :root {
-            --sidebar-w: 250px;
-        }
-
-        body {
-            background: #f4f6fb;
-        }
-
-        .admin-sidebar {
-            width: var(--sidebar-w);
-            min-height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
-            z-index: 1000;
-            overflow-y: auto;
-        }
-
-            .admin-sidebar .brand {
-                padding: 1.25rem 1.5rem;
-                border-bottom: 1px solid rgba(255,255,255,.1);
+            :root {
+                --sidebar-w: 250px;
             }
 
-            .admin-sidebar .nav-link {
-                color: rgba(255,255,255,.75);
-                padding: .6rem 1.5rem;
-                border-radius: 6px;
-                margin: 2px 8px;
-                font-size: .9rem;
-                transition: all .2s;
-                display: flex;
-                align-items: center;
+            body {
+                background: #f4f6fb;
             }
 
-                .admin-sidebar .nav-link:hover,
-                .admin-sidebar .nav-link.active {
-                    background: rgba(255,255,255,.12);
-                    color: #fff;
+            .admin-sidebar {
+                width: var(--sidebar-w);
+                height: 100vh;
+                position: fixed;
+                left: 0;
+                top: 0;
+                background: linear-gradient(180deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+                z-index: 1000;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                transition: transform .3s ease;
+            }
+
+                .admin-sidebar .brand {
+                    padding: 1.25rem 1.5rem;
+                    border-bottom: 1px solid rgba(255,255,255,.1);
                 }
 
-                .admin-sidebar .nav-link i {
-                    width: 22px;
+                .admin-sidebar .nav-link {
+                    color: rgba(255,255,255,.75);
+                    padding: .6rem 1.5rem;
+                    border-radius: 6px;
+                    margin: 2px 8px;
+                    font-size: .9rem;
+                    transition: all .2s;
+                    display: flex;
+                    align-items: center;
                 }
 
-            .admin-sidebar .nav-section {
-                padding: .5rem 1.5rem .25rem;
-                font-size: .7rem;
-                text-transform: uppercase;
-                letter-spacing: .08em;
-                color: rgba(255,255,255,.4);
+                    .admin-sidebar .nav-link:hover,
+                    .admin-sidebar .nav-link.active {
+                        background: rgba(255,255,255,.12);
+                        color: #fff;
+                    }
+
+                    .admin-sidebar .nav-link i {
+                        width: 22px;
+                    }
+
+                .admin-sidebar .nav-section {
+                    padding: .5rem 1.5rem .25rem;
+                    font-size: .7rem;
+                    text-transform: uppercase;
+                    letter-spacing: .08em;
+                    color: rgba(255,255,255,.4);
+                }
+
+            .admin-main {
+                margin-left: var(--sidebar-w);
             }
 
-        .admin-main {
-            margin-left: var(--sidebar-w);
-        }
+            .admin-topbar {
+                background: #fff;
+                border-bottom: 1px solid #e5e7eb;
+                padding: .75rem 1.5rem;
+                position: sticky;
+                top: 0;
+                z-index: 900;
+            }
 
-        .admin-topbar {
-            background: #fff;
-            border-bottom: 1px solid #e5e7eb;
-            padding: .75rem 1.5rem;
-            position: sticky;
-            top: 0;
-            z-index: 900;
-        }
+            .sidebar-toggle-btn {
+                display: none;
+                border: none;
+                background: transparent;
+                font-size: 1.3rem;
+                color: #374151;
+                padding: .25rem .5rem;
+            }
 
-        .stat-card {
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,.06);
-        }
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(15,23,42,.5);
+                z-index: 999;
+            }
 
-        .badge-status-Pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
+            .stat-card {
+                border: none;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,.06);
+            }
 
-        .badge-status-Processing {
-            background: #dbeafe;
-            color: #1e40af;
-        }
+            .badge-status-Pending {
+                background: #fef3c7;
+                color: #92400e;
+            }
 
-        .badge-status-Shipped {
-            background: #e0e7ff;
-            color: #3730a3;
-        }
+            .badge-status-Processing {
+                background: #dbeafe;
+                color: #1e40af;
+            }
 
-        .badge-status-Completed {
-            background: #d1fae5;
-            color: #065f46;
-        }
+            .badge-status-Shipped {
+                background: #e0e7ff;
+                color: #3730a3;
+            }
 
-        .badge-status-Cancelled {
-            background: #fee2e2;
-            color: #991b1b;
-        }
+            .badge-status-Completed {
+                background: #d1fae5;
+                color: #065f46;
+            }
 
-        .badge-return-Pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
+            .badge-status-Cancelled {
+                background: #fee2e2;
+                color: #991b1b;
+            }
 
-        .badge-return-Approved {
-            background: #d1fae5;
-            color: #065f46;
-        }
+            .badge-return-Pending {
+                background: #fef3c7;
+                color: #92400e;
+            }
 
-        .badge-return-Rejected {
-            background: #fee2e2;
-            color: #991b1b;
-        }
+            .badge-return-Approved {
+                background: #d1fae5;
+                color: #065f46;
+            }
+
+            .badge-return-Rejected {
+                background: #fee2e2;
+                color: #991b1b;
+            }
+
+            /* ── RESPONSIVE: left sidebar show/hide ── */
+            @@media (max-width: 991.98px) {
+                .admin-main {
+                    margin-left: 0;
+                }
+
+                .admin-sidebar {
+                    transform: translateX(-100%);
+                }
+
+                    .admin-sidebar.show {
+                        transform: translateX(0);
+                    }
+
+                .sidebar-toggle-btn {
+                    display: inline-flex;
+                    align-items: center;
+                }
+
+                .sidebar-overlay.show {
+                    display: block;
+                }
+            }
     </style>
 </head>
 <body>
 
     <!-- ── Sidebar ─────────────────────────────────────────────────────────────── -->
-    <aside class="admin-sidebar">
+    <aside class="admin-sidebar" id="adminSidebar">
         <div class="brand">
             <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="text-decoration-none">
                 <span class="text-warning fw-bold fs-5"><i class="bi bi-shop me-2"></i>ShopMS</span>
@@ -161,7 +204,7 @@
                 <i class="bi bi-receipt me-2"></i>অর্ডার
             </a>
 
-            <!-- ──── রিটার্ন রিকোয়েস্ট (নতুন) ──── -->
+            <!-- ──── রিটার্ন রিকোয়েস্ট ──── -->
             <a asp-area="Admin" asp-controller="Return" asp-action="Index"
                class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Return" ? "active" : "")">
                 <i class="bi bi-arrow-return-left me-2"></i>রিটার্ন রিকোয়েস্ট
@@ -207,6 +250,18 @@
                 <i class="bi bi-people me-2"></i>ইউজার
             </a>
 
+            <!-- সেটিংস -->
+            <div class="nav-section mt-2">সেটিংস</div>
+            <a asp-area="Admin" asp-controller="NotificationSetting" asp-action="Index"
+               class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "NotificationSetting" ? "active" : "")">
+                <i class="bi bi-bell me-2"></i>নোটিফিকেশন সেটিংস
+            </a>
+
+            <a asp-area="Admin" asp-controller="PaymentMethod" asp-action="Index"
+               class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "PaymentMethod" ? "active" : "")">
+                <i class="bi bi-credit-card-2-front me-2"></i>পেমেন্ট মেথড
+            </a>
+
             <!-- সাইট -->
             <div class="nav-section mt-2">সাইট</div>
             <a asp-controller="Home" asp-action="Index" asp-area="" class="nav-link">
@@ -227,11 +282,19 @@
         </nav>
     </aside>
 
+    <!-- ── Mobile overlay (sidebar খোলা থাকলে backdrop, ক্লিক করলে বন্ধ হবে) ── -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <!-- ── Main content ────────────────────────────────────────────────────────── -->
     <div class="admin-main">
         <!-- Top bar -->
         <div class="admin-topbar d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-semibold text-secondary">@ViewData["Title"]</h6>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="মেনু">
+                    <i class="bi bi-list"></i>
+                </button>
+                <h6 class="mb-0 fw-semibold text-secondary">@ViewData["Title"]</h6>
+            </div>
             <div class="d-flex align-items-center gap-3">
                 @if (TempData["Success"] != null)
                 {
@@ -244,6 +307,22 @@
                         <i class="bi bi-person-circle me-1"></i>@User.Identity?.Name?.Split('@')[0]
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" asp-controller="Account" asp-action="Profile" asp-area="">
+                                <i class="bi bi-person-circle text-primary me-2"></i>আমার প্রোফাইল
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" asp-controller="Account" asp-action="EditProfile" asp-area="">
+                                <i class="bi bi-pencil-square text-primary me-2"></i>প্রোফাইল এডিট
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword" asp-area="">
+                                <i class="bi bi-shield-lock text-primary me-2"></i>পাসওয়ার্ড পরিবর্তন
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider" /></li>
                         <li>
                             <form asp-controller="Account" asp-action="Logout" asp-area="" method="post">
                                 @Html.AntiForgeryToken()
@@ -276,5 +355,52 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     @RenderSection("Scripts", required: false)
+
+    @* ── Sidebar show/hide (মোবাইল/ছোট স্ক্রিনে) ── *@
+    <script>
+            (function() {
+                var sidebar = document.getElementById('adminSidebar');
+                var overlay = document.getElementById('sidebarOverlay');
+                var toggleBtn = document.getElementById('sidebarToggleBtn');
+
+                function openSidebar() {
+                    sidebar.classList.add('show');
+                    overlay.classList.add('show');
+                }
+                function closeSidebar() {
+                    sidebar.classList.remove('show');
+                    overlay.classList.remove('show');
+                }
+
+                if (toggleBtn) {
+                    toggleBtn.addEventListener('click', function() {
+                        if (sidebar.classList.contains('show')) {
+                            closeSidebar();
+                        } else {
+                            openSidebar();
+                        }
+                    });
+                }
+                if (overlay) {
+                    overlay.addEventListener('click', closeSidebar);
+                }
+                // ছোট স্ক্রিনে কোনো মেনু লিংকে ক্লিক করলে sidebar বন্ধ হয়ে যাবে
+                if (sidebar) {
+                    sidebar.querySelectorAll('a.nav-link').forEach(function(link) {
+                        link.addEventListener('click', function() {
+                            if (window.innerWidth <= 991.98) {
+                                closeSidebar();
+                            }
+                        });
+                    });
+                }
+                // বড় স্ক্রিনে resize হলে overlay/state রিসেট
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth > 991.98) {
+                        closeSidebar();
+                    }
+                });
+            })();
+    </script>
 </body>
 </html>

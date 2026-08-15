@@ -15,6 +15,11 @@ namespace ShopManagementSystem.Models
         [MaxLength(300)]
         public string? Address { get; set; }
 
+        // ✅ notun fields
+        public string? ProfilePhoto { get; set; }   // wwwroot/uploads/profile/xxx.jpg
+        public string? Gender { get; set; }         // Male / Female / Other
+        public DateTime? DateOfBirth { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public ICollection<Order> Orders { get; set; } = new List<Order>();
@@ -205,6 +210,7 @@ namespace ShopManagementSystem.Models
     }
 
     // ── Order ───────────────────────────────────────────────────────────────────
+    // ── Order ───────────────────────────────────────────────────────────────────
     public class Order
     {
         public int Id { get; set; }
@@ -221,7 +227,6 @@ namespace ShopManagementSystem.Models
         [MaxLength(50)]
         public string PaymentMethod { get; set; } = "Cash on Delivery";
 
-        // ✅ নতুন — ঢাকার ভিতর / ঢাকার বাইরে
         [MaxLength(50)]
         public string DeliveryZone { get; set; } = "ঢাকার ভিতর";
 
@@ -235,12 +240,25 @@ namespace ShopManagementSystem.Models
         public DateTime OrderDate { get; set; } = DateTime.Now;
         public DateTime? UpdatedAt { get; set; }
 
+        // ✅ নতুন — Order Cancel
+        public string? CancelReason { get; set; }
+        public DateTime? CancelledAt { get; set; }
+
+        // ✅ নতুন — Manual Payment (bKash/Nagad/Rocket/Bank)
+        public int? PaymentMethodSettingId { get; set; }
+        [MaxLength(50)]
+        public string? SenderNumber { get; set; }
+        [MaxLength(100)]
+        public string? PaymentTransactionId { get; set; }
+
         [ForeignKey("UserId")]
         public ApplicationUser? User { get; set; }
 
+        [ForeignKey("PaymentMethodSettingId")]
+        public PaymentMethodSetting? PaymentMethodSetting { get; set; }
+
         public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
     }
-
     // ── Order Detail ────────────────────────────────────────────────────────────
     public class OrderDetail
     {

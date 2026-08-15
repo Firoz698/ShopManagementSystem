@@ -1,0 +1,112 @@
+﻿@model ShopManagementSystem.Models.NotificationSetting
+@{
+    ViewData["Title"] = "Notification Settings";
+}
+
+<h3 class="mb-4">Notification Settings</h3>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<form asp-action="Index" method="post">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="UpdatedAt" />
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Email (SMTP) Settings</span>
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" asp-for="EmailEnabled" role="switch">
+                        <label class="form-check-label" asp-for="EmailEnabled">Enabled</label>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">SMTP Host</label>
+                        <input asp-for="SmtpHost" class="form-control" placeholder="smtp.gmail.com" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">SMTP Port</label>
+                        <input asp-for="SmtpPort" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">SMTP Username</label>
+                        <input asp-for="SmtpUsername" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">SMTP Password</label>
+                        <input asp-for="SmtpPassword" type="password" class="form-control" placeholder="Leave blank to keep unchanged" />
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" asp-for="SmtpUseSsl" role="switch">
+                        <label class="form-check-label" asp-for="SmtpUseSsl">Use SSL</label>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Sender Email</label>
+                        <input asp-for="SenderEmail" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Sender Name</label>
+                        <input asp-for="SenderName" class="form-control" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>SMS Settings</span>
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" asp-for="SmsEnabled" role="switch">
+                        <label class="form-check-label" asp-for="SmsEnabled">Enabled</label>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">SMS API URL</label>
+                        <input asp-for="SmsApiUrl" class="form-control" placeholder="https://sms-provider.com/api/sendsms" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">SMS API Key</label>
+                        <input asp-for="SmsApiKey" type="password" class="form-control" placeholder="Leave blank to keep unchanged" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">SMS Sender ID</label>
+                        <input asp-for="SmsSenderId" class="form-control" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">Admin Contact & Events</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Admin Email</label>
+                        <input asp-for="AdminEmail" class="form-control" />
+                        <span asp-validation-for="AdminEmail" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Admin Phone</label>
+                        <input asp-for="AdminPhone" class="form-control" placeholder="01XXXXXXXXX" />
+                        <span asp-validation-for="AdminPhone" class="text-danger"></span>
+                    </div>
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" asp-for="NotifyOnNewOrder" role="switch">
+                        <label class="form-check-label" asp-for="NotifyOnNewOrder">Notify on new order</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" asp-for="NotifyOnNewChatMessage" role="switch">
+                        <label class="form-check-label" asp-for="NotifyOnNewChatMessage">Notify on new chat message</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Settings</button>
+</form>

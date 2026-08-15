@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using ShopManagementSystem.Areas.Admin.Repository;
 using ShopManagementSystem.Areas.Admin.Repository.Implementations;
 using ShopManagementSystem.Areas.Admin.Repository.Interfaces;
 using ShopManagementSystem.Data;
@@ -20,22 +21,23 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
-    options.Password.RequireDigit           = true;
-    options.Password.RequireLowercase       = true;
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
     options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireUppercase       = false;
-    options.Password.RequiredLength         = 6;
-    options.SignIn.RequireConfirmedEmail     = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequiredLength = 6;
+    options.SignIn.RequireConfirmedEmail = false;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+// ✅ Ekta-i ConfigureApplicationCookie — merge kora, 30 days rakhlam (RememberMe er jonno beshi valid)
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath         = "/Account/Login";
-    options.LogoutPath        = "/Account/Logout";
-    options.AccessDeniedPath  = "/Account/AccessDenied";
-    options.ExpireTimeSpan    = TimeSpan.FromDays(7);
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+    options.ExpireTimeSpan = TimeSpan.FromDays(30);
     options.SlidingExpiration = true;
 });
 
@@ -52,6 +54,8 @@ builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<IHomeRepository, HomeRepository>();
 builder.Services.AddScoped<IWishlistRepository, WishlistRepository>();
+builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+builder.Services.AddHttpClient<ISmsSender, SmsSender>();
 
 //----For Admin
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -62,17 +66,18 @@ builder.Services.AddScoped<IReturnRepository, ReturnRepository>();
 builder.Services.AddScoped<ISliderRepository, SliderRepository>();
 builder.Services.AddScoped<IAdminOrderRepository, AdminOrderRepository>();
 builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
-
-
-
-
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IAdminNotificationSettingRepository, AdminNotificationSettingRepository>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IAdminPaymentMethodRepository, AdminPaymentMethodRepository>();
+builder.Services.AddScoped<IPaymentMethodRepository, PaymentMethodRepository>();
 
 builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout        = TimeSpan.FromMinutes(30);
-    options.Cookie.HttpOnly    = true;
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
 
@@ -83,7 +88,7 @@ using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    var db          = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
     await db.Database.MigrateAsync();
 
@@ -100,7 +105,7 @@ using (var scope = app.Services.CreateScope())
         {
             FullName = "Administrator",
             UserName = adminEmail,
-            Email    = adminEmail,
+            Email = adminEmail,
             PhoneNumber = "01700000000",
             EmailConfirmed = true
         };

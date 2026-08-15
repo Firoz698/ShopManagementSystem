@@ -14,34 +14,37 @@ namespace ShopManagementSystem.Repository.Implementations
             _db = db;
         }
 
-        // শুধু Completed অর্ডার খোঁজে (review এর জন্য)
+        // ── Review ───────────────────────────────────────────────────────────────
+
+        // শুধু Completed অর্ডার — review দেওয়ার জন্য
         public async Task<Order?> GetCompletedOrderAsync(int orderId, string userId)
         {
             return await _db.Orders
-                .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId && o.Status == "Completed");
+                .Include(o => o.OrderDetails)
+                .FirstOrDefaultAsync(o => o.Id == orderId
+                    && o.UserId == userId
+                    && o.Status == "Completed");
         }
 
-        // User আগে এই product এ review দিয়েছে কিনা
         public async Task<bool> HasUserReviewedProductAsync(string userId, int productId)
         {
-            return await _db.Reviews
-                .AnyAsync(r => r.UserId == userId && r.ProductId == productId);
+            return await _db.Reviews.AnyAsync(r => r.UserId == userId && r.ProductId == productId);
         }
 
-        // নতুন review save
         public async Task AddReviewAsync(string userId, int productId, int rating, string? comment)
         {
             _db.Reviews.Add(new Review
             {
                 UserId = userId,
                 ProductId = productId,
-                Rating = Math.Clamp(rating, 1, 5),
+                Rating = rating,
                 Comment = comment
             });
             await _db.SaveChangesAsync();
         }
 
-        // Order details সহ order খোঁজে (return request এর জন্য)
+        // ── Return Request ───────────────────────────────────────────────────────
+
         public async Task<Order?> GetOrderWithDetailsAsync(int orderId, string userId)
         {
             return await _db.Orders
@@ -49,14 +52,12 @@ namespace ShopManagementSystem.Repository.Implementations
                 .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
         }
 
-        // User আগে এই product এর জন্য return request দিয়েছে কিনা
         public async Task<bool> HasReturnRequestAsync(int orderId, int productId, string userId)
         {
-            return await _db.ReturnRequests
-                .AnyAsync(r => r.OrderId == orderId && r.ProductId == productId && r.UserId == userId);
+            return await _db.ReturnRequests.AnyAsync(r =>
+                r.OrderId == orderId && r.ProductId == productId && r.UserId == userId);
         }
 
-        // নতুন return request save
         public async Task AddReturnRequestAsync(int orderId, int productId, string userId, string reason)
         {
             _db.ReturnRequests.Add(new ReturnRequest
@@ -70,7 +71,6 @@ namespace ShopManagementSystem.Repository.Implementations
             await _db.SaveChangesAsync();
         }
 
-        // User এর সব return request — product ও order সহ
         public async Task<List<ReturnRequest>> GetMyReturnsAsync(string userId)
         {
             return await _db.ReturnRequests
@@ -79,6 +79,35 @@ namespace ShopManagementSystem.Repository.Implementations
                 .Include(r => r.Order)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
+        }
+
+        // ── Order Cancel ─────────────────────────────────────────────────────────
+
+        // শুধু Pending/Processing অর্ডার cancel করা যাবে
+        public async Task<Order?> GetCancellableOrderAsync(int orderId, string userId)
+        {
+            return await _db.Orders
+                .Include(o => o.OrderDetails)
+                .FirstOrDefaultAsync(o => o.Id == orderId
+                    && o.UserId == userId
+                    && (o.Status == "Pending" || o.Status == "Processing"));
+        }
+
+        // Order cancel করে + stock ফেরত দেয়
+        public async Task CancelOrderAsync(Order order, string? reason)
+        {
+            foreach (var detail in order.OrderDetails)
+            {
+                var product = await _db.Products.FindAsync(detail.ProductId);
+                if (product != null)
+                    product.Stock += detail.Quantity;
+            }
+
+            order.Status = "Cancelled";
+            order.CancelReason = reason;
+            order.CancelledAt = DateTime.Now;
+
+            await _db.SaveChangesAsync();
         }
     }
 }

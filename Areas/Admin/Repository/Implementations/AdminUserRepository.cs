@@ -92,11 +92,14 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
         }
 
         // User info update করে — true হলে সফল
+        // User info update করে — true হলে সফল
         public async Task<bool> UpdateUserAsync(ApplicationUser user, ApplicationUser model)
         {
             user.FullName = model.FullName;
             user.PhoneNumber = model.PhoneNumber;
             user.Address = model.Address;
+            user.Gender = model.Gender;
+            user.DateOfBirth = model.DateOfBirth;
 
             var result = await _userManager.UpdateAsync(user);
             return result.Succeeded;

@@ -24,7 +24,6 @@ namespace ShopManagementSystem.Controllers
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> SubmitReview(int productId, int orderId, int rating, string? comment)
         {
-            // শুধু Completed অর্ডারেই রিভিউ দেওয়া যাবে
             var order = await _orderRepo.GetCompletedOrderAsync(orderId, UserId);
             if (order == null)
             {
@@ -32,7 +31,6 @@ namespace ShopManagementSystem.Controllers
                 return RedirectToAction("MyOrders", "Cart");
             }
 
-            // আগে রিভিউ দিয়েছে কিনা চেক
             var alreadyReviewed = await _orderRepo.HasUserReviewedProductAsync(UserId, productId);
             if (!alreadyReviewed)
             {
@@ -53,14 +51,12 @@ namespace ShopManagementSystem.Controllers
             var order = await _orderRepo.GetOrderWithDetailsAsync(orderId, UserId);
             if (order == null) return NotFound();
 
-            // শুধু Completed বা Shipped অর্ডারে রিটার্ন করা যাবে
             if (order.Status != "Completed" && order.Status != "Shipped")
             {
                 TempData["Error"] = "শুধুমাত্র Shipped বা Completed অর্ডারে রিটার্ন করা যাবে।";
                 return RedirectToAction("MyOrders", "Cart");
             }
 
-            // আগে রিটার্ন রিকোয়েস্ট দিয়েছে কিনা
             var alreadyRequested = await _orderRepo.HasReturnRequestAsync(orderId, productId, UserId);
             if (alreadyRequested)
             {
@@ -99,6 +95,36 @@ namespace ShopManagementSystem.Controllers
         {
             var returns = await _orderRepo.GetMyReturnsAsync(UserId);
             return View(returns);
+        }
+
+        // ── GET /Order/CancelOrder/5 — cancel confirm পেজ ──────────────────────────
+        public async Task<IActionResult> CancelOrder(int orderId)
+        {
+            var order = await _orderRepo.GetCancellableOrderAsync(orderId, UserId);
+            if (order == null)
+            {
+                TempData["Error"] = "এই অর্ডারটি বাতিল করা সম্ভব নয় (হয়তো ইতোমধ্যে Shipped/Completed/Cancelled হয়ে গেছে)।";
+                return RedirectToAction("MyOrders", "Cart");
+            }
+
+            ViewBag.Order = order;
+            return View();
+        }
+
+        // ── POST /Order/CancelOrder ──────────────────────────────────────────────
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelOrder(int orderId, string? reason)
+        {
+            var order = await _orderRepo.GetCancellableOrderAsync(orderId, UserId);
+            if (order == null)
+            {
+                TempData["Error"] = "এই অর্ডারটি বাতিল করা সম্ভব নয়।";
+                return RedirectToAction("MyOrders", "Cart");
+            }
+
+            await _orderRepo.CancelOrderAsync(order, reason);
+            TempData["Success"] = $"অর্ডার #{order.Id} বাতিল করা হয়েছে।";
+            return RedirectToAction("MyOrders", "Cart");
         }
     }
 }

@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using ShopManagementSystem.Interfaces;
 using ShopManagementSystem.Models;
 using ShopManagementSystem.Repository.Interfaces;
 using ShopManagementSystem.Services;
 using ShopManagementSystem.ViewModels;
+
 
 namespace ShopManagementSystem.Controllers
 {
@@ -14,15 +16,22 @@ namespace ShopManagementSystem.Controllers
         private readonly ICartRepository _cartRepo;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ISslCommerzService _sslService;
+        private readonly INotificationService _notificationService;
+
+        private readonly IPaymentMethodRepository _paymentMethodRepo;
 
         public CartController(
             ICartRepository cartRepo,
             UserManager<ApplicationUser> userManager,
-            ISslCommerzService sslService)
+            ISslCommerzService sslService,
+            INotificationService notificationService,
+            IPaymentMethodRepository paymentMethodRepo)
         {
             _cartRepo = cartRepo;
             _userManager = userManager;
             _sslService = sslService;
+            _notificationService = notificationService;
+            _paymentMethodRepo = paymentMethodRepo;
         }
 
         private string UserId => _userManager.GetUserId(User)!;
@@ -206,10 +215,21 @@ namespace ShopManagementSystem.Controllers
             await _cartRepo.DeductStockAsync(items);
             await _cartRepo.ClearCartAsync(items);
 
+            // ── Admin কে email/SMS notification পাঠাও (order placed) ──
+            var currentUser = await _userManager.GetUserAsync(User);
+            try
+            {
+                await _notificationService.SendNewOrderNotificationAsync(order.Id, currentUser!.FullName, total);
+            }
+            catch
+            {
+                // notification ব্যর্থ হলেও order flow যেন থেমে না যায়
+            }
+
             // Online Payment
             if (vm.PaymentMethod == "Online Payment")
             {
-                var user = await _userManager.GetUserAsync(User);
+                var user = currentUser;
                 var tranId = $"TXN-{order.Id}-{DateTime.Now.Ticks}";
 
                 await _cartRepo.CreatePaymentTransactionAsync(order.Id, tranId, total);
@@ -287,7 +307,7 @@ namespace ShopManagementSystem.Controllers
             if (payment != null)
                 await _cartRepo.UpdatePaymentStatusAsync(payment, "Failed");
 
-            TempData["Error"] = "পেমেন্ট ব্যর্থ হয়েছে।";
+            TempData["Error"] = "পেমেন্ট বাতিল করা হয়েছে।";
             return View("PaymentFail", payment);
         }
 

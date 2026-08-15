@@ -14,7 +14,7 @@
                 </h6>
                 @if ((int)ViewBag.TotalUnread > 0)
                 {
-                    <span class="badge bg-danger rounded-pill">@ViewBag.TotalUnread</span>
+                    <span class="badge bg-danger rounded-pill" id="totalUnreadBadge">@ViewBag.TotalUnread</span>
                 }
             </div>
             <div class="list-group list-group-flush overflow-auto" style="max-height:70vh"
@@ -28,10 +28,12 @@
                 }
                 @foreach (var session in Model)
                 {
-                    <a asp-area="Admin" asp-controller="Chat" asp-action="Conversation"
-                       asp-route-userId="@session.UserId"
-                       class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3 px-3
-                                  @(session.UnreadCount > 0 ? "bg-light" : "")">
+                    <a href="javascript:void(0)"
+                       onclick="loadConversation('@session.UserId', this)"
+                       data-user="@session.UserId"
+                       class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3 px-3 chat-session-item
+                                  @(session.UnreadCount > 0 ? "bg-light" : "")"
+                       id="session-@session.UserId">
                         <!-- Avatar -->
                         <div class="rounded-circle bg-dark text-white d-flex align-items-center
                                         justify-content-center flex-shrink-0 fw-bold"
@@ -47,7 +49,7 @@
                         </div>
                         @if (session.UnreadCount > 0)
                         {
-                            <span class="badge bg-danger rounded-pill flex-shrink-0">
+                            <span class="badge bg-danger rounded-pill flex-shrink-0 session-unread-badge">
                                 @session.UnreadCount
                             </span>
                         }
@@ -57,60 +59,200 @@
         </div>
     </div>
 
-    <!-- ── Right panel placeholder ──────────────────────────────────────── -->
+    <!-- ── Right panel — AJAX দিয়ে conversation লোড হবে এখানে ──────────── -->
     <div class="col-lg-8">
-        <div class="card border-0 shadow-sm h-100 d-flex align-items-center justify-content-center"
-             style="min-height:400px">
-            <div class="text-center text-muted">
-                <i class="bi bi-chat-left-dots display-2 d-block mb-3 opacity-25"></i>
-                <h5>একটি কথোপকথন নির্বাচন করুন</h5>
-                <p class="small">বাম দিক থেকে ইউজার নির্বাচন করুন।</p>
+        <div id="chatPanel">
+            <div class="card border-0 shadow-sm h-100 d-flex align-items-center justify-content-center"
+                 style="min-height:400px" id="chatPlaceholder">
+                <div class="text-center text-muted">
+                    <i class="bi bi-chat-left-dots display-2 d-block mb-3 opacity-25"></i>
+                    <h5>একটি কথোপকথন নির্বাচন করুন</h5>
+                    <p class="small">বাম দিক থেকে ইউজার নির্বাচন করুন।</p>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+<style>
+    .chat-session-item.active-session {
+        background-color: #e7f1ff !important;
+        border-left: 3px solid #0d6efd;
+    }
+</style>
+
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script>
+        let currentUserId = null;
+
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/chatHub")
             .withAutomaticReconnect()
             .build();
 
-        // নতুন user message এলে session list update করো
-        connection.on("ReceiveMessage", function(data) {
+        // ── বাম পাশে ইউজার সিলেক্ট করলে ডান পাশে conversation লোড হবে (page reload হয় না) ──
+        function loadConversation(userId, linkEl) {
+            document.querySelectorAll('.chat-session-item').forEach(function (item) {
+                item.classList.remove('active-session');
+            });
+            if (linkEl) linkEl.classList.add('active-session');
+
+            currentUserId = userId;
+
+            fetch('/Admin/Chat/ConversationPartial?userId=' + encodeURIComponent(userId))
+                .then(function (res) { return res.text(); })
+                .then(function (html) {
+                    document.getElementById('chatPanel').innerHTML = html;
+                    scrollToBottom();
+                    connection.invoke("MarkAsRead", userId).catch(function () { });
+
+                    // এই ইউজারের unread badge ক্লিয়ার করে দাও
+                    if (linkEl) {
+                        var badge = linkEl.querySelector('.session-unread-badge');
+                        if (badge) badge.remove();
+                        linkEl.classList.remove('bg-light');
+                    }
+                })
+                .catch(function (err) {
+                    console.error('Conversation load error:', err);
+                });
+        }
+
+        // নতুন user message এলে
+        connection.on("ReceiveMessage", function (data) {
             if (!data.isFromAdmin) {
-                // Unread badge update
-                playNotificationSound();
-                // Page refresh করলে দেখা যাবে — অথবা dynamic update
-                var badge = document.querySelector(`[data-user="${data.senderId}"] .badge`);
-                if (badge) {
-                    badge.textContent = parseInt(badge.textContent || 0) + 1;
+                if (data.senderId === currentUserId) {
+                    // এখন খোলা থাকা conversation-এই মেসেজ এলো
+                    appendUserMessage(data);
+                    connection.invoke("MarkAsRead", currentUserId).catch(function () { });
+                } else {
+                    // অন্য ইউজারের মেসেজ — লিস্টে unread badge আপডেট করো
+                    playNotificationSound();
+                    var item = document.getElementById('session-' + data.senderId);
+                    if (item) {
+                        item.classList.add('bg-light');
+                        var badge = item.querySelector('.session-unread-badge');
+                        if (badge) {
+                            badge.textContent = parseInt(badge.textContent || 0) + 1;
+                        } else {
+                            var span = document.createElement('span');
+                            span.className = 'badge bg-danger rounded-pill flex-shrink-0 session-unread-badge';
+                            span.textContent = '1';
+                            item.appendChild(span);
+                        }
+                    }
                 }
             }
         });
 
-        connection.on("UserOnline", function(user) {
-            console.log("User online:", user.userName);
+        // Admin নিজের মেসেজ পাঠানোর confirmation
+        connection.on("MessageSent", function (data) {
+            var targetId = data.targetUserId || (data.payload && data.payload.targetUserId);
+            if (targetId === currentUserId) {
+                appendAdminMessage(data.payload || data);
+            }
+        });
+
+        connection.on("UserOnline", function (user) {
+            if (user.userId === currentUserId) {
+                var el = document.getElementById('onlineStatus');
+                if (el) {
+                    el.textContent = '● অনলাইন';
+                    el.className = 'badge bg-success rounded-pill px-2';
+                }
+            }
+        });
+
+        connection.on("UserOffline", function (userId) {
+            if (userId === currentUserId) {
+                var el = document.getElementById('onlineStatus');
+                if (el) {
+                    el.textContent = '○ অফলাইন';
+                    el.className = 'badge bg-secondary rounded-pill px-2';
+                }
+            }
         });
 
         connection.start().catch(console.error);
+
+        function sendMessage() {
+            var input = document.getElementById('messageInput');
+            if (!input || !currentUserId) return;
+            var msg = input.value.trim();
+            if (!msg) return;
+            input.value = '';
+
+            connection.invoke("SendMessageToUser", currentUserId, msg).catch(function (err) {
+                console.error("Send error:", err);
+                alert('মেসেজ পাঠানো যায়নি।');
+            });
+        }
+
+        function appendUserMessage(data) {
+            var area = document.getElementById('messageArea');
+            if (!area) return;
+            var nameEl = document.querySelector('#chatPanel .card-header .fw-bold');
+            var initials = nameEl ? nameEl.textContent.trim().charAt(0).toUpperCase() : 'U';
+            var div = document.createElement('div');
+            div.className = 'd-flex gap-2 mb-3';
+            div.innerHTML = `
+                <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center flex-shrink-0 fw-bold"
+                     style="width:32px;height:32px;font-size:.75rem">${initials}</div>
+                <div>
+                    <div class="bg-white rounded-3 px-3 py-2 shadow-sm"
+                         style="max-width:500px;border-radius:4px 18px 18px 18px !important">
+                        <div class="small">${escapeHtml(data.message)}</div>
+                    </div>
+                    <div class="text-muted mt-1" style="font-size:.7rem">${data.sentAt}</div>
+                </div>`;
+            area.appendChild(div);
+            scrollToBottom();
+        }
+
+        function appendAdminMessage(data) {
+            var area = document.getElementById('messageArea');
+            if (!area) return;
+            var div = document.createElement('div');
+            div.className = 'd-flex gap-2 mb-3 justify-content-end';
+            div.innerHTML = `
+                <div>
+                    <div class="bg-dark text-white rounded-3 px-3 py-2"
+                         style="max-width:500px;border-radius:18px 4px 18px 18px !important">
+                        <div class="small">${escapeHtml(data.message)}</div>
+                    </div>
+                    <div class="text-muted mt-1 text-end" style="font-size:.7rem">
+                        ${data.sentAt} <i class="bi bi-check2 text-secondary ms-1"></i>
+                    </div>
+                </div>
+                <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center flex-shrink-0 fw-bold"
+                     style="width:32px;height:32px;font-size:.75rem">A</div>`;
+            area.appendChild(div);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            var area = document.getElementById('messageArea');
+            if (area) area.scrollTop = area.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            var d = document.createElement('div');
+            d.appendChild(document.createTextNode(text));
+            return d.innerHTML;
+        }
 
         function playNotificationSound() {
             try {
                 var ctx = new (window.AudioContext || window.webkitAudioContext)();
                 var osc = ctx.createOscillator();
-                var g   = ctx.createGain();
+                var g = ctx.createGain();
                 osc.connect(g); g.connect(ctx.destination);
                 osc.frequency.value = 700;
                 g.gain.setValueAtTime(0.15, ctx.currentTime);
                 g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
                 osc.start(); osc.stop(ctx.currentTime + 0.4);
-            } catch(e) {}
+            } catch (e) { }
         }
-
-        // Auto refresh every 30s for new sessions
-        setInterval(function() { location.reload(); }, 30000);
     </script>
 }

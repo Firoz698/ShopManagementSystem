@@ -30,6 +30,9 @@ namespace ShopManagementSystem.Data
         public DbSet<HomepageSection> HomepageSections { get; set; }
         public DbSet<HomepageSectionCategory> HomepageSectionCategories { get; set; }
         public DbSet<HomepageSectionProduct> HomepageSectionProducts { get; set; }
+        public DbSet<NotificationSetting> NotificationSettings { get; set; }
+        public DbSet<PaymentMethodSetting> PaymentMethodSettings { get; set; }
+        public DbSet<OtpVerification> OtpVerifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

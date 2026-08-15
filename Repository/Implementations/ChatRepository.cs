@@ -61,5 +61,28 @@ namespace ShopManagementSystem.Repository.Implementations
             return await _db.ChatMessages
                 .CountAsync(m => m.ReceiverId == userId && !m.IsRead && m.IsFromAdmin);
         }
+
+        // ── নতুন: User → Admin message সেভ করে + admin session unread বাড়ায় ──
+        public async Task<ChatMessage> AddUserMessageAsync(string userId, string messageText)
+        {
+            var message = new ChatMessage
+            {
+                SenderId = userId,
+                ReceiverId = null,          // Admin নির্দিষ্ট user নয়, তাই null
+                Message = messageText,
+                IsFromAdmin = false,
+                IsRead = false,
+                SentAt = DateTime.Now
+            };
+
+            _db.ChatMessages.Add(message);
+
+            var session = await GetOrCreateSessionAsync(userId);
+            session.UnreadCount += 1;      // Admin panel এর জন্য unread বাড়লো
+            session.LastMessageAt = DateTime.Now;
+
+            await _db.SaveChangesAsync();
+            return message;
+        }
     }
 }

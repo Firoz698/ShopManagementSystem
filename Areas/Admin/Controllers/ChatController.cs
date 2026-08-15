@@ -28,6 +28,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
         }
 
         // GET /Admin/Chat/Conversation/userId
+        // (সরাসরি লিংক/ডিপ-লিংক এর জন্য রাখা হলো — full page)
         public async Task<IActionResult> Conversation(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -45,6 +46,28 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             ViewBag.TargetUser = user;
             ViewBag.TargetUserId = userId;
             return View(messages);
+        }
+
+        // GET /Admin/Chat/ConversationPartial?userId=...
+        // ── AJAX দিয়ে ডান পাশের প্যানেল লোড করার জন্য (page reload হয় না) ──
+        [HttpGet]
+        public async Task<IActionResult> ConversationPartial(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return NotFound();
+
+            var messages = await _chatRepo.GetConversationMessagesAsync(userId);
+
+            // Mark as read
+            var session = await _chatRepo.GetSessionByUserIdAsync(userId);
+            if (session != null)
+                await _chatRepo.ResetSessionUnreadCountAsync(session);
+
+            await _chatRepo.MarkUserMessagesAsReadAsync(userId);
+
+            ViewBag.TargetUser = user;
+            ViewBag.TargetUserId = userId;
+            return PartialView("_ChatConversation", messages);
         }
 
         // GET /Admin/Chat/UnreadTotal — AJAX poll
