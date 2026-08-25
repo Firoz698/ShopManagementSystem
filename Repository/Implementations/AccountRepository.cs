@@ -39,12 +39,13 @@ namespace ShopManagementSystem.Repository.Implementations
                 Address = vm.Address,
                 Gender = vm.Gender,
                 DateOfBirth = vm.DateOfBirth,
+                UserType = "Customer", // ✅ স্পষ্টভাবে সেট করা হলো (default থাকলেও নিশ্চিত করা ভালো)
                 EmailConfirmed = true
             };
 
             var result = await _userManager.CreateAsync(user, vm.Password);
             if (result.Succeeded)
-                await _userManager.AddToRoleAsync(user, "User");
+                await _userManager.AddToRoleAsync(user, "Customer"); // ✅ "User" থেকে "Customer" করা হলো
 
             return result;
         }
@@ -62,6 +63,14 @@ namespace ShopManagementSystem.Repository.Implementations
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null) return false;
             return await _userManager.IsInRoleAsync(user, "Admin");
+        }
+
+        // ✅ নতুন — Email দিয়ে Admin অথবা Employee কিনা চেক করে
+        public async Task<bool> IsAdminOrEmployeeAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null) return false;
+            return await IsUserAdminOrEmployeeAsync(user);
         }
 
         // ✅ Change Password (login thakle)
@@ -172,6 +181,42 @@ namespace ShopManagementSystem.Repository.Implementations
 
             var result = await _userManager.UpdateAsync(user);
             return result.Succeeded ? (true, "প্রোফাইল আপডেট হয়েছে।") : (false, "আপডেট ব্যর্থ হয়েছে।");
+        }
+
+        // ✅ Provider + providerKey diye existing external-login user khoje
+        public async Task<ApplicationUser?> FindByLoginAsync(string provider, string providerKey)
+            => await _userManager.FindByLoginAsync(provider, providerKey);
+
+        // ✅ External login (Google/Facebook) diye sign in
+        public async Task<SignInResult> ExternalLoginSignInAsync(string provider, string providerKey)
+            => await _signInManager.ExternalLoginSignInAsync(provider, providerKey, isPersistent: true);
+
+        // ✅ Notun external user create kore, provider-er sathe login link kore
+        public async Task<IdentityResult> CreateExternalUserAsync(ApplicationUser user, string provider, string providerKey)
+        {
+            user.UserType = "Customer"; // ✅ স্পষ্টভাবে সেট করা হলো
+
+            var createResult = await _userManager.CreateAsync(user);
+            if (!createResult.Succeeded) return createResult;
+
+            await _userManager.AddToRoleAsync(user, "Customer"); // ✅ "User" থেকে "Customer" করা হলো
+
+            var loginInfo = new UserLoginInfo(provider, providerKey, provider);
+            var addLoginResult = await _userManager.AddLoginAsync(user, loginInfo);
+
+            return addLoginResult;
+        }
+
+        public async Task<bool> IsUserAdminAsync(ApplicationUser user)
+            => await _userManager.IsInRoleAsync(user, "Admin");
+
+        // ✅ নতুন — User object দিয়ে Admin অথবা Employee কিনা চেক করে
+        public async Task<bool> IsUserAdminOrEmployeeAsync(ApplicationUser user)
+        {
+            if (await _userManager.IsInRoleAsync(user, "Admin"))
+                return true;
+
+            return user.UserType == "Employee";
         }
     }
 }

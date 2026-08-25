@@ -1,0 +1,45 @@
+﻿@using ShopManagementSystem.Data
+@model List<ShopManagementSystem.Models.Menu>
+@inject ApplicationDbContext Db
+
+@foreach (var group in Model)
+{
+    @if (group.IsGroupHeader)
+    {
+        <div class="nav-section mt-2">@group.Title</div>
+        @foreach (var child in group.Children)
+        {
+            <a asp-area="@child.Area" asp-controller="@child.Controller" asp-action="@child.Action"
+               class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == child.Controller ? "active" : "")">
+                <i class="@child.Icon me-2"></i>@child.Title
+
+                @* ── রিটার্ন/চ্যাট এর unread badge (আগের মতোই) ── *@
+                @if (child.Controller == "Return")
+                {
+                    var pendingReturns = 0;
+                    try { pendingReturns = Db.ReturnRequests.Count(r => r.Status == "Pending"); } catch { }
+                    if (pendingReturns > 0)
+                    {
+                        <span class="badge bg-danger ms-auto rounded-pill" style="font-size:.7rem">@pendingReturns</span>
+                    }
+                }
+                @if (child.Controller == "Chat")
+                {
+                    var totalUnread = 0;
+                    try { totalUnread = Db.ChatSessions.Sum(s => s.UnreadCount); } catch { }
+                    if (totalUnread > 0)
+                    {
+                        <span class="badge bg-danger ms-auto rounded-pill" style="font-size:.7rem">@totalUnread</span>
+                    }
+                }
+            </a>
+        }
+    }
+    else
+    {
+        <a asp-area="@group.Area" asp-controller="@group.Controller" asp-action="@group.Action"
+           class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == group.Controller ? "active" : "")">
+            <i class="@group.Icon me-2"></i>@group.Title
+        </a>
+    }
+}

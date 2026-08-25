@@ -6,7 +6,7 @@ using ShopManagementSystem.Models;
 
 namespace ShopManagementSystem.Areas.Admin.Controllers
 {
-    [Area("Admin"), Authorize(Roles = "Admin")]
+    [Area("Admin"), Authorize]
     public class OrderController : Controller
     {
         private readonly IAdminOrderRepository _orderRepo;

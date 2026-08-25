@@ -1,5 +1,12 @@
 ﻿@model List<ShopManagementSystem.Models.ChatMessage>
-@{ ViewData["Title"] = "সাপোর্ট চ্যাট"; }
+@{
+    ViewData["Title"] = "সাপোর্ট চ্যাট";
+}
+
+@{
+    var currentUser = ViewBag.CurrentUser as ShopManagementSystem.Models.ApplicationUser;
+    var adminPhoto = ViewBag.AdminPhoto as string;
+}
 
 <div class="container my-4">
     <div class="row justify-content-center">
@@ -8,10 +15,18 @@
 
                 <!-- Header -->
                 <div class="card-header bg-dark text-white d-flex align-items-center gap-3 py-3">
-                    <div class="rounded-circle bg-success d-flex align-items-center justify-content-center"
-                         style="width:42px;height:42px;flex-shrink:0">
-                        <i class="bi bi-headset fs-5"></i>
-                    </div>
+                    @if (!string.IsNullOrEmpty(adminPhoto))
+                    {
+                        <img src="@adminPhoto" class="rounded-circle flex-shrink-0"
+                             width="42" height="42" style="object-fit:cover" />
+                    }
+                    else
+                    {
+                        <div class="rounded-circle bg-success d-flex align-items-center justify-content-center"
+                             style="width:42px;height:42px;flex-shrink:0">
+                            <i class="bi bi-headset fs-5"></i>
+                        </div>
+                    }
                     <div>
                         <div class="fw-bold">ShopMS সাপোর্ট</div>
                         <div class="small opacity-75" id="adminStatus">
@@ -49,9 +64,19 @@
                         {
                             <!-- Admin message — left side -->
                             <div class="d-flex gap-2 mb-3">
-                                <div class="rounded-circle bg-dark text-white d-flex align-items-center
-                                            justify-content-center flex-shrink-0"
-                                     style="width:32px;height:32px;font-size:.75rem">A</div>
+                                @if (!string.IsNullOrEmpty(adminPhoto))
+                                {
+                                    <img src="@adminPhoto" class="rounded-circle flex-shrink-0"
+                                         width="32" height="32" style="object-fit:cover" />
+                                }
+                                else
+                                {
+                                    <div class="rounded-circle bg-dark text-white d-flex align-items-center
+                                        justify-content-center flex-shrink-0"
+                                         style="width:32px;height:32px;font-size:.75rem">
+                                        A
+                                    </div>
+                                }
                                 <div>
                                     <div class="bg-white rounded-3 px-3 py-2 shadow-sm"
                                          style="max-width:400px; border-radius:4px 18px 18px 18px !important">
@@ -77,6 +102,19 @@
                                         <i class="bi bi-check2-all text-primary ms-1"></i>
                                     </div>
                                 </div>
+                                @if (!string.IsNullOrEmpty(currentUser?.ProfilePhoto))
+                                {
+                                    <img src="@currentUser.ProfilePhoto" class="rounded-circle flex-shrink-0"
+                                         width="32" height="32" style="object-fit:cover" />
+                                }
+                                else
+                                {
+                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center
+                                        justify-content-center flex-shrink-0 fw-bold"
+                                         style="width:32px;height:32px;font-size:.75rem">
+                                        @(currentUser?.FullName?.FirstOrDefault().ToString().ToUpper() ?? "U")
+                                    </div>
+                                }
                             </div>
                         }
                     }
@@ -114,151 +152,182 @@
 </div>
 
 <style>
-.typing-dots span {
-    display: inline-block;
-    width: 6px; height: 6px;
-    background: #6c757d;
-    border-radius: 50%;
-    margin: 0 1px;
-    animation: bounce 1.2s infinite;
-}
-.typing-dots span:nth-child(2) { animation-delay: .2s; }
-.typing-dots span:nth-child(3) { animation-delay: .4s; }
-@@keyframes bounce {
-    0%, 80%, 100% { transform: scale(0); }
-    40% { transform: scale(1); }
-}
-#messageArea::-webkit-scrollbar { width: 4px; }
-#messageArea::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 4px; }
+    .typing-dots span {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        background: #6c757d;
+        border-radius: 50%;
+        margin: 0 1px;
+        animation: bounce 1.2s infinite;
+    }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: .2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: .4s;
+        }
+
+    @@keyframes bounce {
+        0%, 80%, 100% {
+            transform: scale(0);
+        }
+
+        40% {
+            transform: scale(1);
+        }
+    }
+
+    #messageArea::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    #messageArea::-webkit-scrollbar-thumb {
+        background: #dee2e6;
+        border-radius: 4px;
+    }
 </style>
 
 @section Scripts {
-<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
-<script>
-const userId = '@@_userManager.GetUserId(User)';
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        const userId = '@@_userManager.GetUserId(User)';
+        const userPhoto = '@Html.Raw(currentUser?.ProfilePhoto ?? "")';
+        const userInitial = '@(currentUser?.FullName?.FirstOrDefault().ToString().ToUpper() ?? "U")';
+        const adminPhoto = '@Html.Raw(adminPhoto ?? "")';
 
-// SignalR connection
-const connection = new signalR.HubConnectionBuilder()
-    .withUrl("/chatHub")
-    .withAutomaticReconnect()
-    .build();
+        // SignalR connection
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chatHub")
+            .withAutomaticReconnect()
+            .build();
 
-// ── Events ─────────────────────────────────────────────────────────────────
+        // ── Events ─────────────────────────────────────────────────────────────────
 
-// Admin এর মেসেজ পাওয়া
-connection.on("ReceiveMessage", function(data) {
-    if (data.isFromAdmin) {
-        appendAdminMessage(data);
-        // Notification sound
-        playNotificationSound();
-    }
-});
+        // Admin এর মেসেজ পাওয়া
+        connection.on("ReceiveMessage", function(data) {
+            if (data.isFromAdmin) {
+                appendAdminMessage(data);
+                // Notification sound
+                playNotificationSound();
+            }
+        });
 
-// নিজের মেসেজ confirm
-connection.on("MessageSent", function(data) {
-    // already appended
-});
+        // নিজের মেসেজ confirm
+        connection.on("MessageSent", function(data) {
+            // already appended
+        });
 
-// Admin typing indicator
-connection.on("AdminTyping", function() {
-    document.getElementById('typingIndicator').style.display = 'block';
-    clearTimeout(window._typingTimer);
-    window._typingTimer = setTimeout(function() {
-        document.getElementById('typingIndicator').style.display = 'none';
-    }, 3000);
-});
+        // Admin typing indicator
+        connection.on("AdminTyping", function() {
+            document.getElementById('typingIndicator').style.display = 'block';
+            clearTimeout(window._typingTimer);
+            window._typingTimer = setTimeout(function() {
+                document.getElementById('typingIndicator').style.display = 'none';
+            }, 3000);
+        });
 
-// ── Connect ────────────────────────────────────────────────────────────────
-connection.start()
-    .then(function() {
-        console.log("Chat connected");
-        scrollToBottom();
-    })
-    .catch(function(err) {
-        console.error("Chat error:", err);
-    });
+        // ── Connect ────────────────────────────────────────────────────────────────
+        connection.start()
+            .then(function() {
+                console.log("Chat connected");
+                scrollToBottom();
+            })
+            .catch(function(err) {
+                console.error("Chat error:", err);
+            });
 
-// ── Send Message ───────────────────────────────────────────────────────────
-function sendMessage() {
-    var input = document.getElementById('messageInput');
-    var msg   = input.value.trim();
-    if (!msg) return;
+        // ── Send Message ───────────────────────────────────────────────────────────
+        function sendMessage() {
+            var input = document.getElementById('messageInput');
+            var msg = input.value.trim();
+            if (!msg) return;
 
-    // Optimistic UI — নিজের মেসেজ আগেই দেখাও
-    appendUserMessage(msg, new Date().toLocaleTimeString('bn-BD', {hour:'2-digit', minute:'2-digit', hour12:true}));
-    input.value = '';
+            // Optimistic UI — নিজের মেসেজ আগেই দেখাও
+            appendUserMessage(msg, new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', hour12: true }));
+            input.value = '';
 
-    // Empty chat hide
-    var emptyChat = document.getElementById('emptyChat');
-    if (emptyChat) emptyChat.style.display = 'none';
+            // Empty chat hide
+            var emptyChat = document.getElementById('emptyChat');
+            if (emptyChat) emptyChat.style.display = 'none';
 
-    connection.invoke("SendMessageToAdmin", msg).catch(function(err) {
-        console.error("Send error:", err);
-    });
-}
+            connection.invoke("SendMessageToAdmin", msg).catch(function(err) {
+                console.error("Send error:", err);
+            });
+        }
 
-// ── Append Messages ────────────────────────────────────────────────────────
-function appendUserMessage(text, time) {
-    var area = document.getElementById('messageArea');
-    var div  = document.createElement('div');
-    div.className = 'd-flex gap-2 mb-3 justify-content-end';
-    div.innerHTML = `
-        <div>
-            <div class="bg-dark text-white rounded-3 px-3 py-2"
-                 style="max-width:400px;border-radius:18px 4px 18px 18px !important">
-                <div class="small">${escapeHtml(text)}</div>
-            </div>
-            <div class="text-muted mt-1 text-end" style="font-size:.7rem">
-                ${time} <i class="bi bi-check2 text-secondary ms-1"></i>
-            </div>
-        </div>`;
-    area.appendChild(div);
-    scrollToBottom();
-}
+        // ── Append Messages ────────────────────────────────────────────────────────
+        function appendUserMessage(text, time) {
+            var area = document.getElementById('messageArea');
+            var avatarHtml = userPhoto
+                ? `<img src="${userPhoto}" class="rounded-circle flex-shrink-0" width="32" height="32" style="object-fit:cover" />`
+                : `<div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0 fw-bold"
+                        style="width:32px;height:32px;font-size:.75rem">${userInitial}</div>`;
+            var div = document.createElement('div');
+            div.className = 'd-flex gap-2 mb-3 justify-content-end';
+            div.innerHTML = `
+                <div>
+                    <div class="bg-dark text-white rounded-3 px-3 py-2"
+                         style="max-width:400px;border-radius:18px 4px 18px 18px !important">
+                        <div class="small">${escapeHtml(text)}</div>
+                    </div>
+                    <div class="text-muted mt-1 text-end" style="font-size:.7rem">
+                        ${time} <i class="bi bi-check2 text-secondary ms-1"></i>
+                    </div>
+                </div>
+                ${avatarHtml}`;
+            area.appendChild(div);
+            scrollToBottom();
+        }
 
-function appendAdminMessage(data) {
-    var area = document.getElementById('messageArea');
-    var div  = document.createElement('div');
-    div.className = 'd-flex gap-2 mb-3';
-    div.innerHTML = `
-        <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center flex-shrink-0"
-             style="width:32px;height:32px;font-size:.75rem">A</div>
-        <div>
-            <div class="bg-white rounded-3 px-3 py-2 shadow-sm"
-                 style="max-width:400px;border-radius:4px 18px 18px 18px !important">
-                <div class="small">${escapeHtml(data.message)}</div>
-            </div>
-            <div class="text-muted mt-1" style="font-size:.7rem">${data.sentAt}</div>
-        </div>`;
-    document.getElementById('typingIndicator').style.display = 'none';
-    area.appendChild(div);
-    scrollToBottom();
-}
+        function appendAdminMessage(data) {
+            var area = document.getElementById('messageArea');
+            var avatarHtml = adminPhoto
+                ? `<img src="${adminPhoto}" class="rounded-circle flex-shrink-0" width="32" height="32" style="object-fit:cover" />`
+                : `<div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                        style="width:32px;height:32px;font-size:.75rem">A</div>`;
+            var div = document.createElement('div');
+            div.className = 'd-flex gap-2 mb-3';
+            div.innerHTML = `
+                ${avatarHtml}
+                <div>
+                    <div class="bg-white rounded-3 px-3 py-2 shadow-sm"
+                         style="max-width:400px;border-radius:4px 18px 18px 18px !important">
+                        <div class="small">${escapeHtml(data.message)}</div>
+                    </div>
+                    <div class="text-muted mt-1" style="font-size:.7rem">${data.sentAt}</div>
+                </div>`;
+            document.getElementById('typingIndicator').style.display = 'none';
+            area.appendChild(div);
+            scrollToBottom();
+        }
 
-function scrollToBottom() {
-    var area = document.getElementById('messageArea');
-    area.scrollTop = area.scrollHeight;
-}
+        function scrollToBottom() {
+            var area = document.getElementById('messageArea');
+            area.scrollTop = area.scrollHeight;
+        }
 
-function escapeHtml(text) {
-    var div = document.createElement('div');
-    div.appendChild(document.createTextNode(text));
-    return div.innerHTML;
-}
+        function escapeHtml(text) {
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode(text));
+            return div.innerHTML;
+        }
 
-function playNotificationSound() {
-    try {
-        var ctx  = new (window.AudioContext || window.webkitAudioContext)();
-        var osc  = ctx.createOscillator();
-        var gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.frequency.value = 800;
-        gain.gain.setValueAtTime(0.1, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-        osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 0.3);
-    } catch(e) {}
-}
-</script>
+        function playNotificationSound() {
+            try {
+                var ctx = new (window.AudioContext || window.webkitAudioContext)();
+                var osc = ctx.createOscillator();
+                var gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = 800;
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.3);
+            } catch (e) { }
+        }
+    </script>
 }

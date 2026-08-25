@@ -8,7 +8,7 @@ using ShopManagementSystem.ViewModels;
 
 namespace ShopManagementSystem.Areas.Admin.Controllers
 {
-    [Area("Admin"), Authorize(Roles = "Admin")]
+    [Area("Admin"), Authorize]
     public class ProductController : Controller
     {
         private readonly IAdminProductRepository _productRepo;

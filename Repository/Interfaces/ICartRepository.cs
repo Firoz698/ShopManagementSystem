@@ -19,16 +19,19 @@ namespace ShopManagementSystem.Repository.Interfaces
         Task<Product?> GetActiveProductWithSizesAsync(int productId);
 
         // Order
-        Task<Order> CreateOrderAsync(string userId, CheckoutViewModel vm, decimal total);
+        Task<Order> CreateOrderAsync(string userId, CheckoutViewModel vm, decimal total, string status = "Pending");
         Task AddOrderDetailsAsync(int orderId, List<Cart> items);
         Task DeductStockAsync(List<Cart> items);
         Task<Order?> GetOrderConfirmationAsync(int orderId, string userId);
         Task<List<Order>> GetMyOrdersAsync(string userId);
+        Task UpdateOrderStatusAsync(Order? order, string status);
+
+        // ── নতুন: Online payment fulfillment এর জন্য ──
+        Task<Order?> GetOrderByIdAsync(int orderId);
 
         // Payment
         Task<PaymentTransaction> CreatePaymentTransactionAsync(int orderId, string tranId, decimal amount);
         Task<PaymentTransaction?> GetPaymentByTranIdAsync(string tranId);
         Task UpdatePaymentStatusAsync(PaymentTransaction payment, string status, string? valId = null, string? cardType = null);
-        Task UpdateOrderStatusAsync(Order? order, string status);
     }
 }

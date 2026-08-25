@@ -1,0 +1,53 @@
+﻿@model ShopManagementSystem.Models.Menu
+@{
+    ViewData["Title"] = "নতুন মেনু";
+}
+
+<h3 class="mb-4">নতুন মেনু তৈরি করুন</h3>
+
+<form asp-action="Create" method="post">
+    <div class="card">
+        <div class="card-body row g-3">
+            <div class="col-md-6">
+                <label class="form-label">টাইটেল</label>
+                <input asp-for="Title" class="form-control" placeholder="যেমন: প্রোডাক্ট" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Icon (Bootstrap Icons class)</label>
+                <input asp-for="Icon" class="form-control" placeholder="bi bi-box-seam" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Parent (গ্রুপ)</label>
+                <select asp-for="ParentId" class="form-select">
+                    <option value="">-- এটা নিজেই একটা গ্রুপ হেডার --</option>
+                    @foreach (var h in (List<ShopManagementSystem.Models.Menu>)ViewBag.Headers)
+                    {
+                        <option value="@h.Id">@h.Title</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Controller</label>
+                <input asp-for="Controller" class="form-control" placeholder="Product (খালি রাখলে গ্রুপ হেডার হবে)" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Action</label>
+                <input asp-for="Action" class="form-control" value="Index" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Sort Order</label>
+                <input asp-for="SortOrder" type="number" class="form-control" />
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" asp-for="IsActive" role="switch">
+                    <label class="form-check-label" asp-for="IsActive">Active</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary">সেভ করুন</button>
+        <a asp-action="Index" class="btn btn-light">বাতিল</a>
+    </div>
+</form>

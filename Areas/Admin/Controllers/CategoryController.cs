@@ -7,7 +7,7 @@ using ShopManagementSystem.Services;
 
 namespace ShopManagementSystem.Areas.Admin.Controllers
 {
-    [Area("Admin"), Authorize(Roles = "Admin")]
+    [Area("Admin"), Authorize]
     public class CategoryController : Controller
     {
         private readonly ICategoryRepository _categoryRepo;

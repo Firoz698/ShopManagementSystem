@@ -5,7 +5,7 @@ using ShopManagementSystem.Interfaces;
 
 namespace ShopManagementSystem.Areas.Admin.Controllers
 {
-    [Area("Admin"), Authorize(Roles = "Admin")]
+    [Area("Admin"), Authorize]
     public class ReturnController : Controller
     {
         private readonly IReturnRepository _returnRepo;

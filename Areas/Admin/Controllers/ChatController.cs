@@ -4,24 +4,34 @@ using Microsoft.AspNetCore.Mvc;
 using ShopManagementSystem.Areas.Admin.Repository.Interfaces;
 using ShopManagementSystem.Interfaces;
 using ShopManagementSystem.Models;
+using ShopManagementSystem.Services;
 
 namespace ShopManagementSystem.Areas.Admin.Controllers
 {
-    [Area("Admin"), Authorize(Roles = "Admin")]
+    [Area("Admin"), Authorize]
     public class ChatController : Controller
     {
         private readonly IAdminChatRepository _chatRepo;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IPermissionChecker _permissionChecker;
 
-        public ChatController(IAdminChatRepository chatRepo, UserManager<ApplicationUser> userManager)
+        public ChatController(
+            IAdminChatRepository chatRepo,
+            UserManager<ApplicationUser> userManager,
+            IPermissionChecker permissionChecker)
         {
             _chatRepo = chatRepo;
             _userManager = userManager;
+            _permissionChecker = permissionChecker;
         }
 
         // GET /Admin/Chat — সব sessions দেখাবে
         public async Task<IActionResult> Index()
         {
+            var perm = await _permissionChecker.GetPermissionsAsync(User, "Chat");
+            if (!perm.CanView)
+                return Forbid();
+
             var sessions = await _chatRepo.GetAllSessionsAsync();
             ViewBag.TotalUnread = sessions.Sum(s => s.UnreadCount);
             return View(sessions);
@@ -31,12 +41,19 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
         // (সরাসরি লিংক/ডিপ-লিংক এর জন্য রাখা হলো — full page)
         public async Task<IActionResult> Conversation(string userId)
         {
+            var perm = await _permissionChecker.GetPermissionsAsync(User, "Chat");
+            if (!perm.CanView)
+                return Forbid();
+
+            if (string.IsNullOrWhiteSpace(userId))
+                return NotFound();
+
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return NotFound();
 
             var messages = await _chatRepo.GetConversationMessagesAsync(userId);
 
-            // Mark as read
+            // Mark as read — শুধু CanView পাশ করলেই এখানে পৌঁছাবে
             var session = await _chatRepo.GetSessionByUserIdAsync(userId);
             if (session != null)
                 await _chatRepo.ResetSessionUnreadCountAsync(session);
@@ -53,12 +70,18 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> ConversationPartial(string userId)
         {
+            var perm = await _permissionChecker.GetPermissionsAsync(User, "Chat");
+            if (!perm.CanView)
+                return Forbid(); // fetch() রেসপন্সে res.ok === false পাবে, JS ইতিমধ্যে সেটা handle করে
+
+            if (string.IsNullOrWhiteSpace(userId))
+                return NotFound();
+
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return NotFound();
 
             var messages = await _chatRepo.GetConversationMessagesAsync(userId);
 
-            // Mark as read
             var session = await _chatRepo.GetSessionByUserIdAsync(userId);
             if (session != null)
                 await _chatRepo.ResetSessionUnreadCountAsync(session);
@@ -74,6 +97,10 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> UnreadTotal()
         {
+            var perm = await _permissionChecker.GetPermissionsAsync(User, "Chat");
+            if (!perm.CanView)
+                return Forbid();
+
             var count = await _chatRepo.GetTotalUnreadCountAsync();
             return Json(new { count });
         }

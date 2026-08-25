@@ -3,7 +3,7 @@
     ViewData["Title"] = "ইউজার এডিট";
 }
 
-<div class="row justify-content-center">
+<div class="row justify-content-center g-4">
     <div class="col-md-7">
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white py-3 d-flex align-items-center gap-2">
@@ -29,21 +29,38 @@
                 {
                     <div class="alert alert-danger small py-2">@TempData["Error"]</div>
                 }
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success small py-2">@TempData["Success"]</div>
+                }
 
-                <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+                <form asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
                     @Html.AntiForgeryToken()
                     <input type="hidden" asp-for="Id" />
-                    <input type="hidden" asp-for="Email" />
                     <input type="hidden" asp-for="CreatedAt" />
-                    <input type="hidden" asp-for="ProfilePhoto" />
 
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger small py-2"></div>
+
+                    @* Profile Photo *@
+                    <div class="mb-3 text-center">
+                        <img src="@(string.IsNullOrEmpty(Model.ProfilePhoto) ? "/images/default-avatar.png" : Model.ProfilePhoto)"
+                             onerror="this.src='https://ui-avatars.com/api/?name=@Model.FullName&background=6C3EE8&color=fff'"
+                             class="rounded-circle mb-2" width="90" height="90" style="object-fit:cover" />
+                        <input type="file" name="profilePhotoFile" class="form-control form-control-sm" accept="image/*" />
+                    </div>
 
                     @* Full Name *@
                     <div class="mb-3">
                         <label asp-for="FullName" class="form-label fw-medium small">পূর্ণ নাম</label>
                         <input asp-for="FullName" class="form-control form-control-sm" placeholder="পূর্ণ নাম লিখুন" />
                         <span asp-validation-for="FullName" class="text-danger small"></span>
+                    </div>
+
+                    @* Email *@
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label fw-medium small">ইমেইল</label>
+                        <input asp-for="Email" type="email" class="form-control form-control-sm" placeholder="email@example.com" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
                     </div>
 
                     @* Phone *@
@@ -87,6 +104,30 @@
                             <i class="bi bi-x-lg me-1"></i>বাতিল
                         </a>
                     </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @* ── Password Reset — আলাদা card ── *@
+    <div class="col-md-5">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h6 class="fw-bold mb-0"><i class="bi bi-shield-lock me-2 text-danger"></i>পাসওয়ার্ড পরিবর্তন</h6>
+            </div>
+            <div class="card-body p-4">
+                <p class="text-muted small">অ্যাডমিন হিসেবে সরাসরি এই ইউজারের পাসওয়ার্ড পরিবর্তন করতে পারবেন — পুরনো পাসওয়ার্ড লাগবে না।</p>
+                <form asp-action="ResetPassword" asp-route-id="@Model.Id" method="post"
+                      onsubmit="return confirm('নিশ্চিতভাবে এই ইউজারের পাসওয়ার্ড পরিবর্তন করবেন?')">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label fw-medium small">নতুন পাসওয়ার্ড</label>
+                        <input type="password" name="newPassword" class="form-control form-control-sm"
+                               placeholder="কমপক্ষে ৬ অক্ষর" minlength="6" required />
+                    </div>
+                    <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                        <i class="bi bi-key me-1"></i>পাসওয়ার্ড পরিবর্তন করুন
+                    </button>
                 </form>
             </div>
         </div>

@@ -12,6 +12,7 @@ using ShopManagementSystem.Models;
 using ShopManagementSystem.Repository.Implementations;
 using ShopManagementSystem.Repository.Interfaces;
 using ShopManagementSystem.Services;
+using ShopManagementSystem.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +32,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// ✅ Ekta-i ConfigureApplicationCookie — merge kora, 30 days rakhlam (RememberMe er jonno beshi valid)
+// ✅ Ekta-i ConfigureApplicationCookie
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
@@ -40,6 +41,19 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromDays(30);
     options.SlidingExpiration = true;
 });
+
+// ✅ Google + Facebook External Login — build() er AGE thakte hobe
+builder.Services.AddAuthentication()
+    .AddGoogle(options =>
+    {
+        options.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
+        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
+    })
+    .AddFacebook(options =>
+    {
+        options.AppId = builder.Configuration["Authentication:Facebook:AppId"]!;
+        options.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"]!;
+    });
 
 // ── Generic + Specific ───────────────────────────────────────────
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -71,9 +85,29 @@ builder.Services.AddScoped<IAdminNotificationSettingRepository, AdminNotificatio
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IAdminPaymentMethodRepository, AdminPaymentMethodRepository>();
 builder.Services.AddScoped<IPaymentMethodRepository, PaymentMethodRepository>();
+builder.Services.AddScoped<IPermissionChecker, PermissionChecker>();
+// Repositories
+builder.Services.AddScoped<IAdminMenuRepository, AdminMenuRepository>();
+builder.Services.AddScoped<IAdminEmployeeRepository, AdminEmployeeRepository>();
+
+// Repositories
+builder.Services.AddScoped<IAdminMenuRepository, AdminMenuRepository>();
+builder.Services.AddScoped<IAdminEmployeeRepository, AdminEmployeeRepository>();
+
+// Services
+builder.Services.AddScoped<ISidebarMenuService, SidebarMenuService>();
+
+// Global filter — Admin area এর সব controller এ চলবে
+builder.Services.AddScoped<MenuPermissionFilter>();
 
 builder.Services.AddSignalR();
-builder.Services.AddControllersWithViews();
+
+// ✅ এখানে filter যোগ করা হলো, duplicate call বাদ দেওয়া হলো
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.AddService<MenuPermissionFilter>();
+});
+
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);

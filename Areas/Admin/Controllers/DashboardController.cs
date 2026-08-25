@@ -6,7 +6,7 @@ using ShopManagementSystem.ViewModels;
 
 namespace ShopManagementSystem.Areas.Admin.Controllers
 {
-    [Area("Admin"), Authorize(Roles = "Admin")]
+    [Area("Admin"), Authorize] // ✅ "Roles = Admin" সরানো হলো — Employee ও অ্যাক্সেস করতে পারবে (MenuPermissionFilter permission চেক করবে)
     public class DashboardController : Controller
     {
         private readonly ApplicationDbContext _db;
@@ -80,6 +80,12 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             };
 
             return View(vm);
+        }
+
+        // ✅ নতুন — MenuPermissionFilter এখানে redirect করে যখন Employee-এর কোনো নির্দিষ্ট মেনুতে permission নেই
+        public IActionResult AccessDenied()
+        {
+            return View();
         }
     }
 }

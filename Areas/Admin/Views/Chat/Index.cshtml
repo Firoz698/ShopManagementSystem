@@ -1,6 +1,16 @@
 ﻿@model List<ShopManagementSystem.Models.ChatSession>
+@inject ShopManagementSystem.Services.IPermissionChecker PermissionChecker
 @{
     ViewData["Title"] = "চ্যাট সাপোর্ট";
+    var perm = await PermissionChecker.GetPermissionsAsync(User, "Chat");
+}
+
+@if (!perm.CanView)
+{
+    <div class="alert alert-danger">
+        <i class="bi bi-shield-lock me-2"></i>এই পেজ দেখার অনুমতি আপনার নেই।
+    </div>
+    return;
 }
 
 <div class="row g-4">
@@ -12,10 +22,8 @@
                 <h6 class="fw-bold mb-0">
                     <i class="bi bi-chat-dots me-2 text-primary"></i>কথোপকথন
                 </h6>
-                @if ((int)ViewBag.TotalUnread > 0)
-                {
-                    <span class="badge bg-danger rounded-pill" id="totalUnreadBadge">@ViewBag.TotalUnread</span>
-                }
+                <span class="badge bg-danger rounded-pill @((int)ViewBag.TotalUnread > 0 ? "" : "d-none")"
+                      id="totalUnreadBadge">@ViewBag.TotalUnread</span>
             </div>
             <div class="list-group list-group-flush overflow-auto" style="max-height:70vh"
                  id="sessionList">
@@ -28,18 +36,29 @@
                 }
                 @foreach (var session in Model)
                 {
+                    var initial = string.IsNullOrWhiteSpace(session.User?.FullName)
+                        ? "U" : session.User.FullName.Trim()[0].ToString().ToUpper();
                     <a href="javascript:void(0)"
                        onclick="loadConversation('@session.UserId', this)"
                        data-user="@session.UserId"
                        class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3 px-3 chat-session-item
-                                  @(session.UnreadCount > 0 ? "bg-light" : "")"
+                        @(session.UnreadCount > 0 ? "bg-light" : "")"
                        id="session-@session.UserId">
                         <!-- Avatar -->
-                        <div class="rounded-circle bg-dark text-white d-flex align-items-center
-                                        justify-content-center flex-shrink-0 fw-bold"
-                             style="width:42px;height:42px">
-                            @(session.User?.FullName?.FirstOrDefault().ToString().ToUpper() ?? "U")
-                        </div>
+                        @if (!string.IsNullOrEmpty(session.User?.ProfilePhoto))
+                        {
+                            <img src="@session.User.ProfilePhoto" class="rounded-circle flex-shrink-0"
+                                 width="42" height="42" style="object-fit:cover"
+                                 onerror="this.src='https://via.placeholder.com/42'" />
+                        }
+                        else
+                        {
+                            <div class="rounded-circle bg-dark text-white d-flex align-items-center
+                                justify-content-center flex-shrink-0 fw-bold"
+                                 style="width:42px;height:42px">
+                                @initial
+                            </div>
+                        }
                         <div class="flex-grow-1 overflow-hidden">
                             <div class="fw-semibold small">@session.User?.FullName</div>
                             <div class="text-muted" style="font-size:.75rem">@session.User?.Email</div>
@@ -61,7 +80,7 @@
 
     <!-- ── Right panel — AJAX দিয়ে conversation লোড হবে এখানে ──────────── -->
     <div class="col-lg-8">
-        <div id="chatPanel">
+        <div id="chatPanel" data-can-reply="@perm.CanCreate.ToString().ToLower()">
             <div class="card border-0 shadow-sm h-100 d-flex align-items-center justify-content-center"
                  style="min-height:400px" id="chatPlaceholder">
                 <div class="text-center text-muted">
@@ -85,6 +104,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script>
         let currentUserId = null;
+        let totalUnreadCount = @((int)ViewBag.TotalUnread);
 
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/chatHub")
@@ -93,7 +113,7 @@
 
         // ── বাম পাশে ইউজার সিলেক্ট করলে ডান পাশে conversation লোড হবে (page reload হয় না) ──
         function loadConversation(userId, linkEl) {
-            document.querySelectorAll('.chat-session-item').forEach(function (item) {
+            document.querySelectorAll('.chat-session-item').forEach(function(item) {
                 item.classList.remove('active-session');
             });
             if (linkEl) linkEl.classList.add('active-session');
@@ -101,40 +121,56 @@
             currentUserId = userId;
 
             fetch('/Admin/Chat/ConversationPartial?userId=' + encodeURIComponent(userId))
-                .then(function (res) { return res.text(); })
-                .then(function (html) {
+                .then(function(res) {
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    return res.text();
+                })
+                .then(function(html) {
                     document.getElementById('chatPanel').innerHTML = html;
                     scrollToBottom();
-                    connection.invoke("MarkAsRead", userId).catch(function () { });
+                    connection.invoke("MarkAsRead", userId).catch(function() { });
 
-                    // এই ইউজারের unread badge ক্লিয়ার করে দাও
+                    // এই ইউজারের unread badge ক্লিয়ার করে দাও, আর total থেকেও বিয়োগ করো
                     if (linkEl) {
                         var badge = linkEl.querySelector('.session-unread-badge');
-                        if (badge) badge.remove();
+                        if (badge) {
+                            var n = parseInt(badge.textContent || "0", 10) || 0;
+                            updateTotalUnread(-n);
+                            badge.remove();
+                        }
                         linkEl.classList.remove('bg-light');
                     }
                 })
-                .catch(function (err) {
+                .catch(function(err) {
                     console.error('Conversation load error:', err);
+                    document.getElementById('chatPanel').innerHTML =
+                        '<div class="alert alert-danger m-0">কথোপকথন লোড করা যায়নি। আবার চেষ্টা করুন।</div>';
                 });
         }
 
+        function updateTotalUnread(delta) {
+            totalUnreadCount = Math.max(0, totalUnreadCount + delta);
+            var totalBadge = document.getElementById('totalUnreadBadge');
+            if (!totalBadge) return;
+            totalBadge.textContent = totalUnreadCount;
+            totalBadge.classList.toggle('d-none', totalUnreadCount === 0);
+        }
+
         // নতুন user message এলে
-        connection.on("ReceiveMessage", function (data) {
+        connection.on("ReceiveMessage", function(data) {
             if (!data.isFromAdmin) {
                 if (data.senderId === currentUserId) {
-                    // এখন খোলা থাকা conversation-এই মেসেজ এলো
                     appendUserMessage(data);
-                    connection.invoke("MarkAsRead", currentUserId).catch(function () { });
+                    connection.invoke("MarkAsRead", currentUserId).catch(function() { });
                 } else {
-                    // অন্য ইউজারের মেসেজ — লিস্টে unread badge আপডেট করো
                     playNotificationSound();
+                    updateTotalUnread(1);
                     var item = document.getElementById('session-' + data.senderId);
                     if (item) {
                         item.classList.add('bg-light');
                         var badge = item.querySelector('.session-unread-badge');
                         if (badge) {
-                            badge.textContent = parseInt(badge.textContent || 0) + 1;
+                            badge.textContent = (parseInt(badge.textContent || "0", 10) || 0) + 1;
                         } else {
                             var span = document.createElement('span');
                             span.className = 'badge bg-danger rounded-pill flex-shrink-0 session-unread-badge';
@@ -146,15 +182,14 @@
             }
         });
 
-        // Admin নিজের মেসেজ পাঠানোর confirmation
-        connection.on("MessageSent", function (data) {
+        connection.on("MessageSent", function(data) {
             var targetId = data.targetUserId || (data.payload && data.payload.targetUserId);
             if (targetId === currentUserId) {
                 appendAdminMessage(data.payload || data);
             }
         });
 
-        connection.on("UserOnline", function (user) {
+        connection.on("UserOnline", function(user) {
             if (user.userId === currentUserId) {
                 var el = document.getElementById('onlineStatus');
                 if (el) {
@@ -164,12 +199,25 @@
             }
         });
 
-        connection.on("UserOffline", function (userId) {
+        connection.on("UserOffline", function(userId) {
             if (userId === currentUserId) {
                 var el = document.getElementById('onlineStatus');
                 if (el) {
                     el.textContent = '○ অফলাইন';
                     el.className = 'badge bg-secondary rounded-pill px-2';
+                }
+            }
+        });
+
+        connection.on("UserTyping", function(userId) {
+            if (userId === currentUserId) {
+                var ind = document.getElementById('typingIndicator');
+                if (ind) {
+                    ind.style.display = 'block';
+                    clearTimeout(window._typingTimeout);
+                    window._typingTimeout = setTimeout(function() {
+                        ind.style.display = 'none';
+                    }, 3000);
                 }
             }
         });
@@ -183,7 +231,7 @@
             if (!msg) return;
             input.value = '';
 
-            connection.invoke("SendMessageToUser", currentUserId, msg).catch(function (err) {
+            connection.invoke("SendMessageToUser", currentUserId, msg).catch(function(err) {
                 console.error("Send error:", err);
                 alert('মেসেজ পাঠানো যায়নি।');
             });
@@ -193,19 +241,20 @@
             var area = document.getElementById('messageArea');
             if (!area) return;
             var nameEl = document.querySelector('#chatPanel .card-header .fw-bold');
-            var initials = nameEl ? nameEl.textContent.trim().charAt(0).toUpperCase() : 'U';
+            var initials = nameEl && nameEl.textContent.trim()
+                ? nameEl.textContent.trim().charAt(0).toUpperCase() : 'U';
             var div = document.createElement('div');
             div.className = 'd-flex gap-2 mb-3';
             div.innerHTML = `
-                <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center flex-shrink-0 fw-bold"
-                     style="width:32px;height:32px;font-size:.75rem">${initials}</div>
-                <div>
-                    <div class="bg-white rounded-3 px-3 py-2 shadow-sm"
-                         style="max-width:500px;border-radius:4px 18px 18px 18px !important">
-                        <div class="small">${escapeHtml(data.message)}</div>
-                    </div>
-                    <div class="text-muted mt-1" style="font-size:.7rem">${data.sentAt}</div>
-                </div>`;
+                        <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center flex-shrink-0 fw-bold"
+                             style="width:32px;height:32px;font-size:.75rem">${initials}</div>
+                        <div>
+                            <div class="bg-white rounded-3 px-3 py-2 shadow-sm"
+                                 style="max-width:500px;border-radius:4px 18px 18px 18px !important">
+                                <div class="small">${escapeHtml(data.message)}</div>
+                            </div>
+                            <div class="text-muted mt-1" style="font-size:.7rem">${data.sentAt}</div>
+                        </div>`;
             area.appendChild(div);
             scrollToBottom();
         }
@@ -216,17 +265,17 @@
             var div = document.createElement('div');
             div.className = 'd-flex gap-2 mb-3 justify-content-end';
             div.innerHTML = `
-                <div>
-                    <div class="bg-dark text-white rounded-3 px-3 py-2"
-                         style="max-width:500px;border-radius:18px 4px 18px 18px !important">
-                        <div class="small">${escapeHtml(data.message)}</div>
-                    </div>
-                    <div class="text-muted mt-1 text-end" style="font-size:.7rem">
-                        ${data.sentAt} <i class="bi bi-check2 text-secondary ms-1"></i>
-                    </div>
-                </div>
-                <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center flex-shrink-0 fw-bold"
-                     style="width:32px;height:32px;font-size:.75rem">A</div>`;
+                        <div>
+                            <div class="bg-dark text-white rounded-3 px-3 py-2"
+                                 style="max-width:500px;border-radius:18px 4px 18px 18px !important">
+                                <div class="small">${escapeHtml(data.message)}</div>
+                            </div>
+                            <div class="text-muted mt-1 text-end" style="font-size:.7rem">
+                                ${data.sentAt} <i class="bi bi-check2 text-secondary ms-1"></i>
+                            </div>
+                        </div>
+                        <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center flex-shrink-0 fw-bold"
+                             style="width:32px;height:32px;font-size:.75rem">A</div>`;
             area.appendChild(div);
             scrollToBottom();
         }
@@ -238,7 +287,7 @@
 
         function escapeHtml(text) {
             var d = document.createElement('div');
-            d.appendChild(document.createTextNode(text));
+            d.appendChild(document.createTextNode(text || ''));
             return d.innerHTML;
         }
 

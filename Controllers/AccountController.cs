@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -222,6 +223,77 @@ namespace ShopManagementSystem.Controllers
 
             TempData["Success"] = message;
             return RedirectToAction("Profile");
+        }
+
+        // ✅ Google/Facebook button click korle eikhane redirect hoy
+        [HttpGet]
+        public IActionResult ExternalLogin(string provider, string? returnUrl = null)
+        {
+            var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { returnUrl });
+            var properties = new Microsoft.AspNetCore.Authentication.AuthenticationProperties
+            {
+                RedirectUri = redirectUrl
+            };
+            // provider = "Google" ba "Facebook"
+            return Challenge(properties, provider);
+        }
+
+        // ✅ Google/Facebook login shesh howar por eikhane phirbe
+        [HttpGet]
+        public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
+        {
+            if (remoteError != null)
+            {
+                TempData["Error"] = "External login ব্যর্থ হয়েছে।";
+                return RedirectToAction("Login");
+            }
+
+            var info = await HttpContext.AuthenticateAsync(Microsoft.AspNetCore.Identity.IdentityConstants.ExternalScheme);
+            if (info?.Principal == null)
+            {
+                TempData["Error"] = "External login তথ্য পাওয়া যায়নি।";
+                return RedirectToAction("Login");
+            }
+
+            var provider = info.Properties?.Items[".AuthScheme"] ?? "";
+            var providerKey = info.Principal.FindFirstValue(ClaimTypes.NameIdentifier) ?? "";
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email) ?? "";
+            var name = info.Principal.FindFirstValue(ClaimTypes.Name) ?? email;
+
+            // Age theke ei provider diye link kora user ache kina check
+            var existingUser = await _accountRepo.FindByLoginAsync(provider, providerKey);
+
+            if (existingUser != null)
+            {
+                var signInResult = await _accountRepo.ExternalLoginSignInAsync(provider, providerKey);
+                if (signInResult.Succeeded)
+                {
+                    if (await _accountRepo.IsUserAdminAsync(existingUser))
+                        return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
+
+                    return LocalRedirect(returnUrl ?? "/");
+                }
+            }
+
+            // Notun user — email diye create koro
+            var newUser = new ApplicationUser
+            {
+                FullName = name,
+                Email = email,
+                UserName = email,
+                EmailConfirmed = true
+            };
+
+            var createResult = await _accountRepo.CreateExternalUserAsync(newUser, provider, providerKey);
+            if (createResult.Succeeded)
+            {
+                await _accountRepo.ExternalLoginSignInAsync(provider, providerKey);
+                TempData["Success"] = "স্বাগতম! অ্যাকাউন্ট তৈরি হয়েছে।";
+                return LocalRedirect(returnUrl ?? "/");
+            }
+
+            TempData["Error"] = "অ্যাকাউন্ট তৈরি করা সম্ভব হয়নি।";
+            return RedirectToAction("Login");
         }
     }
 }

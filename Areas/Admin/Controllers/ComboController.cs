@@ -8,7 +8,7 @@ using ShopManagementSystem.ViewModels;
 
 namespace ShopManagementSystem.Areas.Admin.Controllers
 {
-    [Area("Admin"), Authorize(Roles = "Admin")]
+    [Area("Admin"), Authorize]
     public class ComboController : Controller
     {
         private readonly ApplicationDbContext _db;

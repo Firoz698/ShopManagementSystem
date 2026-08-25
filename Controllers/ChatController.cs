@@ -40,6 +40,11 @@ namespace ShopManagementSystem.Controllers
             await _chatRepo.MarkMessagesAsReadAsync(UserId);
 
             ViewBag.CurrentUser = await _userManager.GetUserAsync(User);
+
+            // ✅ Admin-er photo dekhanor jonno — প্রথম Admin role-er user খুঁজে বের করো
+            var adminUsers = await _userManager.GetUsersInRoleAsync("Admin");
+            ViewBag.AdminPhoto = adminUsers.FirstOrDefault()?.ProfilePhoto;
+
             return View(messages);
         }
 
@@ -60,7 +65,6 @@ namespace ShopManagementSystem.Controllers
 
             var message = await _chatRepo.AddUserMessageAsync(UserId, messageText);
 
-            // ── Admin কে email/SMS notification পাঠাও (new chat message) ──
             try
             {
                 var currentUser = await _userManager.GetUserAsync(User);

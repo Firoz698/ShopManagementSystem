@@ -22,11 +22,19 @@
 
             <!-- Header -->
             <div class="card-header bg-dark text-white d-flex align-items-center gap-3 py-3">
-                <div class="rounded-circle bg-warning text-dark d-flex align-items-center
-                            justify-content-center fw-bold flex-shrink-0"
-                     style="width:42px;height:42px">
-                    @(targetUser?.FullName?.FirstOrDefault().ToString().ToUpper() ?? "U")
-                </div>
+                @if (!string.IsNullOrEmpty(targetUser?.ProfilePhoto))
+                {
+                    <img src="@targetUser.ProfilePhoto" class="rounded-circle flex-shrink-0"
+                         width="42" height="42" style="object-fit:cover" />
+                }
+                else
+                {
+                    <div class="rounded-circle bg-warning text-dark d-flex align-items-center
+                        justify-content-center fw-bold flex-shrink-0"
+                         style="width:42px;height:42px">
+                        @(targetUser?.FullName?.FirstOrDefault().ToString().ToUpper() ?? "U")
+                    </div>
+                }
                 <div>
                     <div class="fw-bold">@targetUser?.FullName</div>
                     <div class="small opacity-75">
@@ -81,7 +89,7 @@
                                 </div>
                             </div>
                             <div class="rounded-circle bg-danger text-white d-flex align-items-center
-                                                justify-content-center flex-shrink-0 fw-bold"
+                                justify-content-center flex-shrink-0 fw-bold"
                                  style="width:32px;height:32px;font-size:.75rem">
                                 A
                             </div>
@@ -91,11 +99,19 @@
                     {
                         <!-- User message — left -->
                         <div class="d-flex gap-2 mb-3">
-                            <div class="rounded-circle bg-dark text-white d-flex align-items-center
-                                                justify-content-center flex-shrink-0 fw-bold"
-                                 style="width:32px;height:32px;font-size:.75rem">
-                                @(targetUser?.FullName?.FirstOrDefault().ToString().ToUpper() ?? "U")
-                            </div>
+                            @if (!string.IsNullOrEmpty(targetUser?.ProfilePhoto))
+                            {
+                                <img src="@targetUser.ProfilePhoto" class="rounded-circle flex-shrink-0"
+                                     width="32" height="32" style="object-fit:cover" />
+                            }
+                            else
+                            {
+                                <div class="rounded-circle bg-dark text-white d-flex align-items-center
+                                    justify-content-center flex-shrink-0 fw-bold"
+                                     style="width:32px;height:32px;font-size:.75rem">
+                                    @(targetUser?.FullName?.FirstOrDefault().ToString().ToUpper() ?? "U")
+                                </div>
+                            }
                             <div>
                                 <div class="bg-white rounded-3 px-3 py-2 shadow-sm"
                                      style="max-width:500px;border-radius:4px 18px 18px 18px !important">
@@ -146,7 +162,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script>
         const targetUserId = '@targetUserId';
-        const targetName   = '@targetUser?.FullName';
+        const targetName = '@targetUser?.FullName';
+        const targetPhoto = '@Html.Raw(targetUser?.ProfilePhoto ?? "")';
 
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/chatHub")
@@ -172,14 +189,14 @@
         connection.on("UserOnline", function(user) {
             if (user.userId === targetUserId) {
                 document.getElementById('onlineStatus').textContent = '● অনলাইন';
-                document.getElementById('onlineStatus').className  = 'badge bg-success rounded-pill px-2';
+                document.getElementById('onlineStatus').className = 'badge bg-success rounded-pill px-2';
             }
         });
 
         connection.on("UserOffline", function(userId) {
             if (userId === targetUserId) {
                 document.getElementById('onlineStatus').textContent = '○ অফলাইন';
-                document.getElementById('onlineStatus').className  = 'badge bg-secondary rounded-pill px-2';
+                document.getElementById('onlineStatus').className = 'badge bg-secondary rounded-pill px-2';
             }
         });
 
@@ -192,7 +209,7 @@
 
         function sendMessage() {
             var input = document.getElementById('messageInput');
-            var msg   = input.value.trim();
+            var msg = input.value.trim();
             if (!msg) return;
             input.value = '';
 
@@ -205,38 +222,41 @@
         function appendUserMessage(data) {
             var area = document.getElementById('messageArea');
             var initials = targetName ? targetName[0].toUpperCase() : 'U';
-            var div  = document.createElement('div');
+            var avatarHtml = targetPhoto
+                ? `<img src="${targetPhoto}" class="rounded-circle flex-shrink-0" width="32" height="32" style="object-fit:cover" />`
+                : `<div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center flex-shrink-0 fw-bold"
+                                style="width:32px;height:32px;font-size:.75rem">${initials}</div>`;
+            var div = document.createElement('div');
             div.className = 'd-flex gap-2 mb-3';
             div.innerHTML = `
-                <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center flex-shrink-0 fw-bold"
-                     style="width:32px;height:32px;font-size:.75rem">${initials}</div>
-                <div>
-                    <div class="bg-white rounded-3 px-3 py-2 shadow-sm"
-                         style="max-width:500px;border-radius:4px 18px 18px 18px !important">
-                        <div class="small">${escapeHtml(data.message)}</div>
-                    </div>
-                    <div class="text-muted mt-1" style="font-size:.7rem">${data.sentAt}</div>
-                </div>`;
+                        ${avatarHtml}
+                        <div>
+                            <div class="bg-white rounded-3 px-3 py-2 shadow-sm"
+                                 style="max-width:500px;border-radius:4px 18px 18px 18px !important">
+                                <div class="small">${escapeHtml(data.message)}</div>
+                            </div>
+                            <div class="text-muted mt-1" style="font-size:.7rem">${data.sentAt}</div>
+                        </div>`;
             area.appendChild(div);
             scrollToBottom();
         }
 
         function appendAdminMessage(data) {
             var area = document.getElementById('messageArea');
-            var div  = document.createElement('div');
+            var div = document.createElement('div');
             div.className = 'd-flex gap-2 mb-3 justify-content-end';
             div.innerHTML = `
-                <div>
-                    <div class="bg-dark text-white rounded-3 px-3 py-2"
-                         style="max-width:500px;border-radius:18px 4px 18px 18px !important">
-                        <div class="small">${escapeHtml(data.message)}</div>
-                    </div>
-                    <div class="text-muted mt-1 text-end" style="font-size:.7rem">
-                        ${data.sentAt} <i class="bi bi-check2 text-secondary ms-1"></i>
-                    </div>
-                </div>
-                <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center flex-shrink-0 fw-bold"
-                     style="width:32px;height:32px;font-size:.75rem">A</div>`;
+                        <div>
+                            <div class="bg-dark text-white rounded-3 px-3 py-2"
+                                 style="max-width:500px;border-radius:18px 4px 18px 18px !important">
+                                <div class="small">${escapeHtml(data.message)}</div>
+                            </div>
+                            <div class="text-muted mt-1 text-end" style="font-size:.7rem">
+                                ${data.sentAt} <i class="bi bi-check2 text-secondary ms-1"></i>
+                            </div>
+                        </div>
+                        <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center flex-shrink-0 fw-bold"
+                             style="width:32px;height:32px;font-size:.75rem">A</div>`;
             area.appendChild(div);
             scrollToBottom();
         }

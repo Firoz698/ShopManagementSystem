@@ -17,7 +17,6 @@ namespace ShopManagementSystem.Implementations
 
         // ── Cart ─────────────────────────────────────────────────────────────────
 
-        // User এর সব cart item — product ও image সহ
         public async Task<List<Cart>> GetCartItemsAsync(string userId)
         {
             return await _db.Carts
@@ -27,7 +26,6 @@ namespace ShopManagementSystem.Implementations
                 .ToListAsync();
         }
 
-        // নির্দিষ্ট product+size এর cart item খোঁজে
         public async Task<Cart?> GetCartItemAsync(string userId, int productId, int? productSizeId)
         {
             return await _db.Carts.FirstOrDefaultAsync(c =>
@@ -36,7 +34,6 @@ namespace ShopManagementSystem.Implementations
                 c.ProductSizeId == productSizeId);
         }
 
-        // Cart Id দিয়ে cart item খোঁজে
         public async Task<Cart?> GetCartByIdAsync(int cartId, string userId)
         {
             return await _db.Carts
@@ -45,7 +42,6 @@ namespace ShopManagementSystem.Implementations
                 .FirstOrDefaultAsync(c => c.Id == cartId && c.UserId == userId);
         }
 
-        // Cart এ নতুন item যোগ বা quantity বাড়ায়
         public async Task AddToCartAsync(string userId, int productId, int? productSizeId, int quantity)
         {
             var cart = await GetCartItemAsync(userId, productId, productSizeId);
@@ -73,7 +69,6 @@ namespace ShopManagementSystem.Implementations
             await _db.SaveChangesAsync();
         }
 
-        // Cart item এর quantity update করে (1 থেকে max stock এর মধ্যে)
         public async Task UpdateCartQuantityAsync(Cart cart, int quantity)
         {
             int maxStock = cart.ProductSize?.Stock ?? cart.Product!.Stock;
@@ -81,21 +76,18 @@ namespace ShopManagementSystem.Implementations
             await _db.SaveChangesAsync();
         }
 
-        // একটি cart item remove করে
         public async Task RemoveFromCartAsync(Cart cart)
         {
             _db.Carts.Remove(cart);
             await _db.SaveChangesAsync();
         }
 
-        // Order complete হলে সব cart item মুছে ফেলে
         public async Task ClearCartAsync(List<Cart> items)
         {
             _db.Carts.RemoveRange(items);
             await _db.SaveChangesAsync();
         }
 
-        // Navbar badge এর জন্য cart item count
         public async Task<int> GetCartCountAsync(string userId)
         {
             return await _db.Carts.CountAsync(c => c.UserId == userId);
@@ -103,7 +95,6 @@ namespace ShopManagementSystem.Implementations
 
         // ── Product ──────────────────────────────────────────────────────────────
 
-        // Active product + sizes (cart add validate এর জন্য)
         public async Task<Product?> GetActiveProductWithSizesAsync(int productId)
         {
             return await _db.Products
@@ -113,8 +104,8 @@ namespace ShopManagementSystem.Implementations
 
         // ── Order ────────────────────────────────────────────────────────────────
 
-        // নতুন order তৈরি করে save করে
-        public async Task<Order> CreateOrderAsync(string userId, CheckoutViewModel vm, decimal total)
+        // status প্যারামিটার যোগ হয়েছে — Online payment এর জন্য "Pending Payment" দিয়ে শুরু হবে
+        public async Task<Order> CreateOrderAsync(string userId, CheckoutViewModel vm, decimal total, string status = "Pending")
         {
             var order = new Order
             {
@@ -125,9 +116,8 @@ namespace ShopManagementSystem.Implementations
                 DeliveryZone = vm.DeliveryZone,
                 Notes = vm.Notes,
                 TotalAmount = total,
-                Status = "Pending",
+                Status = status,
 
-                // ── নতুন: manual payment details ──
                 PaymentMethodSettingId = vm.PaymentMethodSettingId,
                 SenderNumber = vm.SenderNumber,
                 PaymentTransactionId = vm.TransactionId
@@ -136,7 +126,7 @@ namespace ShopManagementSystem.Implementations
             await _db.SaveChangesAsync();
             return order;
         }
-        // Cart item গুলো থেকে OrderDetails তৈরি করে
+
         public async Task AddOrderDetailsAsync(int orderId, List<Cart> items)
         {
             foreach (var item in items)
@@ -153,7 +143,6 @@ namespace ShopManagementSystem.Implementations
             await _db.SaveChangesAsync();
         }
 
-        // Order দেওয়ার পর product/size stock কমায়
         public async Task DeductStockAsync(List<Cart> items)
         {
             foreach (var item in items)
@@ -166,7 +155,6 @@ namespace ShopManagementSystem.Implementations
             await _db.SaveChangesAsync();
         }
 
-        // Order confirmation page এর জন্য order + details
         public async Task<Order?> GetOrderConfirmationAsync(int orderId, string userId)
         {
             return await _db.Orders
@@ -174,7 +162,14 @@ namespace ShopManagementSystem.Implementations
                 .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
         }
 
-        // User এর সব order — নতুন থেকে পুরনো
+        // ── নতুন: PaymentSuccess/IPN এ order lookup করার জন্য (UserId ভ্যালিডেশন ছাড়াই, কারণ gateway callback এ User লগইন নাও থাকতে পারে) ──
+        public async Task<Order?> GetOrderByIdAsync(int orderId)
+        {
+            return await _db.Orders
+                .Include(o => o.OrderDetails).ThenInclude(od => od.Product)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+        }
+
         public async Task<List<Order>> GetMyOrdersAsync(string userId)
         {
             return await _db.Orders
@@ -184,9 +179,15 @@ namespace ShopManagementSystem.Implementations
                 .ToListAsync();
         }
 
+        public async Task UpdateOrderStatusAsync(Order? order, string status)
+        {
+            if (order == null) return;
+            order.Status = status;
+            await _db.SaveChangesAsync();
+        }
+
         // ── Payment ──────────────────────────────────────────────────────────────
 
-        // নতুন payment transaction তৈরি করে
         public async Task<PaymentTransaction> CreatePaymentTransactionAsync(int orderId, string tranId, decimal amount)
         {
             var txn = new PaymentTransaction
@@ -201,7 +202,6 @@ namespace ShopManagementSystem.Implementations
             return txn;
         }
 
-        // TransactionId দিয়ে payment খোঁজে (order সহ)
         public async Task<PaymentTransaction?> GetPaymentByTranIdAsync(string tranId)
         {
             return await _db.PaymentTransactions
@@ -209,21 +209,12 @@ namespace ShopManagementSystem.Implementations
                 .FirstOrDefaultAsync(p => p.TransactionId == tranId);
         }
 
-        // Payment status, validation id ও card type update করে
         public async Task UpdatePaymentStatusAsync(PaymentTransaction payment, string status, string? valId = null, string? cardType = null)
         {
             payment.Status = status;
             payment.UpdatedAt = DateTime.Now;
             if (valId != null) payment.ValidationId = valId;
             if (cardType != null) payment.PaymentMethod = cardType;
-            await _db.SaveChangesAsync();
-        }
-
-        // Order এর status update করে
-        public async Task UpdateOrderStatusAsync(Order? order, string status)
-        {
-            if (order == null) return;
-            order.Status = status;
             await _db.SaveChangesAsync();
         }
     }

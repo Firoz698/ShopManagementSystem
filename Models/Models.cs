@@ -15,19 +15,27 @@ namespace ShopManagementSystem.Models
         [MaxLength(300)]
         public string? Address { get; set; }
 
-        // ✅ notun fields
-        public string? ProfilePhoto { get; set; }   // wwwroot/uploads/profile/xxx.jpg
-        public string? Gender { get; set; }         // Male / Female / Other
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        // ✅ নতুন যোগ করুন — এই দুইটা আগে ছিল না
+        [MaxLength(300)]
+        public string? ProfilePhoto { get; set; }
+
+        [MaxLength(20)]
+        public string? Gender { get; set; }
+
         public DateTime? DateOfBirth { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        // ✅ আগের মেসেজে যোগ করা UserType (থাকলে বাদ দিন, না থাকলে রাখুন)
+        [MaxLength(20)]
+        public string UserType { get; set; } = "Customer";
 
         public ICollection<Order> Orders { get; set; } = new List<Order>();
         public ICollection<Cart> CartItems { get; set; } = new List<Cart>();
         public ICollection<Wishlist> Wishlist { get; set; } = new List<Wishlist>();
         public ICollection<Review> Reviews { get; set; } = new List<Review>();
+        public ICollection<UserMenuPermission> MenuPermissions { get; set; } = new List<UserMenuPermission>();
     }
-
     // ── Category ────────────────────────────────────────────────────────────────
     public class Category
     {

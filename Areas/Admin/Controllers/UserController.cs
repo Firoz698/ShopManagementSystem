@@ -1,19 +1,20 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShopManagementSystem.Areas.Admin.Repository.Interfaces;
-using ShopManagementSystem.Interfaces;
 using ShopManagementSystem.Models;
 
 namespace ShopManagementSystem.Areas.Admin.Controllers
 {
-    [Area("Admin"), Authorize(Roles = "Admin")]
+    [Area("Admin"), Authorize]
     public class UserController : Controller
     {
         private readonly IAdminUserRepository _userRepo;
+        private readonly IWebHostEnvironment _env;
 
-        public UserController(IAdminUserRepository userRepo)
+        public UserController(IAdminUserRepository userRepo, IWebHostEnvironment env)
         {
             _userRepo = userRepo;
+            _env = env;
         }
 
         // GET /Admin/User
@@ -76,17 +77,42 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
 
         // POST /Admin/User/Edit/id
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, ApplicationUser model)
+        public async Task<IActionResult> Edit(string id, ApplicationUser model, IFormFile? profilePhotoFile)
         {
             var user = await _userRepo.GetByIdAsync(id);
             if (user == null) return NotFound();
 
-            var success = await _userRepo.UpdateUserAsync(user, model);
+            var (success, message) = await _userRepo.UpdateUserAsync(user, model, profilePhotoFile, _env.WebRootPath);
             if (success)
+            {
+                TempData["Success"] = message;
                 return RedirectToAction("Detail", new { id });
+            }
 
-            ModelState.AddModelError("", "আপডেট করা সম্ভব হয়নি।");
+            ModelState.AddModelError("", message);
             return View(model);
+        }
+
+        // ✅ POST /Admin/User/ResetPassword/id — admin diye password change
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(string id, string newPassword)
+        {
+            var user = await _userRepo.GetByIdAsync(id);
+            if (user == null) return NotFound();
+
+            if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
+            {
+                TempData["Error"] = "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।";
+                return RedirectToAction("Edit", new { id });
+            }
+
+            var result = await _userRepo.AdminResetPasswordAsync(user, newPassword);
+
+            TempData[result.Succeeded ? "Success" : "Error"] = result.Succeeded
+                ? "পাসওয়ার্ড পরিবর্তন হয়েছে।"
+                : string.Join(", ", result.Errors.Select(e => e.Description));
+
+            return RedirectToAction("Edit", new { id });
         }
     }
 }

@@ -5,7 +5,7 @@ using ShopManagementSystem.Models;
 
 namespace ShopManagementSystem.Areas.Admin.Controllers
 {
-    [Area("Admin"), Authorize(Roles = "Admin")]
+    [Area("Admin"), Authorize]
     public class PaymentMethodController : Controller
     {
         private readonly IAdminPaymentMethodRepository _repo;

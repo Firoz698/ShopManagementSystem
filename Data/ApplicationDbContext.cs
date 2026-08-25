@@ -34,9 +34,38 @@ namespace ShopManagementSystem.Data
         public DbSet<PaymentMethodSetting> PaymentMethodSettings { get; set; }
         public DbSet<OtpVerification> OtpVerifications { get; set; }
 
+        public DbSet<Menu> Menus { get; set; }
+        public DbSet<UserMenuPermission> UserMenuPermissions { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            // এক user + এক menu = একটাই permission row
+            builder.Entity<UserMenuPermission>()
+                .HasIndex(p => new { p.UserId, p.MenuId })
+                .IsUnique();
+
+            // Menu → Parent (self-reference) cascade delete বন্ধ, নাহলে SQL Server error দিবে
+            builder.Entity<Menu>()
+                .HasOne(m => m.Parent)
+                .WithMany(m => m.Children)
+                .HasForeignKey(m => m.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Employee ডিলিট হলে তার permission গুলোও ডিলিট হয়ে যাক
+            builder.Entity<UserMenuPermission>()
+                .HasOne(p => p.User)
+                .WithMany(u => u.MenuPermissions)
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Menu ডিলিট হলে তার permission গুলোও ডিলিট হয়ে যাক
+            builder.Entity<UserMenuPermission>()
+                .HasOne(p => p.Menu)
+                .WithMany(m => m.UserPermissions)
+                .HasForeignKey(p => p.MenuId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<ReturnRequest>()
                 .HasIndex(r => new { r.OrderId, r.ProductId, r.UserId });

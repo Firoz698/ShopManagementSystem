@@ -1,0 +1,586 @@
+﻿@model List<ShopManagementSystem.Models.Menu>
+@{
+    ViewData["Title"] = "মেনু পারমিশন";
+    var employee = (ShopManagementSystem.Models.ApplicationUser)ViewBag.Employee;
+    var permMap = (Dictionary<int, ShopManagementSystem.Models.UserMenuPermission>)ViewBag.PermissionMap;
+}
+
+<style>
+    .perm-header {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        border-radius: 16px;
+        padding: 28px 32px;
+        color: #fff;
+        margin-bottom: 24px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .perm-header::before {
+            content: "";
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 180px;
+            height: 180px;
+            background: rgba(255,255,255,.08);
+            border-radius: 50%;
+        }
+
+        .perm-header::after {
+            content: "";
+            position: absolute;
+            bottom: -60px;
+            right: 60px;
+            width: 120px;
+            height: 120px;
+            background: rgba(255,255,255,.06);
+            border-radius: 50%;
+        }
+
+    .perm-employee-avatar {
+        width: 54px;
+        height: 54px;
+        border-radius: 14px;
+        background: rgba(255,255,255,.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        font-weight: 700;
+        flex-shrink: 0;
+        backdrop-filter: blur(4px);
+    }
+
+    .perm-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+
+    .perm-subtitle {
+        font-size: 13.5px;
+        opacity: .85;
+        max-width: 640px;
+        line-height: 1.5;
+    }
+
+    .perm-legend {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255,255,255,.15);
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 10px;
+    }
+
+    /* Bulk action bar */
+    .bulk-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 14px 20px;
+        margin-bottom: 18px;
+    }
+
+    .bulk-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn-bulk {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform .1s, box-shadow .15s;
+    }
+
+        .btn-bulk:active {
+            transform: scale(.97);
+        }
+
+    .btn-bulk-all {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+        .btn-bulk-all:hover {
+            background: #bbf7d0;
+        }
+
+    .btn-bulk-none {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+        .btn-bulk-none:hover {
+            background: #fecaca;
+        }
+
+    .bulk-count {
+        font-size: 13px;
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+        .bulk-count strong {
+            color: #4f46e5;
+        }
+
+    /* Table card */
+    .perm-card {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+
+    .perm-tbl-wrap {
+        overflow-x: auto;
+    }
+
+    .perm-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 680px;
+    }
+
+        .perm-table thead th {
+            background: #f8f7ff;
+            color: #4f46e5;
+            font-size: 11.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            padding: 14px 16px;
+            border-bottom: 2px solid #ede9fe;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+            .perm-table thead th.col-menu {
+                text-align: left;
+            }
+
+            .perm-table thead th.col-perm {
+                text-align: center;
+                width: 110px;
+            }
+
+    .col-head-check {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+
+        .col-head-check span {
+            font-size: 11px;
+        }
+
+        .col-head-check input {
+            cursor: pointer;
+        }
+
+    .perm-group-row td {
+        background: linear-gradient(90deg, #ede9fe 0%, #f5f3ff 100%);
+        color: #5b21b6;
+        font-weight: 700;
+        font-size: 12.5px;
+        padding: 9px 16px;
+        letter-spacing: .3px;
+        border-top: 1px solid #ddd6fe;
+        border-bottom: 1px solid #ddd6fe;
+    }
+
+    .perm-table tbody tr.perm-row {
+        border-bottom: 1px solid #f1f1f4;
+        transition: background .12s;
+    }
+
+        .perm-table tbody tr.perm-row:hover {
+            background: #faf9ff;
+        }
+
+        .perm-table tbody tr.perm-row.row-active {
+            background: #f7fdf9;
+        }
+
+    .perm-table td {
+        padding: 13px 16px;
+        font-size: 14px;
+        vertical-align: middle;
+    }
+
+    .menu-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .menu-icon-box {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: #eef2ff;
+        color: #4f46e5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        flex-shrink: 0;
+    }
+
+    .menu-name {
+        font-weight: 600;
+        color: #1f2937;
+        font-size: 13.5px;
+    }
+
+    .perm-check-cell {
+        text-align: center;
+    }
+
+    /* Custom checkbox styling */
+    .perm-check {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: #7c3aed;
+        border-radius: 6px;
+    }
+
+        .perm-check.chk-view {
+            accent-color: #2563eb;
+        }
+
+        .perm-check.chk-create {
+            accent-color: #16a34a;
+        }
+
+        .perm-check.chk-edit {
+            accent-color: #d97706;
+        }
+
+        .perm-check.chk-delete {
+            accent-color: #dc2626;
+        }
+
+    .row-status-dot {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        margin-right: 6px;
+        background: #d1d5db;
+        flex-shrink: 0;
+    }
+
+        .row-status-dot.on {
+            background: #22c55e;
+            box-shadow: 0 0 0 3px #dcfce7;
+        }
+
+    .perm-footer-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .btn-save-perm {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        border: none;
+        color: #fff;
+        font-weight: 600;
+        padding: 11px 28px;
+        border-radius: 10px;
+        font-size: 14.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: opacity .15s, transform .1s;
+    }
+
+        .btn-save-perm:hover {
+            opacity: .9;
+            color: #fff;
+        }
+
+        .btn-save-perm:active {
+            transform: scale(.98);
+        }
+
+    .btn-cancel-perm {
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        color: #4b5563;
+        font-weight: 500;
+        padding: 11px 22px;
+        border-radius: 10px;
+        font-size: 14.5px;
+        text-decoration: none;
+        transition: background .12s;
+    }
+
+        .btn-cancel-perm:hover {
+            background: #f9fafb;
+            color: #4b5563;
+        }
+</style>
+
+<!-- Header -->
+<div class="perm-header d-flex align-items-center gap-3">
+    <div class="perm-employee-avatar">
+        @(employee.FullName?.FirstOrDefault().ToString().ToUpper() ?? "?")
+    </div>
+    <div style="position:relative;z-index:1">
+        <div class="perm-title">@employee.FullName — মেনু পারমিশন</div>
+        <div class="perm-legend">
+            <i class="bi bi-envelope"></i>@employee.Email
+        </div>
+    </div>
+</div>
+
+<form asp-action="Permissions" method="post" id="permForm">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="userId" value="@employee.Id" />
+
+    <!-- Bulk action bar -->
+    <div class="bulk-bar">
+        <div class="bulk-actions">
+            <button type="button" class="btn-bulk btn-bulk-all" id="btnCheckAll">
+                <i class="bi bi-check2-square"></i> সব পারমিশন দিন
+            </button>
+            <button type="button" class="btn-bulk btn-bulk-none" id="btnUncheckAll">
+                <i class="bi bi-x-square"></i> সব বাতিল করুন
+            </button>
+        </div>
+        <div class="bulk-count">
+            <strong id="activeMenuCount">0</strong> / @Model.Count টি মেনুতে অ্যাক্সেস দেওয়া আছে
+        </div>
+    </div>
+
+    <div class="perm-card">
+        <div class="perm-tbl-wrap">
+            <table class="perm-table">
+                <thead>
+                    <tr>
+                        <th class="col-menu">মেনু</th>
+                        <th class="col-perm">
+                            <div class="col-head-check">
+                                <input type="checkbox" class="perm-check chk-view col-toggle" data-col="view" title="সব দেখা টগল করুন" />
+                                <span>দেখা</span>
+                            </div>
+                        </th>
+                        <th class="col-perm">
+                            <div class="col-head-check">
+                                <input type="checkbox" class="perm-check chk-create col-toggle" data-col="create" title="সব তৈরি টগল করুন" />
+                                <span>তৈরি</span>
+                            </div>
+                        </th>
+                        <th class="col-perm">
+                            <div class="col-head-check">
+                                <input type="checkbox" class="perm-check chk-edit col-toggle" data-col="edit" title="সব এডিট টগল করুন" />
+                                <span>এডিট</span>
+                            </div>
+                        </th>
+                        <th class="col-perm">
+                            <div class="col-head-check">
+                                <input type="checkbox" class="perm-check chk-delete col-toggle" data-col="delete" title="সব ডিলিট টগল করুন" />
+                                <span>ডিলিট</span>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int i = 0;
+                    }
+                    @foreach (var group in Model.GroupBy(m => m.Parent?.Title ?? "অন্যান্য"))
+                    {
+                        <tr class="perm-group-row">
+                            <td colspan="5"><i class="bi bi-folder2 me-1"></i>@group.Key</td>
+                        </tr>
+                        @foreach (var m in group)
+                        {
+                            permMap.TryGetValue(m.Id, out var p);
+                            bool isActive = p != null && p.CanAccess;
+                            <tr class="perm-row @(isActive ? "row-active" : "")" data-row="@i">
+                                <td>
+                                    <div class="menu-cell">
+                                        <span class="row-status-dot @(isActive ? "on" : "")"></span>
+                                        <div class="menu-icon-box"><i class="@m.Icon"></i></div>
+                                        <span class="menu-name">@m.Title</span>
+                                        <input type="hidden" name="permissions[@i].MenuId" value="@m.Id" />
+                                    </div>
+                                </td>
+                                <td class="perm-check-cell">
+                                    <input type="checkbox" class="perm-check chk-view can-view" name="permissions[@i].CanView"
+                                           value="true" data-row="@i" data-col="view" @(isActive ? "checked" : "") />
+                                    <input type="hidden" name="permissions[@i].CanView" value="false" />
+                                </td>
+                                <td class="perm-check-cell">
+                                    <input type="checkbox" class="perm-check chk-create" name="permissions[@i].CanCreate"
+                                           value="true" data-row="@i" data-col="create" @(p != null && p.CanCreate ? "checked" : "") />
+                                    <input type="hidden" name="permissions[@i].CanCreate" value="false" />
+                                </td>
+                                <td class="perm-check-cell">
+                                    <input type="checkbox" class="perm-check chk-edit" name="permissions[@i].CanEdit"
+                                           value="true" data-row="@i" data-col="edit" @(p != null && p.CanEdit ? "checked" : "") />
+                                    <input type="hidden" name="permissions[@i].CanEdit" value="false" />
+                                </td>
+                                <td class="perm-check-cell">
+                                    <input type="checkbox" class="perm-check chk-delete" name="permissions[@i].CanDelete"
+                                           value="true" data-row="@i" data-col="delete" @(p != null && p.CanDelete ? "checked" : "") />
+                                    <input type="hidden" name="permissions[@i].CanDelete" value="false" />
+                                </td>
+                            </tr>
+                            i++;
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="perm-footer-actions">
+        <a asp-action="Index" class="btn-cancel-perm">
+            <i class="bi bi-arrow-left me-1"></i>ফিরে যান
+        </a>
+        <button type="submit" class="btn-save-perm">
+            <i class="bi bi-check-circle"></i>পারমিশন সেভ করুন
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        const allViewChecks = document.querySelectorAll('.can-view');
+        const allRows = document.querySelectorAll('.perm-row');
+
+        function updateRowVisual(row) {
+            var viewChecked = row.querySelector('.can-view').checked;
+            row.classList.toggle('row-active', viewChecked);
+            var dot = row.querySelector('.row-status-dot');
+            if (dot) dot.classList.toggle('on', viewChecked);
+        }
+
+        function updateActiveCount() {
+            var count = 0;
+            allViewChecks.forEach(function(cb) { if (cb.checked) count++; });
+            document.getElementById('activeMenuCount').textContent = count;
+        }
+
+        function syncColumnHeaderState(col) {
+            var boxes = document.querySelectorAll('.perm-table tbody input[data-col="' + col + '"]');
+            var header = document.querySelector('.col-toggle[data-col="' + col + '"]');
+            if (!header || boxes.length === 0) return;
+            var checkedCount = 0;
+            boxes.forEach(function(b) { if (b.checked) checkedCount++; });
+            header.checked = checkedCount === boxes.length;
+            header.indeterminate = checkedCount > 0 && checkedCount < boxes.length;
+        }
+
+        function syncAllColumnHeaders() {
+            ['view', 'create', 'edit', 'delete'].forEach(syncColumnHeaderState);
+        }
+
+        // "দেখা" আনচেক করলে বাকি তিনটাও অটো আনচেক হবে
+        allViewChecks.forEach(function(cb) {
+            cb.addEventListener('change', function() {
+                var row = this.closest('tr');
+                if (!this.checked) {
+                    row.querySelectorAll('input[type=checkbox]').forEach(function(other) {
+                        other.checked = false;
+                    });
+                }
+                updateRowVisual(row);
+                updateActiveCount();
+                syncAllColumnHeaders();
+            });
+        });
+
+        // বাকি (create/edit/delete) checkbox — টিক দিলে "দেখা" অটো টিক হয়ে যাবে (dependency নিশ্চিত করতে)
+        document.querySelectorAll('.perm-table tbody input[type=checkbox]:not(.can-view)').forEach(function(cb) {
+            cb.addEventListener('change', function() {
+                var row = this.closest('tr');
+                if (this.checked) {
+                    row.querySelector('.can-view').checked = true;
+                    updateRowVisual(row);
+                    updateActiveCount();
+                }
+                syncAllColumnHeaders();
+            });
+        });
+
+        // কলাম হেডারের mini checkbox — পুরো কলাম টগল
+        document.querySelectorAll('.col-toggle').forEach(function(headerCb) {
+            headerCb.addEventListener('change', function() {
+                var col = this.dataset.col;
+                var checked = this.checked;
+                document.querySelectorAll('.perm-table tbody input[data-col="' + col + '"]').forEach(function(cb) {
+                    cb.checked = checked;
+                });
+
+                if (col === 'view' && !checked) {
+                    // দেখা বন্ধ করলে সব কলাম বন্ধ হয়ে যাবে
+                    document.querySelectorAll('.perm-table tbody input[type=checkbox]').forEach(function(cb) {
+                        cb.checked = false;
+                    });
+                } else if (col !== 'view' && checked) {
+                    // create/edit/delete চালু করলে view ও চালু হবে
+                    document.querySelectorAll('.can-view').forEach(function(cb) { cb.checked = true; });
+                }
+
+                allRows.forEach(updateRowVisual);
+                updateActiveCount();
+                syncAllColumnHeaders();
+            });
+        });
+
+        // গ্লোবাল "সব পারমিশন দিন"
+        document.getElementById('btnCheckAll').addEventListener('click', function() {
+            document.querySelectorAll('.perm-table tbody input[type=checkbox]').forEach(function(cb) {
+                cb.checked = true;
+            });
+            allRows.forEach(updateRowVisual);
+            updateActiveCount();
+            syncAllColumnHeaders();
+        });
+
+        // গ্লোবাল "সব বাতিল করুন"
+        document.getElementById('btnUncheckAll').addEventListener('click', function() {
+            document.querySelectorAll('.perm-table tbody input[type=checkbox]').forEach(function(cb) {
+                cb.checked = false;
+            });
+            allRows.forEach(updateRowVisual);
+            updateActiveCount();
+            syncAllColumnHeaders();
+        });
+
+        // প্রাথমিক state সেট করো (page load এ)
+        updateActiveCount();
+        syncAllColumnHeaders();
+    </script>
+}
