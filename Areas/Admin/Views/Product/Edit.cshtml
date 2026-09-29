@@ -1,6 +1,6 @@
 @model ProductCreateViewModel
 @{
-    ViewData["Title"] = "প্রোডাক্ট সম্পাদনা";
+    ViewData["Title"] = "Edit Product";
 }
 
 <div class="card border-0 shadow-sm">
@@ -16,21 +16,21 @@
                 <div class="col-lg-8">
 
                     <div class="mb-3">
-                        <label class="form-label fw-medium">প্রোডাক্টের নাম <span class="text-danger">*</span></label>
+                        <label class="form-label fw-medium">Product Name <span class="text-danger">*</span></label>
                         <input asp-for="Name" class="form-control" />
                         <span asp-validation-for="Name" class="text-danger small"></span>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">ক্যাটাগরি <span class="text-danger">*</span></label>
+                            <label class="form-label fw-medium">Category <span class="text-danger">*</span></label>
                             <select asp-for="CategoryId" asp-items="(SelectList)ViewBag.Categories" class="form-select">
-                                <option value="">-- ক্যাটাগরি বেছে নিন --</option>
+                                <option value="">-- Select Category --</option>
                             </select>
                             <span asp-validation-for="CategoryId" class="text-danger small"></span>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">স্টক পরিমাণ <span class="text-danger">*</span></label>
+                            <label class="form-label fw-medium">Stock Quantity <span class="text-danger">*</span></label>
                             <input asp-for="Stock" type="number" min="0" class="form-control" />
                             <span asp-validation-for="Stock" class="text-danger small"></span>
                         </div>
@@ -38,26 +38,26 @@
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">মূল্য (৳) <span class="text-danger">*</span></label>
+                            <label class="form-label fw-medium">Price (৳) <span class="text-danger">*</span></label>
                             <input asp-for="Price" type="number" step="0.01" min="0" class="form-control" />
                             <span asp-validation-for="Price" class="text-danger small"></span>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">ছাড়ের মূল্য (৳)</label>
+                            <label class="form-label fw-medium">Discount Price (৳)</label>
                             <input asp-for="DiscountPrice" type="number" step="0.01" min="0"
-                                   class="form-control" placeholder="ঐচ্ছিক" />
+                                   class="form-control" placeholder="Optional" />
                             <span asp-validation-for="DiscountPrice" class="text-danger small"></span>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-medium">বিবরণ</label>
+                        <label class="form-label fw-medium">Description</label>
                         <textarea asp-for="Description" class="form-control" rows="5"></textarea>
                     </div>
 
                     <div class="form-check form-switch mb-3">
                         <input asp-for="IsActive" class="form-check-input" type="checkbox" />
-                        <label asp-for="IsActive" class="form-check-label fw-medium">সক্রিয়</label>
+                        <label asp-for="IsActive" class="form-check-label fw-medium">Active</label>
                     </div>
 
                     <!-- ── Sizes Section ── -->
@@ -65,11 +65,11 @@
                         <div class="card-body">
                             <div class="d-flex align-items-center justify-content-between mb-3">
                                 <h6 class="fw-semibold mb-0">
-                                    <i class="bi bi-rulers me-2"></i>সাইজ ম্যানেজমেন্ট
+                                    <i class="bi bi-rulers me-2"></i>Size Management
                                 </h6>
                                 <button type="button" class="btn btn-sm btn-outline-dark"
                                         onclick="addSizeRow()">
-                                    <i class="bi bi-plus-circle me-1"></i>সাইজ যোগ করুন
+                                    <i class="bi bi-plus-circle me-1"></i>Add Size
                                 </button>
                             </div>
 
@@ -89,34 +89,34 @@
                                                 <input type="text" name="Sizes[@i].SizeName"
                                                        value="@Model.Sizes[i].SizeName"
                                                        class="form-control form-control-sm"
-                                                       placeholder="সাইজের নাম *" />
+                                                       placeholder="Size name *" />
                                             </div>
                                             <div class="col-md-2">
                                                 <input type="text" name="Sizes[@i].SizeCode"
                                                        value="@Model.Sizes[i].SizeCode"
                                                        class="form-control form-control-sm"
-                                                       placeholder="কোড" />
+                                                       placeholder="Code" />
                                             </div>
                                             <div class="col-md-2">
                                                 <input type="number" name="Sizes[@i].SalesPrice"
                                                        value="@Model.Sizes[i].SalesPrice"
                                                        step="0.01" min="0"
                                                        class="form-control form-control-sm"
-                                                       placeholder="বিক্রয় মূল্য" />
+                                                       placeholder="Sales price" />
                                             </div>
                                             <div class="col-md-2">
                                                 <input type="number" name="Sizes[@i].Stock"
                                                        value="@Model.Sizes[i].Stock"
                                                        min="0"
                                                        class="form-control form-control-sm"
-                                                       placeholder="স্টক" />
+                                                       placeholder="Stock" />
                                             </div>
                                             <div class="col-md-2">
                                                 <div class="form-check form-switch mt-1">
                                                     <input type="checkbox" name="Sizes[@i].IsActive"
                                                            value="true" class="form-check-input"
                                                            @(Model.Sizes[i].IsActive ? "checked" : "") />
-                                                    <label class="form-check-label small">সক্রিয়</label>
+                                                    <label class="form-check-label small">Active</label>
                                                 </div>
                                             </div>
                                             <div class="col-md-1 text-center">
@@ -139,11 +139,11 @@
                     <div class="card bg-light border-0 mb-3">
                         <div class="card-body">
                             <h6 class="fw-semibold mb-1">
-                                <i class="bi bi-images me-2"></i>বিদ্যমান ছবি
+                                <i class="bi bi-images me-2"></i>Existing Images
                             </h6>
                             <p class="text-muted small mb-3">
                                 <i class="bi bi-info-circle me-1"></i>
-                                ⭐ ক্লিক করে প্রধান ছবি বেছে নিন। ☑ চেক করলে ছবি মুছে যাবে।
+                                Click to select Primary image. Check box to delete.
                             </p>
 
                             @{
@@ -162,12 +162,12 @@
                                                  style="width:80px;height:80px;object-fit:cover;cursor:pointer;transition:all .2s"
                                                  onerror="this.src='https://via.placeholder.com/80'"
                                                  onclick="setPrimary(@img.Id, this)"
-                                                 title="প্রধান হিসেবে সেট করুন" />
+                                                 title="Set as primary" />
 
                                             <span id="primaryBadge_@img.Id"
                                                   class="badge bg-primary position-absolute bottom-0 start-0"
                                                   style="font-size:.6rem;display:@(img.IsPrimary ? "block" : "none")">
-                                                ⭐ প্রধান
+                                                ⭐ Primary
                                             </span>
 
                                             <div class="position-absolute top-0 end-0">
@@ -176,7 +176,7 @@
                                                        class="form-check-input remove-cb"
                                                        id="rm_@img.Id"
                                                        style="margin:3px;cursor:pointer"
-                                                       title="এই ছবি মুছুন"
+                                                       title="Delete this image"
                                                        onchange="onRemoveChange(@img.Id, this)" />
                                             </div>
                                         </div>
@@ -188,11 +188,11 @@
                             }
                             else
                             {
-                                <p class="text-muted small">কোনো ছবি নেই</p>
+                                <p class="text-muted small">No images uploaded</p>
                             }
 
                             <hr class="my-3" />
-                            <h6 class="fw-semibold mb-2 small">নতুন ছবি যোগ করুন</h6>
+                            <h6 class="fw-semibold mb-2 small">Upload New Images</h6>
                             <input type="file" name="Images" id="imageUploader"
                                    class="form-control form-control-sm"
                                    multiple accept="image/*"
@@ -207,9 +207,9 @@
 
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-dark px-4">
-                    <i class="bi bi-check-circle me-2"></i>আপডেট করুন
+                    <i class="bi bi-check-circle me-2"></i>Update Product
                 </button>
-                <a asp-action="Index" class="btn btn-outline-secondary">বাতিল</a>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
             </div>
 
         </form>
@@ -221,7 +221,6 @@
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 
     <script>
-        // ── প্রধান ছবি সেট করা ──────────────────────────────────────────────
         function setPrimary(imgId, el) {
             document.querySelectorAll('[id^="primaryBadge_"]').forEach(function (b) {
                 b.style.display = 'none';
@@ -235,7 +234,6 @@
             document.getElementById('primaryImageIdInput').value = imgId;
         }
 
-        // ── মুছুন checkbox ───────────────────────────────────────────────────
         function onRemoveChange(imgId, cb) {
             var thumb = cb.closest('.img-item').querySelector('.img-thumb');
             if (cb.checked) {
@@ -253,7 +251,6 @@
             }
         }
 
-        // ── নতুন ছবির preview ───────────────────────────────────────────────
         function previewImages(input) {
             var preview = document.getElementById('imgPreview');
             preview.innerHTML = '';
@@ -270,7 +267,6 @@
             });
         }
 
-        // ── Sizes ────────────────────────────────────────────────────────────
         var sizeIndex = @(Model.Sizes?.Count ?? 0);
 
         function addSizeRow() {
@@ -280,27 +276,27 @@
                     <input type="hidden" name="Sizes[${i}].IsRemove" value="false" class="isRemoveInput" />
                     <div class="col-md-3">
                         <input type="text" name="Sizes[${i}].SizeName"
-                               class="form-control form-control-sm" placeholder="সাইজের নাম *" />
+                               class="form-control form-control-sm" placeholder="Size name *" />
                     </div>
                     <div class="col-md-2">
                         <input type="text" name="Sizes[${i}].SizeCode"
-                               class="form-control form-control-sm" placeholder="কোড" />
+                               class="form-control form-control-sm" placeholder="Code" />
                     </div>
                     <div class="col-md-2">
                         <input type="number" name="Sizes[${i}].SalesPrice"
                                step="0.01" min="0"
-                               class="form-control form-control-sm" placeholder="বিক্রয় মূল্য" />
+                               class="form-control form-control-sm" placeholder="Sales price" />
                     </div>
                     <div class="col-md-2">
                         <input type="number" name="Sizes[${i}].Stock"
                                min="0" value="0"
-                               class="form-control form-control-sm" placeholder="স্টক" />
+                               class="form-control form-control-sm" placeholder="Stock" />
                     </div>
                     <div class="col-md-2">
                         <div class="form-check form-switch mt-1">
                             <input type="checkbox" name="Sizes[${i}].IsActive"
                                    value="true" class="form-check-input" checked />
-                            <label class="form-check-label small">সক্রিয়</label>
+                            <label class="form-check-label small">Active</label>
                         </div>
                     </div>
                     <div class="col-md-1 text-center">
@@ -319,13 +315,12 @@
             var isRemoveInput = row.querySelector('.isRemoveInput');
 
             if (hiddenId && hiddenId.value) {
-                // Existing size — IsRemove = true করো, hide করো
                 isRemoveInput.value = 'true';
                 row.style.display = 'none';
             } else {
-                // নতুন row — সরাসরি remove
                 row.remove();
             }
         }
     </script>
+}
 }

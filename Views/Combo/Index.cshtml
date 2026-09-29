@@ -1,16 +1,16 @@
-﻿@model List<ShopManagementSystem.Models.ComboOffer>
+@model List<ShopManagementSystem.Models.ComboOffer>
 @{
-    ViewData["Title"] = "কম্বো অফার";
+    ViewData["Title"] = "Combo Offers";
 }
 
 <div class="container my-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="fw-bold mb-0"><i class="bi bi-gift text-danger me-2"></i>কম্বো অফার</h4>
-            <p class="text-muted small mb-0">একসাথে কিনুন, বেশি সাশ্রয় করুন</p>
+            <h4 class="fw-bold mb-0"><i class="bi bi-gift text-danger me-2"></i>Combo Offers</h4>
+            <p class="text-muted small mb-0">Bundle & Save More</p>
         </div>
         <a asp-controller="Product" asp-action="Index" class="btn btn-sm btn-outline-dark">
-            <i class="bi bi-arrow-left me-1"></i>সব পণ্য
+            <i class="bi bi-arrow-left me-1"></i>All Products
         </a>
     </div>
 
@@ -18,9 +18,9 @@
     {
         <div class="text-center py-5 text-muted">
             <i class="bi bi-gift display-2 d-block mb-3 opacity-25"></i>
-            <h5>এই মুহূর্তে কোনো কম্বো অফার নেই</h5>
-            <p class="small">শীঘ্রই আসছে। নিয়মিত চেক করুন!</p>
-            <a asp-controller="Product" asp-action="Index" class="btn btn-dark mt-2">সব পণ্য দেখুন</a>
+            <h5>No combo offers available right now</h5>
+            <p class="small">Check back soon for exciting deals!</p>
+            <a asp-controller="Product" asp-action="Index" class="btn btn-dark mt-2">Browse All Products</a>
         </div>
     }
     else
@@ -33,7 +33,6 @@
                 var savePct = combo.OriginalPrice.HasValue && combo.OriginalPrice > 0
                 ? Math.Round(savings / combo.OriginalPrice.Value * 100) : 0;
 
-                <!-- Countdown timer -->
                 var timeLeft = combo.EndDate.HasValue
                 ? (combo.EndDate.Value - DateTime.Now).TotalSeconds : 0;
 
@@ -76,7 +75,7 @@
                             @if (savePct > 0)
                             {
                                 <span class="position-absolute top-0 start-0 m-2 badge bg-danger fs-6 px-3 py-2">
-                                    @savePct% সাশ্রয়
+                                    Save @savePct%
                                 </span>
                             }
 
@@ -87,7 +86,7 @@
                                     <div class="badge bg-dark px-2 py-2 countdown-badge"
                                          data-seconds="@((int)timeLeft)" id="countdown_@combo.Id">
                                         <i class="bi bi-clock me-1"></i>
-                                        <span class="countdown-text">লোড হচ্ছে...</span>
+                                        <span class="countdown-text">Loading...</span>
                                     </div>
                                 </div>
                             }
@@ -102,7 +101,7 @@
 
                             <!-- Product list with images -->
                             <div class="mb-3">
-                                <div class="fw-medium small mb-2 text-muted">এই কম্বোতে আছে:</div>
+                                <div class="fw-medium small mb-2 text-muted">Included in this combo:</div>
                                 @foreach (var item in combo.Items)
                                 {
                                     var pImg2 = item.Product?.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
@@ -131,19 +130,19 @@
                                 @if (combo.OriginalPrice.HasValue)
                                 {
                                     <div class="d-flex justify-content-between mb-1">
-                                        <span class="small text-muted">আলাদা কিনলে</span>
+                                        <span class="small text-muted">Individual Price</span>
                                         <span class="small text-muted text-decoration-line-through">
                                             ৳@combo.OriginalPrice.Value.ToString("N0")
                                         </span>
                                     </div>
                                     <div class="d-flex justify-content-between mb-1">
-                                        <span class="small text-success fw-medium">আপনি বাঁচাচ্ছেন</span>
+                                        <span class="small text-success fw-medium">You Save</span>
                                         <span class="small text-success fw-bold">-৳@savings.ToString("N0")</span>
                                     </div>
                                     <hr class="my-2" />
                                 }
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="fw-bold">কম্বো মূল্য</span>
+                                    <span class="fw-bold">Combo Price</span>
                                     <span class="fs-4 fw-bold text-danger">৳@combo.ComboPrice.ToString("N0")</span>
                                 </div>
                             </div>
@@ -152,7 +151,7 @@
                         <div class="card-footer bg-white border-0 pb-4 px-3 d-flex gap-2">
                             <a asp-controller="Combo" asp-action="Detail" asp-route-id="@combo.Id"
                                class="btn btn-outline-dark btn-sm flex-fill">
-                                <i class="bi bi-eye me-1"></i>বিস্তারিত
+                                <i class="bi bi-eye me-1"></i>Details
                             </a>
                             @if (User.Identity?.IsAuthenticated == true)
                             {
@@ -160,7 +159,7 @@
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@combo.Id" />
                                     <button type="submit" class="btn btn-danger btn-sm w-100 fw-semibold">
-                                        <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ করুন
+                                        <i class="bi bi-cart-plus me-1"></i>Add to Cart
                                     </button>
                                 </form>
                             }
@@ -168,7 +167,7 @@
                             {
                                 <a asp-controller="Account" asp-action="Login"
                                    class="btn btn-danger btn-sm flex-fill fw-semibold">
-                                    <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ করুন
+                                    <i class="bi bi-cart-plus me-1"></i>Add to Cart
                                 </a>
                             }
                         </div>
@@ -184,28 +183,27 @@
         transition: transform .22s, box-shadow .22s;
     }
 
-        .combo-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 16px 40px rgba(0,0,0,.12) !important;
-        }
+    .combo-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 16px 40px rgba(0,0,0,.12) !important;
+    }
 </style>
 
 @section Scripts {
     <script>
-        // Countdown timer
         document.querySelectorAll('.countdown-badge').forEach(function(badge) {
             var seconds = parseInt(badge.dataset.seconds);
             var el      = badge.querySelector('.countdown-text');
 
             function update() {
-                if (seconds <= 0) { el.textContent = 'শেষ!'; badge.classList.add('bg-secondary'); return; }
+                if (seconds <= 0) { el.textContent = 'Expired!'; badge.classList.add('bg-secondary'); return; }
                 var d = Math.floor(seconds / 86400);
                 var h = Math.floor((seconds % 86400) / 3600);
                 var m = Math.floor((seconds % 3600) / 60);
                 var s = seconds % 60;
                 el.textContent = d > 0
-                    ? d + 'দ ' + h + 'ঘ ' + m + 'মি'
-                    : h + 'ঘ ' + m + 'মি ' + s + 'সে';
+                    ? d + 'd ' + h + 'h ' + m + 'm'
+                    : h + 'h ' + m + 'm ' + s + 's';
                 seconds--;
             }
             update();
@@ -213,3 +211,4 @@
         });
     </script>
 }
+

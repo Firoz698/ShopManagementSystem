@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ShopManagementSystem.Data;
 using ShopManagementSystem.Interfaces;
 using ShopManagementSystem.Models;
@@ -25,9 +25,9 @@ namespace ShopManagementSystem.Services
             var setting = await _context.NotificationSettings.FirstOrDefaultAsync();
             if (setting == null || !setting.NotifyOnNewOrder) return;
 
-            var subject = $"নতুন অর্ডার #{orderId}";
-            var body = $"গ্রাহক: {customerName}\nঅর্ডার নম্বর: #{orderId}\nমোট মূল্য: ৳{totalAmount}\n\nঅ্যাডমিন প্যানেলে গিয়ে বিস্তারিত দেখুন।";
-            var smsText = $"নতুন অর্ডার #{orderId} - {customerName} - ৳{totalAmount}";
+            var subject = $"New Order #{orderId}";
+            var body = $"Customer: {customerName}\nOrder Number: #{orderId}\nTotal Amount: ৳{totalAmount}\n\nPlease check the admin panel for details.";
+            var smsText = $"New Order #{orderId} - {customerName} - ৳{totalAmount}";
 
             await SendAsync(setting, subject, body, smsText);
         }
@@ -37,9 +37,9 @@ namespace ShopManagementSystem.Services
             var setting = await _context.NotificationSettings.FirstOrDefaultAsync();
             if (setting == null || !setting.NotifyOnNewChatMessage) return;
 
-            var subject = $"নতুন মেসেজ - {customerName}";
-            var body = $"গ্রাহক: {customerName}\nমেসেজ: {messageText}\n\nঅ্যাডমিন প্যানেলে গিয়ে রিপ্লাই দিন।";
-            var smsText = $"নতুন চ্যাট মেসেজ - {customerName}: {Truncate(messageText, 100)}";
+            var subject = $"New Message - {customerName}";
+            var body = $"Customer: {customerName}\nMessage: {messageText}\n\nPlease log in to admin panel to reply.";
+            var smsText = $"New chat message - {customerName}: {Truncate(messageText, 100)}";
 
             await SendAsync(setting, subject, body, smsText);
         }
@@ -49,13 +49,13 @@ namespace ShopManagementSystem.Services
             if (setting.EmailEnabled && !string.IsNullOrWhiteSpace(setting.AdminEmail))
             {
                 try { await SendEmailAsync(setting, subject, emailBody); }
-                catch (Exception ex) { _logger.LogError(ex, "Email notification পাঠাতে ব্যর্থ হয়েছে।"); }
+                catch (Exception ex) { _logger.LogError(ex, "Failed to send email notification."); }
             }
 
             if (setting.SmsEnabled && !string.IsNullOrWhiteSpace(setting.AdminPhone))
             {
                 try { await SendSmsAsync(setting, smsText); }
-                catch (Exception ex) { _logger.LogError(ex, "SMS notification পাঠাতে ব্যর্থ হয়েছে।"); }
+                catch (Exception ex) { _logger.LogError(ex, "Failed to send SMS notification."); }
             }
         }
 
@@ -85,8 +85,7 @@ namespace ShopManagementSystem.Services
 
             var client = _httpClientFactory.CreateClient();
 
-            // এটা একটা generic GET-style SMS gateway format (bulksmsbd/adnsms টাইপ প্রোভাইডারদের সাথে মিলবে)
-            // আপনার actual SMS provider এর API doc অনুযায়ী url format ঠিক করে নিতে হবে
+            // Generic GET-style SMS gateway format
             var url = $"{setting.SmsApiUrl}?api_key={setting.SmsApiKey}&senderid={setting.SmsSenderId}" +
                       $"&number={setting.AdminPhone}&message={Uri.EscapeDataString(message)}";
 

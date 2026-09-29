@@ -73,7 +73,7 @@ namespace ShopManagementSystem.Controllers
             var userId = _userManager.GetUserId(User)!;
             await _productRepo.AddReviewAsync(userId, vm);
 
-            TempData["Success"] = "আপনার রিভিউ যোগ করা হয়েছে।";
+            TempData["Success"] = "Your review has been submitted successfully.";
             return RedirectToAction("Detail", new { id = vm.ProductId });
         }
     }

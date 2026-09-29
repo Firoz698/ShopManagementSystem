@@ -1,8 +1,8 @@
-﻿@model List<ShopManagementSystem.Models.ReturnRequest>
+@model List<ShopManagementSystem.Models.ReturnRequest>
 @{
-    ViewData["Title"] = "রিটার্ন রিকোয়েস্ট ম্যানেজমেন্ট";
+    ViewData["Title"] = "Return Request Management";
 
-    // প্রতিটি status এর পরবর্তী ধাপ
+    // Next stages for each status
     var nextMap = new Dictionary<string, string[]>
     {
         { "Pending",  new[] { "Approved", "Rejected" } },
@@ -22,7 +22,7 @@
 
 <!-- ── Status Filter ───────────────────────────────────────────────────────── -->
 <div class="d-flex gap-2 mb-4 flex-wrap">
-    <a asp-action="Index" class="btn btn-sm @(ViewBag.Status == null ? "btn-dark" : "btn-outline-dark")">সব</a>
+    <a asp-action="Index" class="btn btn-sm @(ViewBag.Status == null ? "btn-dark" : "btn-outline-dark")">All</a>
     @foreach (var s in (string[])ViewBag.StatusList)
     {
         <a asp-action="Index" asp-route-status="@s"
@@ -43,13 +43,13 @@
             <thead class="table-dark">
                 <tr>
                     <th>#</th>
-                    <th>ইউজার</th>
-                    <th>পণ্য</th>
-                    <th>অর্ডার</th>
-                    <th>কারণ</th>
-                    <th>তারিখ</th>
-                    <th class="text-center">স্ট্যাটাস</th>
-                    <th class="text-center">অ্যাকশন</th>
+                    <th>User</th>
+                    <th>Product</th>
+                    <th>Order</th>
+                    <th>Reason</th>
+                    <th>Date</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -103,7 +103,7 @@
                             <div class="d-flex gap-1 justify-content-center">
                                 <a asp-area="Admin" asp-controller="Return" asp-action="Details"
                                    asp-route-id="@ret.Id"
-                                   class="btn btn-sm btn-outline-secondary" title="বিস্তারিত">
+                                   class="btn btn-sm btn-outline-secondary" title="Details">
                                     <i class="bi bi-eye"></i>
                                 </a>
 
@@ -119,14 +119,14 @@
                                             data-reason="@ret.Reason"
                                             data-next="@string.Join(",", next)"
                                             onclick="openActionModal(this)"
-                                            title="স্ট্যাটাস পরিবর্তন">
+                                            title="Update Status">
                                         <i class="bi bi-arrow-right-circle"></i>
                                     </button>
                                 }
                                 else
                                 {
                                     <span class="text-muted small d-flex align-items-center px-1">
-                                        <i class="bi bi-check2-all me-1"></i>সম্পন্ন
+                                        <i class="bi bi-check2-all me-1"></i>Completed
                                     </span>
                                 }
                             </div>
@@ -138,14 +138,14 @@
                     <tr>
                         <td colspan="8" class="text-center text-muted py-5">
                             <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
-                            কোনো রিটার্ন রিকোয়েস্ট নেই
+                            No return requests found
                         </td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
-    <div class="card-footer bg-white text-muted small">মোট @Model.Count টি রিকোয়েস্ট</div>
+    <div class="card-footer bg-white text-muted small">Total @Model.Count requests</div>
 </div>
 
 <!-- ── Status Flow Modal ──────────────────────────────────────────────────── -->
@@ -153,7 +153,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
             <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title fw-bold">স্ট্যাটাস পরিবর্তন</h5>
+                <h5 class="modal-title fw-bold">Update Status</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form asp-action="UpdateStatus" method="post">
@@ -163,17 +163,17 @@
 
                     <!-- Info card -->
                     <div class="bg-light rounded p-3 mb-3 small">
-                        <div><strong>ইউজার:</strong> <span id="modalUserName"></span></div>
-                        <div><strong>পণ্য:</strong> <span id="modalProductName"></span></div>
-                        <div class="mt-1"><strong>কারণ:</strong> <span id="modalReason"></span></div>
+                        <div><strong>User:</strong> <span id="modalUserName"></span></div>
+                        <div><strong>Product:</strong> <span id="modalProductName"></span></div>
+                        <div class="mt-1"><strong>Reason:</strong> <span id="modalReason"></span></div>
                     </div>
 
                     <!-- Flow: current → next -->
                     <div class="d-flex align-items-center gap-2 mb-3">
-                        <span class="text-muted small">বর্তমান:</span>
+                        <span class="text-muted small">Current:</span>
                         <span id="modalCurrentBadge" class="badge rounded-pill px-3" style="font-size:.8rem"></span>
                         <i class="bi bi-arrow-right text-muted"></i>
-                        <span class="text-muted small">পরিবর্তন করুন:</span>
+                        <span class="text-muted small">Change to:</span>
                     </div>
 
                     <!-- Dynamic next status options -->
@@ -181,15 +181,15 @@
 
                     <!-- Admin note -->
                     <div>
-                        <label class="form-label fw-medium small">অ্যাডমিন নোট (ঐচ্ছিক)</label>
+                        <label class="form-label fw-medium small">Admin Note (optional)</label>
                         <textarea name="adminNote" class="form-control form-control-sm" rows="2"
-                                  placeholder="ইউজারকে কারণ জানান..."></textarea>
+                                  placeholder="Provide any feedback to the customer..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">বাতিল</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-dark btn-sm px-4">
-                        <i class="bi bi-check2 me-1"></i>সেভ করুন
+                        <i class="bi bi-check2 me-1"></i>Save Changes
                     </button>
                 </div>
             </form>
@@ -255,9 +255,9 @@
             Refunded: 'background:#dbeafe;color:#1e40af',
         };
         const nextLabels = {
-            Approved: { icon: 'bi-check-circle', css: 'approved', label: '✅ অনুমোদন করুন' },
-            Rejected: { icon: 'bi-x-circle',     css: 'rejected', label: '❌ প্রত্যাখ্যান করুন' },
-            Refunded: { icon: 'bi-cash-coin',     css: 'refunded', label: '💰 রিফান্ড সম্পন্ন' },
+            Approved: { icon: 'bi-check-circle', css: 'approved', label: '✅ Approve' },
+            Rejected: { icon: 'bi-x-circle',     css: 'rejected', label: '❌ Reject' },
+            Refunded: { icon: 'bi-cash-coin',     css: 'refunded', label: '💰 Refund Completed' },
         };
 
         function openActionModal(btn) {
@@ -300,3 +300,4 @@
         }
     </script>
 }
+

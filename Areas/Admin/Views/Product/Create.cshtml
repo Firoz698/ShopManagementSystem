@@ -1,6 +1,6 @@
 @model ProductCreateViewModel
 @{
-    ViewData["Title"] = "নতুন প্রোডাক্ট যোগ করুন";
+    ViewData["Title"] = "Add New Product";
 }
 
 <div class="card border-0 shadow-sm">
@@ -15,25 +15,25 @@
                     <!-- Basic Info -->
                     <div class="card border-0 bg-light mb-3">
                         <div class="card-body">
-                            <h6 class="fw-bold mb-3">📦 মূল তথ্য</h6>
+                            <h6 class="fw-bold mb-3">📦 Basic Information</h6>
                             <div class="row g-3">
                                 <div class="col-md-8">
-                                    <label class="form-label fw-medium small">প্রোডাক্টের নাম <span class="text-danger">*</span></label>
-                                    <input asp-for="Name" class="form-control" placeholder="প্রোডাক্টের নাম" />
+                                    <label class="form-label fw-medium small">Product Name <span class="text-danger">*</span></label>
+                                    <input asp-for="Name" class="form-control" placeholder="Product name" />
                                     <span asp-validation-for="Name" class="text-danger small"></span>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label fw-medium small">প্রোডাক্ট কোড</label>
+                                    <label class="form-label fw-medium small">Product Code (SKU)</label>
                                     <input asp-for="ProductCode" class="form-control" placeholder="SKU-001" />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label fw-medium small">ক্যাটাগরি <span class="text-danger">*</span></label>
+                                    <label class="form-label fw-medium small">Category <span class="text-danger">*</span></label>
                                     <select asp-for="CategoryId" asp-items="(SelectList)ViewBag.Categories" class="form-select">
-                                        <option value="">-- নির্বাচন করুন --</option>
+                                        <option value="">-- Select Category --</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label fw-medium small">স্টক <span class="text-danger">*</span></label>
+                                    <label class="form-label fw-medium small">Stock <span class="text-danger">*</span></label>
                                     <input asp-for="Stock" type="number" min="0" class="form-control" placeholder="0" />
                                 </div>
                             </div>
@@ -43,14 +43,14 @@
                     <!-- Pricing -->
                     <div class="card border-0 bg-light mb-3">
                         <div class="card-body">
-                            <h6 class="fw-bold mb-3">💰 মূল্য তথ্য</h6>
+                            <h6 class="fw-bold mb-3">💰 Pricing Details</h6>
                             <div class="row g-3">
                                 <div class="col-md-4">
-                                    <label class="form-label fw-medium small">ক্রয় মূল্য (৳)</label>
+                                    <label class="form-label fw-medium small">Purchase Price (৳)</label>
                                     <input asp-for="PurchasePrice" type="number" step="0.01" class="form-control" placeholder="0.00" />
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label fw-medium small">বিক্রয় মূল্য (৳) <span class="text-danger">*</span></label>
+                                    <label class="form-label fw-medium small">Selling Price (৳) <span class="text-danger">*</span></label>
                                     <input asp-for="Price" type="number" step="0.01" class="form-control" placeholder="0.00" />
                                 </div>
                                 <div class="col-md-4">
@@ -60,21 +60,21 @@
 
                                 <!-- Discount -->
                                 <div class="col-md-4">
-                                    <label class="form-label fw-medium small">ছাড়ের মূল্য (৳)</label>
-                                    <input asp-for="DiscountPrice" type="number" step="0.01" class="form-control" placeholder="ঐচ্ছিক" />
+                                    <label class="form-label fw-medium small">Discount Price (৳)</label>
+                                    <input asp-for="DiscountPrice" type="number" step="0.01" class="form-control" placeholder="Optional" />
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label fw-medium small">ছাড় শুরু</label>
+                                    <label class="form-label fw-medium small">Discount Start Date</label>
                                     <input asp-for="DiscountStartDate" type="date" class="form-control" />
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label fw-medium small">ছাড় শেষ</label>
+                                    <label class="form-label fw-medium small">Discount End Date</label>
                                     <input asp-for="DiscountEndDate" type="date" class="form-control" />
                                 </div>
                                 <div class="col-12">
                                     <div class="form-check form-switch">
                                         <input asp-for="IsDiscountFixed" class="form-check-input" type="checkbox" checked />
-                                        <label class="form-check-label small">Fixed Amount ছাড় (unchecked = % ছাড়)</label>
+                                        <label class="form-check-label small">Fixed Amount Discount (unchecked = Percentage Discount)</label>
                                     </div>
                                 </div>
                             </div>
@@ -83,22 +83,22 @@
 
                     <!-- Description -->
                     <div class="mb-3">
-                        <label class="form-label fw-medium small">বিবরণ</label>
+                        <label class="form-label fw-medium small">Description</label>
                         <textarea asp-for="Description" class="form-control" rows="4"
-                                  placeholder="প্রোডাক্টের বিস্তারিত বিবরণ..."></textarea>
+                                  placeholder="Detailed product description..."></textarea>
                     </div>
 
                     <!-- ── Size Management ───────────────────────────────── -->
                     <div class="card border-0 bg-light">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6 class="fw-bold mb-0">📏 সাইজ ও মূল্য (ঐচ্ছিক)</h6>
+                                <h6 class="fw-bold mb-0">📏 Sizes & Specific Pricing (Optional)</h6>
                                 <button type="button" class="btn btn-sm btn-dark" onclick="addSizeRow()">
-                                    <i class="bi bi-plus-circle me-1"></i>সাইজ যোগ করুন
+                                    <i class="bi bi-plus-circle me-1"></i>Add Size
                                 </button>
                             </div>
                             <div class="small text-muted mb-3">
-                                সাইজ যোগ করলে প্রতিটি সাইজের আলাদা মূল্য ও স্টক নির্ধারণ করা যাবে।
+                                Adding sizes allows setting custom prices and stock per size variant.
                             </div>
                             <div id="sizeContainer">
                                 <!-- Rows added dynamically -->
@@ -111,19 +111,19 @@
                 <div class="col-lg-4">
                     <div class="card border-0 bg-light mb-3" style="border: 2px dashed #dee2e6 !important">
                         <div class="card-body">
-                            <h6 class="fw-semibold mb-3"><i class="bi bi-images me-2"></i>প্রোডাক্ট ছবি</h6>
+                            <h6 class="fw-semibold mb-3"><i class="bi bi-images me-2"></i>Product Images</h6>
                             <input type="file" name="Images" id="imgUpload" class="form-control form-control-sm"
                                    multiple accept="image/*" onchange="previewImages(this)" />
-                            <div class="form-text mb-2">একাধিক ছবি — প্রথমটি প্রধান ছবি।</div>
+                            <div class="form-text mb-2">Multiple images allowed — the first will be the primary image.</div>
                             <div id="imgPreview" class="d-flex flex-wrap gap-2"></div>
                         </div>
                     </div>
                     <div class="card border-0 bg-light">
                         <div class="card-body">
-                            <h6 class="fw-semibold mb-3">⚙️ স্ট্যাটাস</h6>
+                            <h6 class="fw-semibold mb-3">⚙️ Status</h6>
                             <div class="form-check form-switch">
                                 <input asp-for="IsActive" class="form-check-input" type="checkbox" checked />
-                                <label class="form-check-label fw-medium">সক্রিয় (ইউজারদের দেখাবে)</label>
+                                <label class="form-check-label fw-medium">Active (Visible to customers)</label>
                             </div>
                         </div>
                     </div>
@@ -133,9 +133,9 @@
             <hr class="my-4" />
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-dark px-4">
-                    <i class="bi bi-check-circle me-2"></i>প্রোডাক্ট সেভ করুন
+                    <i class="bi bi-check-circle me-2"></i>Save Product
                 </button>
-                <a asp-action="Index" class="btn btn-outline-secondary">বাতিল</a>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
             </div>
         </form>
     </div>
@@ -150,21 +150,21 @@
             var html = `
             <div class="row g-2 align-items-end mb-2 size-row" id="sizeRow${i}">
                 <div class="col-md-3">
-                    <label class="form-label fw-medium" style="font-size:.78rem">সাইজের নাম <span class="text-danger">*</span></label>
+                    <label class="form-label fw-medium" style="font-size:.78rem">Size Name <span class="text-danger">*</span></label>
                     <input type="text" name="Sizes[${i}].SizeName" class="form-control form-control-sm"
                            placeholder="S, M, XL, 42..." required />
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label fw-medium" style="font-size:.78rem">কোড</label>
-                    <input type="text" name="Sizes[${i}].SizeCode" class="form-control form-control-sm" placeholder="ঐচ্ছিক" />
+                    <label class="form-label fw-medium" style="font-size:.78rem">Code</label>
+                    <input type="text" name="Sizes[${i}].SizeCode" class="form-control form-control-sm" placeholder="Optional" />
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label fw-medium" style="font-size:.78rem">বিক্রয় মূল্য (৳) <span class="text-danger">*</span></label>
+                    <label class="form-label fw-medium" style="font-size:.78rem">Sales Price (৳) <span class="text-danger">*</span></label>
                     <input type="number" step="0.01" name="Sizes[${i}].SalesPrice" class="form-control form-control-sm"
                            placeholder="0.00" required />
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label fw-medium" style="font-size:.78rem">স্টক</label>
+                    <label class="form-label fw-medium" style="font-size:.78rem">Stock</label>
                     <input type="number" name="Sizes[${i}].Stock" class="form-control form-control-sm"
                            placeholder="0" value="0" min="0" />
                 </div>
@@ -173,7 +173,7 @@
                         <input type="checkbox" name="Sizes[${i}].IsActive" class="form-check-input"
                                id="sizeActive${i}" value="true" checked />
                         <input type="hidden" name="Sizes[${i}].IsActive" value="false" />
-                        <label class="form-check-label small" for="sizeActive${i}">সক্রিয়</label>
+                        <label class="form-check-label small" for="sizeActive${i}">Active</label>
                     </div>
                     <button type="button" class="btn btn-sm btn-outline-danger"
                             onclick="document.getElementById('sizeRow${i}').remove()">
@@ -201,3 +201,4 @@
         }
     </script>
 }
+

@@ -34,7 +34,7 @@ namespace ShopManagementSystem.Controllers
 
         private string UserId => _userManager.GetUserId(User)!;
 
-        // ── GET /Cart/GetCount ──────────────────────────────────────────────────
+        // GET /Cart/GetCount
         [HttpGet, AllowAnonymous]
         public async Task<IActionResult> GetCount()
         {
@@ -45,7 +45,7 @@ namespace ShopManagementSystem.Controllers
             return Json(new { count });
         }
 
-        // ── GET /Cart ────────────────────────────────────────────────────────────
+        // GET /Cart
         public async Task<IActionResult> Index()
         {
             var items = await _cartRepo.GetCartItemsAsync(UserId);
@@ -69,7 +69,7 @@ namespace ShopManagementSystem.Controllers
             return View(vm);
         }
 
-        // ── POST /Cart/Add ───────────────────────────────────────────────────────
+        // POST /Cart/Add
         [HttpPost]
         public async Task<IActionResult> Add(int productId, int quantity = 1, int? productSizeId = null)
         {
@@ -77,7 +77,7 @@ namespace ShopManagementSystem.Controllers
 
             if (product == null || !product.IsActive)
             {
-                TempData["Error"] = "প্রোডাক্ট পাওয়া যায়নি।";
+                TempData["Error"] = "Product not found.";
                 return RedirectToAction("Index");
             }
 
@@ -93,26 +93,26 @@ namespace ShopManagementSystem.Controllers
 
             if (availableStock < quantity)
             {
-                TempData["Error"] = "পর্যাপ্ত স্টক নেই।";
+                TempData["Error"] = "Not enough stock available.";
                 return RedirectToAction("Detail", "Product", new { id = productId });
             }
 
             await _cartRepo.AddToCartAsync(UserId, productId, productSizeId, quantity);
-            TempData["Success"] = "কার্টে যোগ করা হয়েছে।";
+            TempData["Success"] = "Product added to cart.";
             return RedirectToAction("Index");
         }
 
-        // ── POST /Cart/AddAjax ───────────────────────────────────────────────────
+        // POST /Cart/AddAjax
         [HttpPost, IgnoreAntiforgeryToken]
         public async Task<IActionResult> AddAjax(int productId, int quantity = 1, int? productSizeId = null)
         {
             if (!User.Identity!.IsAuthenticated)
-                return Json(new { success = false, message = "লগইন করুন" });
+                return Json(new { success = false, message = "Please login first" });
 
             var product = await _cartRepo.GetActiveProductWithSizesAsync(productId);
 
             if (product == null || !product.IsActive)
-                return Json(new { success = false, message = "প্রোডাক্ট পাওয়া যায়নি।" });
+                return Json(new { success = false, message = "Product not found." });
 
             if (productSizeId.HasValue && productSizeId.Value <= 0)
                 productSizeId = null;
@@ -125,15 +125,15 @@ namespace ShopManagementSystem.Controllers
                 : product.Stock;
 
             if (availableStock < quantity)
-                return Json(new { success = false, message = "পর্যাপ্ত স্টক নেই।" });
+                return Json(new { success = false, message = "Not enough stock available." });
 
             await _cartRepo.AddToCartAsync(UserId, productId, productSizeId, quantity);
 
             var cartCount = await _cartRepo.GetCartCountAsync(UserId);
-            return Json(new { success = true, cartCount, message = "কার্টে যোগ হয়েছে।" });
+            return Json(new { success = true, cartCount, message = "Product added to cart." });
         }
 
-        // ── POST /Cart/UpdateQuantity ────────────────────────────────────────────
+        // POST /Cart/UpdateQuantity
         [HttpPost]
         public async Task<IActionResult> UpdateQuantity(int cartId, int quantity)
         {
@@ -144,7 +144,7 @@ namespace ShopManagementSystem.Controllers
             return RedirectToAction("Index");
         }
 
-        // ── POST /Cart/Remove ────────────────────────────────────────────────────
+        // POST /Cart/Remove
         [HttpPost]
         public async Task<IActionResult> Remove(int cartId)
         {
@@ -155,7 +155,7 @@ namespace ShopManagementSystem.Controllers
             return RedirectToAction("Index");
         }
 
-        // ── GET /Cart/Checkout ───────────────────────────────────────────────────
+        // GET /Cart/Checkout
         public async Task<IActionResult> Checkout()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -187,7 +187,7 @@ namespace ShopManagementSystem.Controllers
             return View(vm);
         }
 
-        // ── POST /Cart/PlaceOrder ────────────────────────────────────────────────
+        // POST /Cart/PlaceOrder
         [HttpPost]
         public async Task<IActionResult> PlaceOrder(CheckoutViewModel vm)
         {
@@ -200,7 +200,7 @@ namespace ShopManagementSystem.Controllers
                 int stock = item.ProductSize?.Stock ?? item.Product!.Stock;
                 if (stock < item.Quantity)
                 {
-                    TempData["Error"] = $"'{item.Product!.Name}' এর পর্যাপ্ত স্টক নেই।";
+                    TempData["Error"] = $"'{item.Product!.Name}' does not have enough stock.";
                     return RedirectToAction("Checkout");
                 }
             }
@@ -208,18 +208,15 @@ namespace ShopManagementSystem.Controllers
             decimal total = items.Sum(i =>
                 (i.ProductSize?.SalesPrice ?? i.Product!.DiscountPrice ?? i.Product!.Price) * i.Quantity);
 
-            decimal deliveryCharge = vm.DeliveryZone == "ঢাকার বাইরে" ? 120 : 60;
+            decimal deliveryCharge = (vm.DeliveryZone == "Outside Dhaka") ? 120 : 60;
             total += deliveryCharge;
 
             var currentUser = await _userManager.GetUserAsync(User);
             var isOnlinePayment = vm.PaymentMethod == "Online Payment";
 
-            // ══════════════════════════════════════════════════════════════════
-            // ── Online Payment: আগে গেটওয়ে ইনিশিয়েট, stock/cart/notify পরে ──
-            // ══════════════════════════════════════════════════════════════════
+            // Online Payment
             if (isOnlinePayment)
             {
-                // Pending Payment status এ order তৈরি — stock/cart এখনো touch হয়নি
                 var pendingOrder = await _cartRepo.CreateOrderAsync(UserId, vm, total, status: "Pending Payment");
                 await _cartRepo.AddOrderDetailsAsync(pendingOrder.Id, items);
 
@@ -239,20 +236,15 @@ namespace ShopManagementSystem.Controllers
 
                 if (!string.IsNullOrEmpty(gatewayUrl))
                 {
-                    // ✅ সফল — গেটওয়েতে পাঠাও। Stock deduct/cart clear/notification
-                    // এখনো হয়নি — সেগুলো হবে PaymentSuccess/IPN এ, পেমেন্ট কনফার্ম হওয়ার পরে
                     return Redirect(gatewayUrl);
                 }
 
-                // ❌ গেটওয়ে ব্যর্থ — stock/cart কিছুই কমেনি, order কে স্পষ্টভাবে fail মার্ক করো
                 await _cartRepo.UpdateOrderStatusAsync(pendingOrder, "Payment Failed");
-                TempData["Error"] = "পেমেন্ট গেটওয়ে সংযোগ ব্যর্থ হয়েছে। আবার চেষ্টা করুন অথবা ক্যাশ অন ডেলিভারি বেছে নিন।";
+                TempData["Error"] = "Payment gateway connection failed. Please try again or select Cash on Delivery.";
                 return RedirectToAction("Checkout");
             }
 
-            // ══════════════════════════════════════════════════════════════════
-            // ── Cash on Delivery: আগের মতোই সব সাথে সাথে কনফার্ম হবে ──
-            // ══════════════════════════════════════════════════════════════════
+            // Cash on Delivery
             var order = await _cartRepo.CreateOrderAsync(UserId, vm, total, status: "Pending");
             await _cartRepo.AddOrderDetailsAsync(order.Id, items);
             await _cartRepo.DeductStockAsync(items);
@@ -264,14 +256,14 @@ namespace ShopManagementSystem.Controllers
             }
             catch
             {
-                // notification ব্যর্থ হলেও order flow থামবে না
+                // Proceed even if notification fails
             }
 
-            TempData["Success"] = $"অর্ডার #{order.Id} সফলভাবে দেওয়া হয়েছে!";
+            TempData["Success"] = $"Order #{order.Id} has been placed successfully!";
             return RedirectToAction("OrderConfirmation", new { id = order.Id });
         }
 
-        // ── GET /Cart/OrderConfirmation/5 ────────────────────────────────────────
+        // GET /Cart/OrderConfirmation/5
         public async Task<IActionResult> OrderConfirmation(int id)
         {
             var order = await _cartRepo.GetOrderConfirmationAsync(id, UserId);
@@ -279,14 +271,14 @@ namespace ShopManagementSystem.Controllers
             return View(order);
         }
 
-        // ── GET /Cart/MyOrders ───────────────────────────────────────────────────
+        // GET /Cart/MyOrders
         public async Task<IActionResult> MyOrders()
         {
             var orders = await _cartRepo.GetMyOrdersAsync(UserId);
             return View(orders);
         }
 
-        // ── GET /Cart/PaymentSuccess ─────────────────────────────────────────────
+        // GET /Cart/PaymentSuccess
         [HttpGet]
         public async Task<IActionResult> PaymentSuccess(
             string tran_id, string val_id, string amount, string card_type, string status)
@@ -307,7 +299,6 @@ namespace ShopManagementSystem.Controllers
                 await _cartRepo.UpdatePaymentStatusAsync(payment, "Success", val_id, card_type ?? "Online");
                 await _cartRepo.UpdateOrderStatusAsync(payment.Order, "Processing");
 
-                // ✅ পেমেন্ট কনফার্ম হওয়ার পরেই stock deduct, cart clear, notification
                 var order = payment.Order!;
                 var items = await _cartRepo.GetCartItemsAsync(order.UserId);
 
@@ -324,21 +315,20 @@ namespace ShopManagementSystem.Controllers
                 }
                 catch
                 {
-                    // notification ব্যর্থ হলেও payment flow থামবে না
                 }
 
-                TempData["Success"] = $"পেমেন্ট সফল! অর্ডার #{payment.OrderId} কনফার্ম।";
+                TempData["Success"] = $"Payment successful! Order #{payment.OrderId} confirmed.";
                 return RedirectToAction("OrderConfirmation", new { id = payment.OrderId });
             }
 
             await _cartRepo.UpdatePaymentStatusAsync(payment, "Failed");
             await _cartRepo.UpdateOrderStatusAsync(payment.Order, "Payment Failed");
 
-            TempData["Error"] = "পেমেন্ট যাচাই করা যায়নি।";
+            TempData["Error"] = "Payment could not be verified.";
             return RedirectToAction("PaymentFail", new { tran_id });
         }
 
-        // ── GET /Cart/PaymentFail ────────────────────────────────────────────────
+        // GET /Cart/PaymentFail
         [HttpGet]
         public async Task<IActionResult> PaymentFail(string tran_id)
         {
@@ -349,11 +339,11 @@ namespace ShopManagementSystem.Controllers
                 await _cartRepo.UpdateOrderStatusAsync(payment.Order, "Payment Failed");
             }
 
-            TempData["Error"] = "পেমেন্ট ব্যর্থ হয়েছে।";
+            TempData["Error"] = "Payment failed.";
             return View("PaymentFail", payment);
         }
 
-        // ── GET /Cart/PaymentCancel ──────────────────────────────────────────────
+        // GET /Cart/PaymentCancel
         [HttpGet]
         public async Task<IActionResult> PaymentCancel(string tran_id)
         {
@@ -364,11 +354,11 @@ namespace ShopManagementSystem.Controllers
                 await _cartRepo.UpdateOrderStatusAsync(payment.Order, "Cancelled");
             }
 
-            TempData["Error"] = "পেমেন্ট বাতিল করা হয়েছে।";
+            TempData["Error"] = "Payment has been cancelled.";
             return View("PaymentCancel", payment);
         }
 
-        // ── POST /Cart/IPN ───────────────────────────────────────────────────────
+        // POST /Cart/IPN
         [HttpPost, IgnoreAntiforgeryToken]
         public async Task<IActionResult> IPN([FromForm] SslIpnResponse ipn)
         {
@@ -385,7 +375,6 @@ namespace ShopManagementSystem.Controllers
                 await _cartRepo.UpdatePaymentStatusAsync(payment, "Success", ipn.val_id ?? "", ipn.card_type ?? "Online");
                 await _cartRepo.UpdateOrderStatusAsync(payment.Order, "Processing");
 
-                // ✅ IPN দিয়ে সার্ভার-টু-সার্ভার confirm হলেও একইভাবে stock/cart handle করো
                 var order = payment.Order!;
                 var items = await _cartRepo.GetCartItemsAsync(order.UserId);
 

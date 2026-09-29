@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
@@ -12,14 +12,14 @@ namespace ShopManagementSystem.Filters
         private readonly ApplicationDbContext _db;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        // এই controller গুলো Employee সবসময় ব্যবহার করতে পারবে (permission ছাড়াই)
+        // These controllers are always accessible by Employees (no explicit permission needed)
         private static readonly string[] AlwaysAllowed = { "Dashboard", "Account" };
 
-        // action নামে এই শব্দগুলো থাকলে Create পারমিশন লাগবে
+        // Actions requiring Create permission
         private static readonly string[] CreateKeywords = { "Create", "Add" };
-        // action নামে এই শব্দগুলো থাকলে Edit পারমিশন লাগবে
+        // Actions requiring Edit permission
         private static readonly string[] EditKeywords = { "Edit", "Update", "Toggle" };
-        // action নামে এই শব্দগুলো থাকলে Delete পারমিশন লাগবে
+        // Actions requiring Delete permission
         private static readonly string[] DeleteKeywords = { "Delete", "Remove" };
 
         public MenuPermissionFilter(ApplicationDbContext db, UserManager<ApplicationUser> userManager)
@@ -36,7 +36,7 @@ namespace ShopManagementSystem.Filters
             var user = context.HttpContext.User;
             if (user.Identity == null || !user.Identity.IsAuthenticated) { await next(); return; }
 
-            if (user.IsInRole("Admin")) { await next(); return; } // Admin সব পাবে, সব CRUD পারবে
+            if (user.IsInRole("Admin")) { await next(); return; } // Admin has full access
 
             var controller = context.RouteData.Values["controller"]?.ToString() ?? "";
             if (AlwaysAllowed.Contains(controller)) { await next(); return; }
@@ -44,21 +44,21 @@ namespace ShopManagementSystem.Filters
             var action = context.RouteData.Values["action"]?.ToString() ?? "";
             var userId = _userManager.GetUserId(user);
 
-            // এই controller এর সাথে যুক্ত Menu খুঁজে বের করো
+            // Find Menu corresponding to this controller
             var menu = await _db.Menus
                 .Where(m => m.Controller == controller && m.Area == "Admin")
                 .Select(m => new { m.Id })
                 .FirstOrDefaultAsync();
 
-            if (menu == null) { await Deny(context); return; } // Menu টেবিলে entry না থাকলে ব্লক
+            if (menu == null) { await Deny(context); return; } // Block if menu not found
 
             var permission = await _db.UserMenuPermissions
                 .FirstOrDefaultAsync(p => p.UserId == userId && p.MenuId == menu.Id);
 
-            // মূল "দেখা" পারমিশনই না থাকলে সরাসরি ব্লক
+            // Block if user cannot access this menu
             if (permission == null || !permission.CanAccess) { await Deny(context); return; }
 
-            // action নাম অনুযায়ী প্রয়োজনীয় CRUD পারমিশন চেক করো
+            // Check specific CRUD permission by action name
             bool needsCreate = CreateKeywords.Any(k => action.Contains(k, StringComparison.OrdinalIgnoreCase));
             bool needsEdit = EditKeywords.Any(k => action.Contains(k, StringComparison.OrdinalIgnoreCase));
             bool needsDelete = DeleteKeywords.Any(k => action.Contains(k, StringComparison.OrdinalIgnoreCase));

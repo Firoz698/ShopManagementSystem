@@ -1,9 +1,9 @@
-﻿@model List<ShopManagementSystem.Models.ChatMessage>
+@model List<ShopManagementSystem.Models.ChatMessage>
 @inject ShopManagementSystem.Services.IPermissionChecker PermissionChecker
 @{
     var targetUser = ViewBag.TargetUser as ShopManagementSystem.Models.ApplicationUser;
     var targetUserId = ViewBag.TargetUserId as string;
-    ViewData["Title"] = $"চ্যাট — {targetUser?.FullName}";
+    ViewData["Title"] = $"Chat — {targetUser?.FullName}";
     var perm = await PermissionChecker.GetPermissionsAsync(User, "Chat");
     var headerInitial = string.IsNullOrWhiteSpace(targetUser?.FullName)
         ? "U" : targetUser.FullName.Trim()[0].ToString().ToUpper();
@@ -12,7 +12,7 @@
 @if (!perm.CanView)
 {
     <div class="alert alert-danger">
-        <i class="bi bi-shield-lock me-2"></i>এই পেজ দেখার অনুমতি আপনার নেই।
+        <i class="bi bi-shield-lock me-2"></i>You do not have permission to view this page.
     </div>
     return;
 }
@@ -21,7 +21,7 @@
     <div class="col-12">
         <a asp-area="Admin" asp-controller="Chat" asp-action="Index"
            class="btn btn-sm btn-outline-secondary mb-2">
-            <i class="bi bi-arrow-left me-1"></i>সব চ্যাট
+            <i class="bi bi-arrow-left me-1"></i>All Chats
         </a>
     </div>
 
@@ -52,7 +52,7 @@
                     </div>
                 </div>
                 <div class="ms-auto">
-                    <span class="badge bg-success rounded-pill px-2" id="onlineStatus">● অনলাইন</span>
+                    <span class="badge bg-success rounded-pill px-2" id="onlineStatus">● Online</span>
                 </div>
             </div>
 
@@ -62,7 +62,7 @@
 
                 <div class="text-center mb-3">
                     <span class="badge bg-secondary rounded-pill px-3 py-2 small">
-                        @targetUser?.FullName এর সাথে কথোপকথন
+                        Conversation with @targetUser?.FullName
                     </span>
                 </div>
 
@@ -70,7 +70,7 @@
                 {
                     <div class="text-center text-muted py-4">
                         <i class="bi bi-chat-square-dots display-4 d-block mb-2 opacity-25"></i>
-                        <p class="small">এখনো কোনো মেসেজ নেই</p>
+                        <p class="small">No messages yet</p>
                     </div>
                 }
 
@@ -136,16 +136,16 @@
 
             <!-- Typing -->
             <div id="typingIndicator" class="px-3 py-1" style="display:none;background:#f8f9fa">
-                <span class="text-muted small">@targetUser?.FullName টাইপ করছেন...</span>
+                <span class="text-muted small">@targetUser?.FullName is typing...</span>
             </div>
 
-            <!-- Input — শুধু CanCreate থাকলে দেখাও -->
+            <!-- Input -->
             @if (perm.CanCreate)
             {
                 <div class="card-footer bg-white border-top p-3">
                     <div class="d-flex gap-2">
                         <input type="text" id="messageInput" class="form-control"
-                               placeholder="@(targetUser?.FullName) কে মেসেজ লিখুন..."
+                               placeholder="Write a message to @(targetUser?.FullName)..."
                                maxlength="1000"
                                onkeypress="if(event.key==='Enter') sendMessage()" />
                         <button class="btn btn-danger px-4 flex-shrink-0" onclick="sendMessage()">
@@ -157,7 +157,7 @@
             else
             {
                 <div class="card-footer bg-light border-top p-3 text-center text-muted small">
-                    <i class="bi bi-lock me-1"></i>মেসেজ পাঠানোর অনুমতি আপনার নেই
+                    <i class="bi bi-lock me-1"></i>You do not have permission to send messages.
                 </div>
             }
         </div>
@@ -178,7 +178,6 @@
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script>
-        // ✅ JSON.Serialize দিয়ে সেফলি এনকোড — নামে quote/apostrophe থাকলেও ভাঙবে না
         const targetUserId = @Html.Raw(Json.Serialize(targetUserId ?? ""));
         const targetName = @Html.Raw(Json.Serialize(targetUser?.FullName ?? ""));
         const targetPhoto = @Html.Raw(Json.Serialize(targetUser?.ProfilePhoto ?? ""));
@@ -204,14 +203,14 @@
 
         connection.on("UserOnline", function(user) {
             if (user.userId === targetUserId) {
-                document.getElementById('onlineStatus').textContent = '● অনলাইন';
+                document.getElementById('onlineStatus').textContent = '● Online';
                 document.getElementById('onlineStatus').className = 'badge bg-success rounded-pill px-2';
             }
         });
 
         connection.on("UserOffline", function(userId) {
             if (userId === targetUserId) {
-                document.getElementById('onlineStatus').textContent = '○ অফলাইন';
+                document.getElementById('onlineStatus').textContent = '○ Offline';
                 document.getElementById('onlineStatus').className = 'badge bg-secondary rounded-pill px-2';
             }
         });
@@ -245,7 +244,7 @@
 
             connection.invoke("SendMessageToUser", targetUserId, msg).catch(function(err) {
                 console.error("Send error:", err);
-                alert('মেসেজ পাঠানো যায়নি।');
+                alert('Failed to send message.');
             });
         }
 
@@ -302,4 +301,5 @@
             return d.innerHTML;
         }
     </script>
+}
 }

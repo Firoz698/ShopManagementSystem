@@ -45,7 +45,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             {
                 await _userRepo.RemoveUserRelatedDataAsync(id);
                 await _userRepo.DeleteUserAsync(user);
-                TempData["Success"] = "ইউজার মুছে ফেলা হয়েছে।";
+                TempData["Success"] = "User deleted successfully.";
             }
             return RedirectToAction("Index");
         }
@@ -61,8 +61,8 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             await _userRepo.ToggleRoleAsync(user);
 
             TempData["Success"] = roles.Contains("Admin")
-                ? "Admin রোল সরানো হয়েছে।"
-                : "Admin রোল দেওয়া হয়েছে।";
+                ? "Admin role removed."
+                : "Admin role assigned.";
 
             return RedirectToAction("Index");
         }
@@ -93,7 +93,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             return View(model);
         }
 
-        // ✅ POST /Admin/User/ResetPassword/id — admin diye password change
+        // POST /Admin/User/ResetPassword/id - admin password change
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword(string id, string newPassword)
         {
@@ -102,14 +102,14 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
 
             if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
             {
-                TempData["Error"] = "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।";
+                TempData["Error"] = "Password must be at least 6 characters long.";
                 return RedirectToAction("Edit", new { id });
             }
 
             var result = await _userRepo.AdminResetPasswordAsync(user, newPassword);
 
             TempData[result.Succeeded ? "Success" : "Error"] = result.Succeeded
-                ? "পাসওয়ার্ড পরিবর্তন হয়েছে।"
+                ? "Password changed successfully."
                 : string.Join(", ", result.Errors.Select(e => e.Description));
 
             return RedirectToAction("Edit", new { id });

@@ -14,7 +14,7 @@ namespace ShopManagementSystem.Implementations
             _db = db;
         }
 
-        // Active slider গুলো SortOrder অনুযায়ী
+ // Active slider SortOrder 
         public async Task<List<Slider>> GetActiveSlidersAsync()
         {
             return await _db.Sliders
@@ -23,7 +23,7 @@ namespace ShopManagementSystem.Implementations
                 .ToListAsync();
         }
 
-        // Active category গুলো (homepage এ সর্বোচ্চ ৮টি)
+ // Active category (homepage )
         public async Task<List<Category>> GetActiveCategoriesAsync(int take = 8)
         {
             return await _db.Categories
@@ -32,7 +32,7 @@ namespace ShopManagementSystem.Implementations
                 .ToListAsync();
         }
 
-        // সর্বশেষ active product গুলো — images, category ও sizes সহ
+ // active product — images, category sizes 
         public async Task<List<Product>> GetLatestProductsAsync(int take = 8)
         {
             return await _db.Products

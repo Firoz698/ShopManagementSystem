@@ -1,5 +1,5 @@
-﻿@{
-    ViewData["Title"] = "অর্ডার বাতিল";
+@{
+    ViewData["Title"] = "Cancel Order";
     var order = (ShopManagementSystem.Models.Order)ViewBag.Order;
 }
 
@@ -7,10 +7,10 @@
     <div class="card border-0 shadow-sm mx-auto" style="max-width:520px">
         <div class="card-body py-4">
             <h5 class="fw-bold text-danger mb-3">
-                <i class="bi bi-exclamation-triangle me-2"></i>অর্ডার #@order.Id বাতিল করবেন?
+                <i class="bi bi-exclamation-triangle me-2"></i>Cancel Order #@order.Id?
             </h5>
             <p class="text-muted small mb-4">
-                বাতিল করলে অর্ডারের পণ্যগুলো স্টকে ফেরত যাবে। এই কাজটি আর ফিরিয়ে নেওয়া যাবে না।
+                Cancelling this order will return all reserved items to inventory. This action cannot be undone.
             </p>
 
             <form asp-action="CancelOrder" method="post">
@@ -18,18 +18,19 @@
                 <input type="hidden" name="orderId" value="@order.Id" />
 
                 <div class="mb-3">
-                    <label class="form-label">বাতিলের কারণ (ঐচ্ছিক)</label>
+                    <label class="form-label">Cancellation Reason (Optional)</label>
                     <textarea name="reason" class="form-control" rows="3"
-                              placeholder="কেন বাতিল করছেন লিখুন..."></textarea>
+                              placeholder="Please share why you are cancelling..."></textarea>
                 </div>
 
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-x-circle me-1"></i>হ্যাঁ, বাতিল করুন
+                        <i class="bi bi-x-circle me-1"></i>Yes, Cancel Order
                     </button>
-                    <a asp-action="MyOrders" asp-controller="Cart" class="btn btn-outline-secondary">ফিরে যান</a>
+                    <a asp-action="MyOrders" asp-controller="Cart" class="btn btn-outline-secondary">Go Back</a>
                 </div>
             </form>
         </div>
     </div>
+</div>
 </div>

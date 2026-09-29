@@ -13,7 +13,7 @@ namespace ShopManagementSystem.Repository.Interfaces
         Task AddReturnRequestAsync(int orderId, int productId, string userId, string reason);
         Task<List<ReturnRequest>> GetMyReturnsAsync(string userId);
 
-        // ── নতুন: Order Cancel ──
+ // ── : Order Cancel ──
         Task<Order?> GetCancellableOrderAsync(int orderId, string userId);
         Task CancelOrderAsync(Order order, string? reason);
     }

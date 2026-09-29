@@ -1,8 +1,7 @@
 @model List<ShopManagementSystem.Models.Product>
-@{ ViewData["Title"] = "প্রোডাক্ট ম্যানেজমেন্ট"; }
+@{ ViewData["Title"] = "Product Management"; }
 
 <style>
-    /* ── Toolbar ── */
     .prod-toolbar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:1.25rem; background:#fff; border:1px solid #e9ecef; border-radius:12px; padding:12px 14px; }
     .toolbar-left { display:flex; align-items:center; gap:8px; flex:1; flex-wrap:wrap; min-width:0; }
     .prod-srch { height:36px; border:1px solid #e2e8f0; border-radius:8px; padding:0 12px; font-size:13px; outline:none; background:#f8fafc; color:#1e293b; width:220px; min-width:120px; transition:border-color .15s; }
@@ -15,7 +14,6 @@
     .btn-add-prod { display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 16px; border-radius:8px; border:none; background:#212529; color:#fff; font-size:13px; font-weight:500; cursor:pointer; white-space:nowrap; text-decoration:none; flex-shrink:0; transition:opacity .15s; }
     .btn-add-prod:hover { opacity:.85; color:#fff; }
 
-    /* ── Card & Table ── */
     .prod-card { background:#fff; border:1px solid #e9ecef; border-radius:12px; overflow:hidden; }
     .prod-tbl-wrap { overflow-x:auto; }
     .prod-table { width:100%; border-collapse:collapse; min-width:650px; }
@@ -46,7 +44,6 @@
     .btn-del-p  { color:#dc2626; }
     .btn-del-p:hover  { border-color:#fca5a5; background:#fef2f2; }
 
-    /* ── Footer & Pagination ── */
     .prod-footer { border-top:1px solid #e9ecef; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; background:#fff; }
     .prod-footer-info { font-size:12px; color:#adb5bd; }
     .pgn { display:flex; align-items:center; gap:4px; }
@@ -55,7 +52,6 @@
     .pgn-btn.active { background:#212529; color:#fff; border-color:#212529; }
     .pgn-btn.disabled { opacity:.4; pointer-events:none; }
 
-    /* ── Mobile cards ── */
     .prod-mobile { display:none; }
     .m-prod-card { border-bottom:1px solid #f1f5f9; padding:14px; }
     .m-prod-card:last-child { border-bottom:none; }
@@ -79,10 +75,10 @@
     <div class="toolbar-left">
         <form method="get" id="filterForm" style="display:contents">
             <input type="text" name="search" value="@ViewBag.Search"
-                   class="prod-srch" placeholder="প্রোডাক্টের নাম খুঁজুন..." />
+                   class="prod-srch" placeholder="Search product name..." />
 
             <select name="categoryId" class="prod-sel">
-                <option value="">সব ক্যাটাগরি</option>
+                <option value="">All Categories</option>
                 @foreach (var cat in (List<ShopManagementSystem.Models.Category>)ViewBag.Categories)
                 {
                     <option value="@cat.Id"
@@ -93,19 +89,19 @@
             </select>
 
             <select name="isActive" class="prod-sel">
-                <option value="">সব স্ট্যাটাস</option>
-                <option value="true"  @@(ViewBag.IsActive?.ToString() == "True"  ? "selected" : "")>সক্রিয়</option>
-                <option value="false" @@(ViewBag.IsActive?.ToString() == "False" ? "selected" : "")>নিষ্ক্রিয়</option>
+                <option value="">All Status</option>
+                <option value="true"  @@(ViewBag.IsActive?.ToString() == "True"  ? "selected" : "")>Active</option>
+                <option value="false" @@(ViewBag.IsActive?.ToString() == "False" ? "selected" : "")>Inactive</option>
             </select>
 
-            <button type="submit" class="btn-filter">ফিল্টার</button>
-            <a asp-action="Index" class="btn-reset-prod">রিসেট</a>
+            <button type="submit" class="btn-filter">Filter</button>
+            <a asp-action="Index" class="btn-reset-prod">Reset</a>
         </form>
     </div>
 
     <a asp-action="Create" class="btn-add-prod">
         <i class="bi bi-plus-circle" style="font-size:15px"></i>
-        নতুন প্রোডাক্ট
+        Add Product
     </a>
 </div>
 
@@ -115,13 +111,13 @@
         <table class="prod-table">
             <thead>
                 <tr>
-                    <th>ছবি</th>
-                    <th>নাম</th>
-                    <th>ক্যাটাগরি</th>
-                    <th>মূল্য</th>
-                    <th class="tc">স্টক</th>
-                    <th class="tc">স্ট্যাটাস</th>
-                    <th class="tc">অ্যাকশন</th>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th class="tc">Stock</th>
+                    <th class="tc">Status</th>
+                    <th class="tc">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -160,20 +156,20 @@
                             <form asp-action="ToggleActive" asp-route-id="@p.Id" method="post" style="display:contents">
                                 @Html.AntiForgeryToken()
                                 <button type="submit" class="@(p.IsActive ? "toggle-on-btn" : "toggle-off-btn")">
-                                    @(p.IsActive ? "সক্রিয়" : "নিষ্ক্রিয়")
+                                    @(p.IsActive ? "Active" : "Inactive")
                                 </button>
                             </form>
                         </td>
                         <td class="tc">
                             <div class="act-wrap-p">
-                                <a asp-action="Edit" asp-route-id="@p.Id" class="btn-act-p btn-edit-p" title="সম্পাদনা">
+                                <a asp-action="Edit" asp-route-id="@p.Id" class="btn-act-p btn-edit-p" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 <form asp-action="Delete" asp-route-id="@p.Id" method="post"
-                                      onsubmit="return confirm('প্রোডাক্টটি মুছবেন? এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।')"
+                                      onsubmit="return confirm('Delete this product? This action cannot be undone.')"
                                       style="display:contents">
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn-act-p btn-del-p" title="মুছুন">
+                                    <button type="submit" class="btn-act-p btn-del-p" title="Delete">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -185,7 +181,7 @@
                 {
                     <tr>
                         <td colspan="7" style="text-align:center;color:#adb5bd;padding:48px 16px;font-size:14px">
-                            কোনো প্রোডাক্ট পাওয়া যায়নি
+                            No products found
                         </td>
                     </tr>
                 }
@@ -221,11 +217,11 @@
                         {
                             <span style="font-size:13px;font-weight:600;color:#212529">৳@p.Price.ToString("N0")</span>
                         }
-                        <span class="@stockClass2">স্টক: @p.Stock</span>
+                        <span class="@stockClass2">Stock: @p.Stock</span>
                         <form asp-action="ToggleActive" asp-route-id="@p.Id" method="post" style="display:contents">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="@(p.IsActive ? "toggle-on-btn" : "toggle-off-btn")">
-                                @(p.IsActive ? "সক্রিয়" : "নিষ্ক্রিয়")
+                                @(p.IsActive ? "Active" : "Inactive")
                             </button>
                         </form>
                     </div>
@@ -234,7 +230,7 @@
                             <i class="bi bi-pencil"></i>
                         </a>
                         <form asp-action="Delete" asp-route-id="@p.Id" method="post"
-                              onsubmit="return confirm('প্রোডাক্টটি মুছবেন?')"
+                              onsubmit="return confirm('Delete this product?')"
                               style="display:contents">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="btn-act-p btn-del-p">
@@ -248,10 +244,9 @@
     </div>
 
     <div class="prod-footer">
-        <span class="prod-footer-info">মোট @Model.Count টি প্রোডাক্ট</span>
+        <span class="prod-footer-info">Total @Model.Count products</span>
 
         @{
-            int pageSize = 10;
             int currentPage = ViewBag.CurrentPage ?? 1;
             int totalPages = ViewBag.TotalPages ?? 1;
         }
@@ -295,4 +290,5 @@
             </div>
         }
     </div>
+</div>
 </div>

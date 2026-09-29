@@ -1,4 +1,4 @@
-﻿@using ShopManagementSystem.Data
+@using ShopManagementSystem.Data
 @model List<ShopManagementSystem.Models.Menu>
 @inject ApplicationDbContext Db
 
@@ -13,7 +13,6 @@
                class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == child.Controller ? "active" : "")">
                 <i class="@child.Icon me-2"></i>@child.Title
 
-                @* ── রিটার্ন/চ্যাট এর unread badge (আগের মতোই) ── *@
                 @if (child.Controller == "Return")
                 {
                     var pendingReturns = 0;
@@ -42,4 +41,5 @@
             <i class="@group.Icon me-2"></i>@group.Title
         </a>
     }
+}
 }

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ShopManagementSystem.Models
@@ -10,11 +10,11 @@ namespace ShopManagementSystem.Models
         [Required, MaxLength(150)]
         public string Title { get; set; } = string.Empty;
 
-        // Bootstrap icon class, যেমন: "bi bi-speedometer2"
+        // Bootstrap icon class, e.g.: "bi bi-speedometer2"
         [MaxLength(100)]
         public string? Icon { get; set; }
 
-        // Controller/Action/Area — খালি থাকলে এটা শুধু গ্রুপ হেডার (ক্লিক করা যাবে না)
+        // Controller/Action/Area - If empty, this is a group header (not clickable)
         [MaxLength(100)]
         public string? Controller { get; set; }
 
@@ -24,7 +24,7 @@ namespace ShopManagementSystem.Models
         [MaxLength(100)]
         public string? Area { get; set; } = "Admin";
 
-        // Parent menu (গ্রুপ হেডার) — null হলে এটা top-level গ্রুপ
+        // Parent menu (group header) - null indicates top-level group
         public int? ParentId { get; set; }
 
         public int SortOrder { get; set; } = 0;
@@ -37,7 +37,7 @@ namespace ShopManagementSystem.Models
         public ICollection<Menu> Children { get; set; } = new List<Menu>();
         public ICollection<UserMenuPermission> UserPermissions { get; set; } = new List<UserMenuPermission>();
 
-        // Controller না থাকলে এটা শুধু গ্রুপ লেবেল (যেমন "সেটিংস"), ক্লিকযোগ্য লিংক না
+        // If Controller is null/empty, this is a group header, not a clickable link
         [NotMapped]
         public bool IsGroupHeader => string.IsNullOrEmpty(Controller);
     }

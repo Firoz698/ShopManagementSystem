@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +18,7 @@ namespace ShopManagementSystem.Hubs
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IPermissionChecker _permissionChecker;
 
-        // userId -> ওই ইউজারের সব active connectionId (multi-tab/device safe)
+        // userId -> all active connectionIds for that user (multi-tab/device safe)
         private static readonly ConcurrentDictionary<string, HashSet<string>> _onlineUsers = new();
         private static readonly object _onlineLock = new();
 
@@ -41,8 +41,7 @@ namespace ShopManagementSystem.Hubs
 
             AddConnection(user.Id, Context.ConnectionId);
 
-            // Role-এর বদলে actual "Chat" permission দিয়ে চেক — non-Admin role হলেও 
-            // menu permission থাকলে Admins গ্রুপে ঢুকবে
+            // Check actual "Chat" permission - if user has permission, join Admins group
             var perm = await _permissionChecker.GetPermissionsAsync(Context.User!, "Chat");
             if (perm.CanView)
             {
@@ -51,7 +50,7 @@ namespace ShopManagementSystem.Hubs
             }
             else
             {
-                // সাধারণ কাস্টমার হিসেবে ট্রিট করো
+                // Regular customer
                 await Groups.AddToGroupAsync(Context.ConnectionId, $"User_{user.Id}");
 
                 var session = await _db.ChatSessions.FirstOrDefaultAsync(s => s.UserId == user.Id);
@@ -80,7 +79,7 @@ namespace ShopManagementSystem.Hubs
             {
                 var stillOnline = RemoveConnection(user.Id, Context.ConnectionId);
 
-                // শুধু তখনই "Offline" পাঠাও যখন ইউজারের আর কোনো active connection নেই
+                // Only send "Offline" when user has no remaining active connections
                 if (!stillOnline)
                 {
                     var perm = await _permissionChecker.GetPermissionsAsync(Context.User!, "Chat");
@@ -93,7 +92,7 @@ namespace ShopManagementSystem.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
-        // ── User → Admin মেসেজ পাঠানো ────────────────────────────────────────
+        // ── User -> Admin Send Message ────────────────────────────────────────
         public async Task SendMessageToAdmin(string message)
         {
             var user = await _userManager.GetUserAsync(Context.User!);
@@ -137,7 +136,7 @@ namespace ShopManagementSystem.Hubs
             await Clients.Caller.SendAsync("MessageSent", payload);
         }
 
-        // ── Admin → User মেসেজ পাঠানো ────────────────────────────────────────
+        // ── Admin -> User Send Message ────────────────────────────────────────
         public async Task SendMessageToUser(string targetUserId, string message)
         {
             var admin = await _userManager.GetUserAsync(Context.User!);
@@ -146,15 +145,15 @@ namespace ShopManagementSystem.Hubs
             message = (message ?? string.Empty).Trim();
             if (string.IsNullOrEmpty(message) || message.Length > MaxMessageLength) return;
 
-            // ✅ Role-এর বদলে actual permission চেক — CanCreate না থাকলে reject
+            // Check actual permission - reject if CanCreate is false
             var perm = await _permissionChecker.GetPermissionsAsync(Context.User!, "Chat");
             if (!perm.CanCreate)
             {
-                await Clients.Caller.SendAsync("Error", "মেসেজ পাঠানোর অনুমতি আপনার নেই।");
+                await Clients.Caller.SendAsync("Error", "You do not have permission to send messages.");
                 return;
             }
 
-            // Session না থাকলে তৈরি করো (SendMessageToAdmin এর মতোই সামঞ্জস্যপূর্ণ)
+            // Create session if it doesn't exist
             var session = await _db.ChatSessions.FirstOrDefaultAsync(s => s.UserId == targetUserId);
             if (session == null)
             {
@@ -188,7 +187,7 @@ namespace ShopManagementSystem.Hubs
             await Clients.Caller.SendAsync("MessageSent", new { payload, targetUserId });
         }
 
-        // ── Messages পড়া হয়েছে mark করা ─────────────────────────────────────
+        // ── Mark Messages as Read ─────────────────────────────────────────────
         public async Task MarkAsRead(string userId)
         {
             if (string.IsNullOrWhiteSpace(userId)) return;
@@ -196,8 +195,7 @@ namespace ShopManagementSystem.Hubs
             var caller = await _userManager.GetUserAsync(Context.User!);
             if (caller == null) return;
 
-            // ✅ আগে কোনো চেক ছিল না — যেকোনো authenticated ইউজার যেকোনো session
-            // এর unread reset করতে পারতো। এখন শুধু CanView থাকা staff/admin পারবে।
+            // Only staff/admin with CanView permission can mark as read
             var perm = await _permissionChecker.GetPermissionsAsync(Context.User!, "Chat");
             if (!perm.CanView) return;
 
@@ -213,7 +211,7 @@ namespace ShopManagementSystem.Hubs
                 .ExecuteUpdateAsync(s => s.SetProperty(m => m.IsRead, true));
         }
 
-        // ── চেক করো user online কিনা ─────────────────────────────────────────
+        // ── Check if user is online ──────────────────────────────────────────
         public bool IsUserOnline(string userId) => _onlineUsers.ContainsKey(userId);
 
         // ── Multi-connection safe helpers ───────────────────────────────────
@@ -230,7 +228,7 @@ namespace ShopManagementSystem.Hubs
             }
         }
 
-        /// <returns>true হলে ইউজারের এখনো অন্য active connection আছে</returns>
+        /// <returns>true if user still has other active connections</returns>
         private static bool RemoveConnection(string userId, string connectionId)
         {
             lock (_onlineLock)

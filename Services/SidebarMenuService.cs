@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using ShopManagementSystem.Data;
 using ShopManagementSystem.Models;
@@ -34,7 +34,7 @@ namespace ShopManagementSystem.Services
             HashSet<int> allowedIds;
             if (isAdmin)
             {
-                // Admin সব active menu দেখবে
+ // Admin active menu 
                 allowedIds = allMenus.Select(m => m.Id).ToHashSet();
             }
             else
@@ -46,7 +46,7 @@ namespace ShopManagementSystem.Services
                 allowedIds = permitted.ToHashSet();
             }
 
-            // Group header দেখাবে শুধু যদি তার কমপক্ষে ১টা child allowed থাকে
+ // Group header child allowed 
             var visible = new HashSet<int>(allowedIds);
             foreach (var header in allMenus.Where(m => m.IsGroupHeader))
             {

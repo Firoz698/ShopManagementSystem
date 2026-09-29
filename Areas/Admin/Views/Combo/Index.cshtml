@@ -1,11 +1,11 @@
-﻿@model List<ShopManagementSystem.Models.ComboOffer>
+@model List<ShopManagementSystem.Models.ComboOffer>
 @{
-    ViewData["Title"] = "কম্বো অফার ম্যানেজমেন্ট";
+    ViewData["Title"] = "Combo Offer Management";
 }
 
 <div class="d-flex justify-content-end mb-4">
     <a asp-action="Create" class="btn btn-dark">
-        <i class="bi bi-plus-circle me-2"></i>নতুন কম্বো অফার
+        <i class="bi bi-plus-circle me-2"></i>Create New Combo
     </a>
 </div>
 
@@ -13,8 +13,8 @@
 {
     <div class="text-center py-5 text-muted">
         <i class="bi bi-gift display-3 d-block mb-3 opacity-25"></i>
-        <h5>কোনো কম্বো অফার নেই</h5>
-        <a asp-action="Create" class="btn btn-dark mt-2">প্রথম কম্বো তৈরি করুন</a>
+        <h5>No combo offers found</h5>
+        <a asp-action="Create" class="btn btn-dark mt-2">Create First Combo</a>
     </div>
 }
 else
@@ -52,7 +52,7 @@ else
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <h6 class="fw-bold mb-0">@combo.Title</h6>
                             <span class="badge @(combo.IsActive && !isExpired ? "bg-success" : "bg-secondary") rounded-pill">
-                                @(isExpired ? "মেয়াদ শেষ" : combo.IsActive ? "সক্রিয়" : "নিষ্ক্রিয়")
+                                @(isExpired ? "Expired" : combo.IsActive ? "Active" : "Inactive")
                             </span>
                         </div>
 
@@ -81,7 +81,7 @@ else
                                 <span class="text-muted small text-decoration-line-through">
                                     ৳@combo.OriginalPrice.Value.ToString("N0")
                                 </span>
-                                <span class="badge bg-danger-subtle text-danger">৳@savings.ToString("N0") ছাড়</span>
+                                <span class="badge bg-danger-subtle text-danger">Save ৳@savings.ToString("N0")</span>
                             }
                         </div>
 
@@ -90,8 +90,8 @@ else
                         {
                             <div class="small text-muted">
                                 <i class="bi bi-calendar3 me-1"></i>
-                                @(combo.StartDate?.ToString("dd MMM") ?? "এখন") →
-                                @(combo.EndDate?.ToString("dd MMM yyyy") ?? "অনির্দিষ্ট")
+                                @(combo.StartDate?.ToString("dd MMM") ?? "Now") →
+                                @(combo.EndDate?.ToString("dd MMM yyyy") ?? "Indefinite")
                             </div>
                         }
                     </div>
@@ -99,16 +99,16 @@ else
                     <div class="card-footer bg-white border-0 pb-3 px-3 d-flex gap-2">
                         <a asp-action="Edit" asp-route-id="@combo.Id"
                            class="btn btn-sm btn-outline-primary flex-fill">
-                            <i class="bi bi-pencil me-1"></i>সম্পাদনা
+                            <i class="bi bi-pencil me-1"></i>Edit
                         </a>
                         <form asp-action="ToggleActive" asp-route-id="@combo.Id" method="post" class="flex-fill">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="btn btn-sm @(combo.IsActive ? "btn-outline-warning" : "btn-outline-success") w-100">
-                                @(combo.IsActive ? "নিষ্ক্রিয় করুন" : "সক্রিয় করুন")
+                                @(combo.IsActive ? "Deactivate" : "Activate")
                             </button>
                         </form>
                         <form asp-action="Delete" asp-route-id="@combo.Id" method="post"
-                              onsubmit="return confirm('কম্বোটি মুছবেন?')">
+                              onsubmit="return confirm('Delete this combo offer?')">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="btn btn-sm btn-outline-danger">
                                 <i class="bi bi-trash"></i>
@@ -120,3 +120,4 @@ else
         }
     </div>
 }
+

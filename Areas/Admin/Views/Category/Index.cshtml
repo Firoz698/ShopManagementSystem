@@ -1,7 +1,7 @@
 @model List<ShopManagementSystem.Models.Category>
 @inject ShopManagementSystem.Services.IPermissionChecker PermissionChecker
 @{
-    ViewData["Title"] = "ক্যাটাগরি ম্যানেজমেন্ট";
+    ViewData["Title"] = "Category Management";
     var perm = await PermissionChecker.GetPermissionsAsync(User, "Category");
 }
 
@@ -47,7 +47,6 @@
             color: #fff;
         }
 
-    /* Desktop table */
     .cat-card {
         background: #fff;
         border: 1px solid #e9ecef;
@@ -220,7 +219,6 @@
         font-size: 14px;
     }
 
-    /* Mobile cards */
     .mobile-cards {
         display: none;
     }
@@ -286,13 +284,13 @@
 
 <div class="cat-header">
     <div>
-        <div class="cat-title">ক্যাটাগরি ম্যানেজমেন্ট</div>
-        <div class="cat-subtitle">মোট @Model.Count টি ক্যাটাগরি</div>
+        <div class="cat-title">Category Management</div>
+        <div class="cat-subtitle">Total @Model.Count categories</div>
     </div>
     @if (perm.CanCreate)
     {
         <a asp-action="Create" class="btn-add-cat">
-            <i class="bi bi-plus-circle"></i> নতুন ক্যাটাগরি
+            <i class="bi bi-plus-circle"></i> Add Category
         </a>
     }
 </div>
@@ -303,14 +301,14 @@
         <table class="cat-table">
             <thead>
                 <tr>
-                    <th>ছবি</th>
-                    <th>নাম</th>
-                    <th>স্লাগ</th>
-                    <th class="tc">প্রোডাক্ট</th>
-                    <th class="tc">স্ট্যাটাস</th>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Slug</th>
+                    <th class="tc">Products</th>
+                    <th class="tc">Status</th>
                     @if (perm.CanEdit || perm.CanDelete)
                     {
-                        <th class="tc">অ্যাকশন</th>
+                        <th class="tc">Actions</th>
                     }
                 </tr>
             </thead>
@@ -338,7 +336,7 @@
                         </td>
                         <td class="tc">
                             <span class="@(cat.IsActive ? "badge-active" : "badge-inactive")">
-                                @(cat.IsActive ? "সক্রিয়" : "নিষ্ক্রিয়")
+                                @(cat.IsActive ? "Active" : "Inactive")
                             </span>
                         </td>
                         @if (perm.CanEdit || perm.CanDelete)
@@ -347,16 +345,16 @@
                                 <div class="act-wrap">
                                     @if (perm.CanEdit)
                                     {
-                                        <a asp-action="Edit" asp-route-id="@cat.Id" class="btn-act edit" title="সম্পাদনা">
+                                        <a asp-action="Edit" asp-route-id="@cat.Id" class="btn-act edit" title="Edit">
                                             <i class="bi bi-pencil"></i>
                                         </a>
                                     }
                                     @if (perm.CanDelete)
                                     {
                                         <form asp-action="Delete" asp-route-id="@cat.Id" method="post"
-                                              onsubmit="return confirm('ক্যাটাগরিটি মুছবেন?')" style="display:contents">
+                                              onsubmit="return confirm('Delete this category?')" style="display:contents">
                                             @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn-act del" title="মুছুন">
+                                            <button type="submit" class="btn-act del" title="Delete">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </form>
@@ -368,7 +366,7 @@
                 }
                 @if (!Model.Any())
                 {
-                    <tr><td colspan="6" class="cat-empty">কোনো ক্যাটাগরি নেই</td></tr>
+                    <tr><td colspan="6" class="cat-empty">No categories found</td></tr>
                 }
             </tbody>
         </table>
@@ -395,9 +393,9 @@
                 </div>
                 <div class="m-bottom">
                     <div class="m-badges">
-                        <span class="badge-count">@cat.Products.Count প্রোডাক্ট</span>
+                        <span class="badge-count">@cat.Products.Count Products</span>
                         <span class="@(cat.IsActive ? "badge-active" : "badge-inactive")">
-                            @(cat.IsActive ? "সক্রিয়" : "নিষ্ক্রিয়")
+                            @(cat.IsActive ? "Active" : "Inactive")
                         </span>
                     </div>
                     @if (perm.CanEdit || perm.CanDelete)
@@ -412,7 +410,7 @@
                             @if (perm.CanDelete)
                             {
                                 <form asp-action="Delete" asp-route-id="@cat.Id" method="post"
-                                      onsubmit="return confirm('ক্যাটাগরিটি মুছবেন?')" style="display:contents">
+                                      onsubmit="return confirm('Delete this category?')" style="display:contents">
                                     @Html.AntiForgeryToken()
                                     <button type="submit" class="btn-act del">
                                         <i class="bi bi-trash"></i>
@@ -426,8 +424,9 @@
         }
         @if (!Model.Any())
         {
-            <div class="cat-empty">কোনো ক্যাটাগরি নেই</div>
+            <div class="cat-empty">No categories found</div>
         }
     </div>
 
+</div>
 </div>

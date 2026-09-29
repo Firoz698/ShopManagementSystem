@@ -14,7 +14,7 @@ namespace ShopManagementSystem.Implementations
             _db = db;
         }
 
-        // User এর সব wishlist item — product, image ও category সহ
+ // User wishlist item — product, image category 
         public async Task<List<Wishlist>> GetWishlistItemsAsync(string userId)
         {
             return await _db.Wishlists
@@ -25,28 +25,28 @@ namespace ShopManagementSystem.Implementations
                 .ToListAsync();
         }
 
-        // ProductId দিয়ে wishlist item খোঁজে (Toggle এর জন্য)
+ // ProductId wishlist item (Toggle )
         public async Task<Wishlist?> GetByProductIdAsync(string userId, int productId)
         {
             return await _db.Wishlists
                 .FirstOrDefaultAsync(w => w.UserId == userId && w.ProductId == productId);
         }
 
-        // Wishlist Id দিয়ে item খোঁজে (Remove এর জন্য)
+ // Wishlist Id item (Remove )
         public async Task<Wishlist?> GetByIdAsync(int id, string userId)
         {
             return await _db.Wishlists
                 .FirstOrDefaultAsync(w => w.Id == id && w.UserId == userId);
         }
 
-        // নতুন wishlist item যোগ করে
+ // wishlist item 
         public async Task AddAsync(string userId, int productId)
         {
             _db.Wishlists.Add(new Wishlist { UserId = userId, ProductId = productId });
             await _db.SaveChangesAsync();
         }
 
-        // Wishlist item মুছে ফেলে
+ // Wishlist item 
         public async Task RemoveAsync(Wishlist item)
         {
             _db.Wishlists.Remove(item);

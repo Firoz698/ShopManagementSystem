@@ -1,9 +1,9 @@
 @model List<ShopManagementSystem.Models.Slider>
-@{ ViewData["Title"] = "স্লাইডার ম্যানেজমেন্ট"; }
+@{ ViewData["Title"] = "Slider Management"; }
 
 <div class="d-flex justify-content-end mb-4">
     <a asp-action="Create" class="btn btn-dark">
-        <i class="bi bi-plus-circle me-2"></i>নতুন স্লাইডার
+        <i class="bi bi-plus-circle me-2"></i>New Slider
     </a>
 </div>
 
@@ -18,30 +18,30 @@
                          onerror="this.src='https://via.placeholder.com/400x180/1a1a2e/fff?text=No+Image'"
                          alt="slider" />
                     <span class="badge @(s.IsActive ? "bg-success" : "bg-secondary") position-absolute top-0 end-0 m-2">
-                        @(s.IsActive ? "সক্রিয়" : "নিষ্ক্রিয়")
+                        @(s.IsActive ? "Active" : "Inactive")
                     </span>
-                    <span class="badge bg-dark position-absolute top-0 start-0 m-2">ক্রম: @s.SortOrder</span>
+                    <span class="badge bg-dark position-absolute top-0 start-0 m-2">Order: @s.SortOrder</span>
                 </div>
                 <div class="card-body py-2 px-3">
-                    <div class="fw-semibold small">@(s.Title ?? "(কোনো টাইটেল নেই)")</div>
+                    <div class="fw-semibold small">@(s.Title ?? "(No Title)")</div>
                     @if (!string.IsNullOrEmpty(s.SubTitle))
                     {
                         <div class="text-muted" style="font-size:.8rem">@s.SubTitle</div>
                     }
                     @if (!string.IsNullOrEmpty(s.ButtonText))
                     {
-                        <span class="badge bg-warning text-dark mt-1">বাটন: @s.ButtonText</span>
+                        <span class="badge bg-warning text-dark mt-1">Button: @s.ButtonText</span>
                     }
                 </div>
                 <div class="card-footer bg-white border-0 d-flex gap-2 pt-0 pb-3 px-3">
                     <a asp-action="Edit" asp-route-id="@s.Id" class="btn btn-sm btn-outline-primary flex-fill">
-                        <i class="bi bi-pencil me-1"></i>সম্পাদনা
+                        <i class="bi bi-pencil me-1"></i>Edit
                     </a>
                     <form asp-action="Delete" asp-route-id="@s.Id" method="post"
-                          onsubmit="return confirm('স্লাইডারটি মুছবেন?')" class="flex-fill">
+                          onsubmit="return confirm('Delete this slider?')" class="flex-fill">
                         @Html.AntiForgeryToken()
                         <button type="submit" class="btn btn-sm btn-outline-danger w-100">
-                            <i class="bi bi-trash me-1"></i>মুছুন
+                            <i class="bi bi-trash me-1"></i>Delete
                         </button>
                     </form>
                 </div>
@@ -52,7 +52,8 @@
     {
         <div class="col-12 text-center py-5 text-muted">
             <i class="bi bi-images display-3 d-block mb-3 opacity-25"></i>
-            <h5>কোনো স্লাইডার নেই</h5>
+            <h5>No sliders found</h5>
         </div>
     }
 </div>
+

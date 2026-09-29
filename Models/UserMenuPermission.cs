@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ShopManagementSystem.Models
@@ -13,11 +13,11 @@ namespace ShopManagementSystem.Models
         [Required]
         public int MenuId { get; set; }
 
-        // ── এখন আলাদা আলাদা CRUD পারমিশন ──
-        public bool CanAccess { get; set; } = true;   // View / মেনু দেখতে পারবে কিনা
-        public bool CanCreate { get; set; } = false;  // নতুন তৈরি করতে পারবে কিনা
-        public bool CanEdit { get; set; } = false;    // এডিট/আপডেট করতে পারবে কিনা
-        public bool CanDelete { get; set; } = false;  // ডিলিট করতে পারবে কিনা
+        // CRUD permissions
+        public bool CanAccess { get; set; } = true;   // View / can access menu
+        public bool CanCreate { get; set; } = false;  // Can create new items
+        public bool CanEdit { get; set; } = false;    // Can edit/update items
+        public bool CanDelete { get; set; } = false;  // Can delete items
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 

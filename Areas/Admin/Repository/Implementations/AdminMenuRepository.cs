@@ -20,7 +20,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository
 
         public async Task<Menu?> GetByIdAsync(int id) => await _db.Menus.FindAsync(id);
 
-        // শুধু গ্রুপ হেডার (Controller ফাঁকা) — dropdown এ parent হিসেবে দেখানোর জন্য
+ // (Controller ) — dropdown parent 
         public async Task<List<Menu>> GetHeaderOptionsAsync()
         {
             return await _db.Menus
@@ -57,7 +57,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository
             var menu = await _db.Menus.FindAsync(id);
             if (menu == null) return;
 
-            // চাইল্ড থাকলে ডিলিট করা যাবে না (safety)
+ // (safety)
             var hasChildren = await _db.Menus.AnyAsync(m => m.ParentId == id);
             if (hasChildren) return;
 

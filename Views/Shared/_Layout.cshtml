@@ -1,549 +1,500 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] — ShopManagementSystem</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Tiro+Bangla&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link href="~/css/site.css" rel="stylesheet" />
     <style>
-            :root {
-                --primary: #6C3EE8;
-                --primary-dark: #4E26C0;
-                --primary-light: #EDE8FF;
-                --accent: #FF7A2F;
-                --accent-light: #FFF0E8;
-                --success: #22C55E;
-                --surface: #FFFFFF;
-                --surface-2: #F8F6FF;
-                --border: rgba(108,62,232,0.13);
-                --text-main: #1A1235;
-                --text-muted: #7B6FA0;
-                --navbar-h: 68px;
-                --shadow-soft: 0 4px 24px rgba(108,62,232,0.10);
-                --shadow-card: 0 2px 12px rgba(108,62,232,0.08);
-                --radius: 14px;
-                --radius-sm: 8px;
-            }
+        :root {
+            --primary: #6C3EE8;
+            --primary-dark: #4E26C0;
+            --primary-light: #EDE8FF;
+            --accent: #FF7A2F;
+            --accent-light: #FFF0E8;
+            --success: #22C55E;
+            --surface: #FFFFFF;
+            --surface-2: #F8F6FF;
+            --border: rgba(108,62,232,0.13);
+            --text-main: #1A1235;
+            --text-muted: #7B6FA0;
+            --navbar-h: 68px;
+            --shadow-soft: 0 4px 24px rgba(108,62,232,0.10);
+            --shadow-card: 0 2px 12px rgba(108,62,232,0.08);
+            --radius: 14px;
+            --radius-sm: 8px;
+        }
 
-            * {
-                box-sizing: border-box;
-            }
+        * {
+            box-sizing: border-box;
+        }
 
-            body {
-                font-family: 'Hind Siliguri', sans-serif;
-                background: var(--surface-2);
-                color: var(--text-main);
-                margin: 0;
-            }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--surface-2);
+            color: var(--text-main);
+            margin: 0;
+        }
 
-            /* ── NAVBAR ── */
+        /* ── NAVBAR ── */
+        .shopms-nav {
+            background: linear-gradient(135deg, #2D1B69 0%, #4E26C0 50%, #6C3EE8 100%);
+            height: var(--navbar-h);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(44,27,105,0.35);
+        }
+
+        .shopms-nav .navbar-brand {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: #fff !important;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #FF7A2F, #FF4F81);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        /* Search bar */
+        .nav-search-wrap {
+            flex: 1;
+            max-width: 420px;
+            margin: 0 1.5rem;
+        }
+
+        .nav-search-wrap .input-group {
+            background: rgba(255,255,255,0.12);
+            border-radius: 50px;
+            overflow: hidden;
+            border: 1.5px solid rgba(255,255,255,0.25);
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .nav-search-wrap .input-group:focus-within {
+            background: rgba(255,255,255,0.22);
+            border-color: rgba(255,255,255,0.55);
+        }
+
+        .nav-search-wrap .form-control {
+            background: transparent;
+            border: none;
+            color: #fff;
+            padding: 0.55rem 1rem;
+            font-size: 0.92rem;
+        }
+
+        .nav-search-wrap .form-control::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+
+        .nav-search-wrap .form-control:focus {
+            box-shadow: none;
+            color: #fff;
+            background: transparent;
+        }
+
+        .nav-search-wrap .btn-search {
+            background: linear-gradient(135deg, #FF7A2F, #FF4F81);
+            border: none;
+            color: #fff;
+            padding: 0.55rem 1.1rem;
+            transition: opacity 0.2s;
+        }
+
+        .nav-search-wrap .btn-search:hover {
+            opacity: 0.88;
+        }
+
+        /* Nav links */
+        .shopms-nav .nav-link {
+            color: rgba(255,255,255,0.85) !important;
+            font-weight: 500;
+            font-size: 0.93rem;
+            padding: 0.4rem 0.75rem !important;
+            border-radius: var(--radius-sm);
+            transition: background 0.18s, color 0.18s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .shopms-nav .nav-link:hover,
+        .shopms-nav .nav-link.active {
+            color: #fff !important;
+            background: rgba(255,255,255,0.15);
+        }
+
+        .shopms-nav .navbar-toggler {
+            border-color: rgba(255,255,255,0.4);
+            padding: 0.35rem 0.6rem;
+        }
+
+        .shopms-nav .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255,255,255,0.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        /* Cart badge */
+        .cart-badge {
+            position: absolute;
+            top: -4px;
+            right: -6px;
+            background: linear-gradient(135deg, #FF7A2F, #FF4F81);
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--primary-dark);
+        }
+
+        /* Auth buttons */
+        .btn-nav-login {
+            border: 1.5px solid rgba(255,255,255,0.5);
+            color: #fff !important;
+            background: transparent;
+            border-radius: 50px;
+            padding: 0.38rem 1.1rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: background 0.18s;
+        }
+
+        .btn-nav-login:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .btn-nav-register {
+            background: linear-gradient(135deg, #FF7A2F, #FF4F81);
+            color: #fff !important;
+            border: none;
+            border-radius: 50px;
+            padding: 0.38rem 1.2rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 3px 10px rgba(255,79,129,0.4);
+            transition: opacity 0.18s, transform 0.15s;
+        }
+
+        .btn-nav-register:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* User dropdown */
+        .shopms-nav .dropdown-menu {
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-soft);
+            padding: 0.4rem;
+            min-width: 210px;
+        }
+
+        .shopms-nav .dropdown-item {
+            border-radius: var(--radius-sm);
+            font-size: 0.92rem;
+            padding: 0.5rem 0.9rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.15s;
+        }
+
+        .shopms-nav .dropdown-item:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .shopms-nav .dropdown-item.text-danger:hover {
+            background: #FFF0F0;
+        }
+
+        .shopms-nav .dropdown-divider {
+            border-color: var(--border);
+            margin: 0.3rem 0;
+        }
+
+        /* Navbar profile photo */
+        .nav-profile-pic {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1.5px solid rgba(255,255,255,0.6);
+            flex-shrink: 0;
+        }
+
+        /* ── CATEGORY BAR ── */
+        .cat-bar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0.6rem 0;
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: none;
+        }
+
+        .cat-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .cat-bar .container {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .cat-pill {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 50px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            text-decoration: none;
+            transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.15s;
+            white-space: nowrap;
+        }
+
+        .cat-pill:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: rgba(108,62,232,0.3);
+            transform: translateY(-1px);
+        }
+
+        .cat-bar-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.03em;
+            padding-right: 0.5rem;
+            border-right: 1px solid var(--border);
+            margin-right: 0.25rem;
+            white-space: nowrap;
+        }
+
+        /* ── ALERTS ── */
+        .alert-zone {
+            padding: 0.6rem 0 0;
+        }
+
+        .alert {
+            border-radius: var(--radius);
+            border: none;
+            font-size: 0.92rem;
+            padding: 0.75rem 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success {
+            background: #ECFDF5;
+            color: #065F46;
+            border-left: 4px solid var(--success);
+        }
+
+        .alert-danger {
+            background: #FFF1F2;
+            color: #9F1239;
+            border-left: 4px solid #F43F5E;
+        }
+
+        /* ── MAIN CONTENT ── */
+        main {
+            min-height: calc(100vh - var(--navbar-h) - 42px - 340px);
+        }
+
+        /* ── FOOTER ── */
+        .shopms-footer {
+            background: linear-gradient(160deg, #1A1235 0%, #2D1B69 60%, #4E26C0 100%);
+            color: rgba(255,255,255,0.75);
+            padding-top: 3.5rem;
+        }
+
+        .footer-brand-name {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-desc {
+            font-size: 0.9rem;
+            line-height: 1.75;
+            color: rgba(255,255,255,0.55);
+        }
+
+        .footer-social a {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.09);
+            border: 1px solid rgba(255,255,255,0.14);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.75);
+            font-size: 1.05rem;
+            text-decoration: none;
+            transition: background 0.18s, color 0.18s, transform 0.15s;
+        }
+
+        .footer-social a:hover {
+            background: linear-gradient(135deg, #FF7A2F, #FF4F81);
+            color: #fff;
+            border-color: transparent;
+            transform: translateY(-2px);
+        }
+
+        .footer-heading {
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 1.1rem;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.6rem;
+        }
+
+        .footer-links a {
+            color: rgba(255,255,255,0.55);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.18s, padding-left 0.18s;
+            display: inline-block;
+        }
+
+        .footer-links a:hover {
+            color: #fff;
+            padding-left: 5px;
+        }
+
+        .footer-contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 0.88rem;
+            color: rgba(255,255,255,0.55);
+            margin-bottom: 0.65rem;
+        }
+
+        .footer-contact-item i {
+            color: var(--accent);
+            font-size: 1rem;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .footer-divider {
+            border-color: rgba(255,255,255,0.1);
+            margin: 2rem 0 1.25rem;
+        }
+
+        .footer-bottom {
+            font-size: 0.83rem;
+            color: rgba(255,255,255,0.4);
+            padding-bottom: 1.5rem;
+        }
+
+        .footer-bottom .dev-credit {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* ── RESPONSIVE TWEAKS ── */
+        @@media (max-width: 991.98px) {
             .shopms-nav {
-                background: linear-gradient(135deg, #2D1B69 0%, #4E26C0 50%, #6C3EE8 100%);
-                height: var(--navbar-h);
-                position: sticky;
-                top: 0;
-                z-index: 1000;
-                box-shadow: 0 4px 20px rgba(44,27,105,0.35);
+                height: auto;
+                min-height: var(--navbar-h);
             }
 
-                .shopms-nav .navbar-brand {
-                    font-family: 'Tiro Bangla', serif;
-                    font-size: 1.5rem;
-                    font-weight: 700;
-                    color: #fff !important;
-                    letter-spacing: -0.5px;
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                }
+            .nav-search-wrap {
+                max-width: 100%;
+                margin: 0.6rem 0;
+            }
+
+            .shopms-nav .navbar-collapse {
+                padding: 0.6rem 0 1rem;
+                gap: 0.3rem;
+            }
+
+            .shopms-nav .navbar-nav {
+                gap: 0.1rem !important;
+            }
+
+            .shopms-nav .nav-link {
+                padding: 0.55rem 0.9rem !important;
+            }
+        }
+
+        @@media (max-width: 575.98px) {
+            :root {
+                --navbar-h: 60px;
+            }
+
+            .shopms-nav .navbar-brand {
+                font-size: 1.25rem;
+            }
 
             .brand-icon {
-                width: 38px;
-                height: 38px;
-                background: linear-gradient(135deg, #FF7A2F, #FF4F81);
-                border-radius: 10px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 1.1rem;
-                color: white;
-                flex-shrink: 0;
+                width: 32px;
+                height: 32px;
+                font-size: 0.95rem;
             }
 
-            /* Search bar */
-            .nav-search-wrap {
-                flex: 1;
-                max-width: 420px;
-                margin: 0 1.5rem;
+            .footer-social {
+                gap: 0.5rem !important;
             }
+        }
 
-                .nav-search-wrap .input-group {
-                    background: rgba(255,255,255,0.12);
-                    border-radius: 50px;
-                    overflow: hidden;
-                    border: 1.5px solid rgba(255,255,255,0.25);
-                    transition: border-color 0.2s, background 0.2s;
-                }
-
-                    .nav-search-wrap .input-group:focus-within {
-                        background: rgba(255,255,255,0.22);
-                        border-color: rgba(255,255,255,0.55);
-                    }
-
-                .nav-search-wrap .form-control {
-                    background: transparent;
-                    border: none;
-                    color: #fff;
-                    padding: 0.55rem 1rem;
-                    font-family: 'Hind Siliguri', sans-serif;
-                    font-size: 0.92rem;
-                }
-
-                    .nav-search-wrap .form-control::placeholder {
-                        color: rgba(255,255,255,0.6);
-                    }
-
-                    .nav-search-wrap .form-control:focus {
-                        box-shadow: none;
-                        color: #fff;
-                        background: transparent;
-                    }
-
-                .nav-search-wrap .btn-search {
-                    background: linear-gradient(135deg, #FF7A2F, #FF4F81);
-                    border: none;
-                    color: #fff;
-                    padding: 0.55rem 1.1rem;
-                    transition: opacity 0.2s;
-                }
-
-                    .nav-search-wrap .btn-search:hover {
-                        opacity: 0.88;
-                    }
-
-            /* Nav links */
-            .shopms-nav .nav-link {
-                color: rgba(255,255,255,0.82) !important;
-                font-weight: 500;
-                font-size: 0.93rem;
-                padding: 0.4rem 0.7rem !important;
-                border-radius: var(--radius-sm);
-                transition: background 0.18s, color 0.18s;
-                display: flex;
-                align-items: center;
-                gap: 5px;
-            }
-
-                .shopms-nav .nav-link:hover,
-                .shopms-nav .nav-link.active {
-                    color: #fff !important;
-                    background: rgba(255,255,255,0.15);
-                }
-
-            .shopms-nav .navbar-toggler {
-                border-color: rgba(255,255,255,0.4);
-                padding: 0.35rem 0.6rem;
-            }
-
-            .shopms-nav .navbar-toggler-icon {
-                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255,255,255,0.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-            }
-
-            /* Cart badge */
-            .cart-badge {
-                position: absolute;
-                top: -4px;
-                right: -6px;
-                background: linear-gradient(135deg, #FF7A2F, #FF4F81);
-                color: #fff;
-                font-size: 0.65rem;
-                font-weight: 700;
-                width: 18px;
-                height: 18px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border: 2px solid var(--primary-dark);
-            }
-
-            /* Auth buttons */
-            .btn-nav-login {
-                border: 1.5px solid rgba(255,255,255,0.5);
-                color: #fff !important;
-                background: transparent;
-                border-radius: 50px;
-                padding: 0.38rem 1.1rem;
-                font-weight: 500;
-                font-size: 0.9rem;
-                transition: background 0.18s;
-            }
-
-                .btn-nav-login:hover {
-                    background: rgba(255,255,255,0.15);
-                }
-
-            .btn-nav-register {
-                background: linear-gradient(135deg, #FF7A2F, #FF4F81);
-                color: #fff !important;
-                border: none;
-                border-radius: 50px;
-                padding: 0.38rem 1.2rem;
-                font-weight: 600;
-                font-size: 0.9rem;
-                box-shadow: 0 3px 10px rgba(255,79,129,0.4);
-                transition: opacity 0.18s, transform 0.15s;
-            }
-
-                .btn-nav-register:hover {
-                    opacity: 0.9;
-                    transform: translateY(-1px);
-                }
-
-            /* User dropdown */
-            .shopms-nav .dropdown-menu {
-                border-radius: var(--radius);
-                border: 1px solid var(--border);
-                box-shadow: var(--shadow-soft);
-                padding: 0.4rem;
-                min-width: 200px;
-            }
-
-            .shopms-nav .dropdown-item {
-                border-radius: var(--radius-sm);
-                font-size: 0.92rem;
-                padding: 0.5rem 0.9rem;
-                color: var(--text-main);
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                transition: background 0.15s;
-            }
-
-                .shopms-nav .dropdown-item:hover {
-                    background: var(--primary-light);
-                    color: var(--primary);
-                }
-
-                .shopms-nav .dropdown-item.text-danger:hover {
-                    background: #FFF0F0;
-                }
-
-            .shopms-nav .dropdown-divider {
-                border-color: var(--border);
-                margin: 0.3rem 0;
-            }
-
-            /* Navbar profile photo */
-            .nav-profile-pic {
-                width: 26px;
-                height: 26px;
-                border-radius: 50%;
-                object-fit: cover;
-                border: 1.5px solid rgba(255,255,255,0.6);
-                flex-shrink: 0;
-            }
-
-            /* ── LANGUAGE SWITCHER ── */
-            .goog-te-banner-frame.skiptranslate,
-            .goog-te-banner-frame,
-            #goog-gt-tt,
-            .goog-te-balloon-frame {
-                display: none !important;
-            }
-            body {
-                top: 0px !important;
-                position: static !important;
-            }
-            .goog-te-gadget {
-                display: none !important;
-            }
-            .goog-text-highlight {
-                background: none !important;
-                box-shadow: none !important;
-            }
-            .skiptranslate iframe {
-                display: none !important;
-            }
-            .lang-switcher-btn {
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                background: rgba(255, 255, 255, 0.15);
-                color: #fff !important;
-                border: 1.5px solid rgba(255, 255, 255, 0.4);
-                border-radius: 50px;
-                padding: 0.32rem 0.85rem;
-                font-size: 0.84rem;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.2s ease;
-                text-decoration: none;
-                user-select: none;
-            }
-            .lang-switcher-btn:hover {
-                background: rgba(255, 255, 255, 0.28);
-                border-color: rgba(255, 255, 255, 0.75);
-                color: #fff !important;
-                transform: translateY(-1px);
-            }
-
-            /* ── CATEGORY BAR ── */
-            .cat-bar {
-                background: var(--surface);
-                border-bottom: 1px solid var(--border);
-                padding: 0.6rem 0;
-                overflow-x: auto;
-                white-space: nowrap;
-                scrollbar-width: none;
-            }
-
-                .cat-bar::-webkit-scrollbar {
-                    display: none;
-                }
-
-                .cat-bar .container {
-                    display: flex;
-                    gap: 0.5rem;
-                    align-items: center;
-                }
-
-            .cat-pill {
-                display: inline-block;
-                padding: 0.3rem 1rem;
-                border-radius: 50px;
-                font-size: 0.82rem;
-                font-weight: 500;
-                color: var(--text-muted);
-                background: var(--surface-2);
-                border: 1px solid var(--border);
-                text-decoration: none;
-                transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.15s;
-                white-space: nowrap;
-            }
-
-                .cat-pill:hover {
-                    background: var(--primary-light);
-                    color: var(--primary);
-                    border-color: rgba(108,62,232,0.3);
-                    transform: translateY(-1px);
-                }
-
-            .cat-bar-label {
-                font-size: 0.75rem;
-                font-weight: 600;
-                color: var(--text-muted);
-                letter-spacing: 0.03em;
-                padding-right: 0.5rem;
-                border-right: 1px solid var(--border);
-                margin-right: 0.25rem;
-                white-space: nowrap;
-            }
-
-            /* ── ALERTS ── */
-            .alert-zone {
-                padding: 0.6rem 0 0;
-            }
-
-            .alert {
-                border-radius: var(--radius);
-                border: none;
-                font-size: 0.92rem;
-                padding: 0.75rem 1.1rem;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-
-            .alert-success {
-                background: #ECFDF5;
-                color: #065F46;
-                border-left: 4px solid var(--success);
-            }
-
-            .alert-danger {
-                background: #FFF1F2;
-                color: #9F1239;
-                border-left: 4px solid #F43F5E;
-            }
-
-            /* ── MAIN CONTENT ── */
-            main {
-                min-height: calc(100vh - var(--navbar-h) - 42px - 340px);
-            }
-
-            /* ── FOOTER ── */
-            .shopms-footer {
-                background: linear-gradient(160deg, #1A1235 0%, #2D1B69 60%, #4E26C0 100%);
-                color: rgba(255,255,255,0.75);
-                padding-top: 3.5rem;
-            }
-
-            .footer-brand-name {
-                font-family: 'Tiro Bangla', serif;
-                font-size: 1.5rem;
-                font-weight: 700;
-                color: #fff;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                margin-bottom: 0.75rem;
-            }
-
-            .footer-desc {
-                font-size: 0.9rem;
-                line-height: 1.75;
-                color: rgba(255,255,255,0.55);
-            }
-
-            .footer-social a {
-                width: 38px;
-                height: 38px;
-                border-radius: 10px;
-                background: rgba(255,255,255,0.09);
-                border: 1px solid rgba(255,255,255,0.14);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: rgba(255,255,255,0.75);
-                font-size: 1.05rem;
-                text-decoration: none;
-                transition: background 0.18s, color 0.18s, transform 0.15s;
-            }
-
-                .footer-social a:hover {
-                    background: linear-gradient(135deg, #FF7A2F, #FF4F81);
-                    color: #fff;
-                    border-color: transparent;
-                    transform: translateY(-2px);
-                }
-
-            .footer-heading {
-                font-size: 0.8rem;
-                font-weight: 700;
-                letter-spacing: 0.1em;
-                text-transform: uppercase;
-                color: var(--accent);
-                margin-bottom: 1.1rem;
-            }
-
-            .footer-links {
-                list-style: none;
-                padding: 0;
-                margin: 0;
-            }
-
-                .footer-links li {
-                    margin-bottom: 0.6rem;
-                }
-
-                .footer-links a {
-                    color: rgba(255,255,255,0.55);
-                    text-decoration: none;
-                    font-size: 0.9rem;
-                    transition: color 0.18s, padding-left 0.18s;
-                    display: inline-block;
-                }
-
-                    .footer-links a:hover {
-                        color: #fff;
-                        padding-left: 5px;
-                    }
-
-            .footer-contact-item {
-                display: flex;
-                align-items: flex-start;
-                gap: 10px;
-                font-size: 0.88rem;
-                color: rgba(255,255,255,0.55);
-                margin-bottom: 0.65rem;
-            }
-
-                .footer-contact-item i {
-                    color: var(--accent);
-                    font-size: 1rem;
-                    margin-top: 2px;
-                    flex-shrink: 0;
-                }
-
-            .footer-divider {
-                border-color: rgba(255,255,255,0.1);
-                margin: 2rem 0 1.25rem;
-            }
-
-            .footer-bottom {
-                font-size: 0.83rem;
-                color: rgba(255,255,255,0.4);
-                padding-bottom: 1.5rem;
-            }
-
-                .footer-bottom .dev-credit {
-                    color: var(--accent);
-                    font-weight: 600;
-                }
-
-            /* ── RESPONSIVE TWEAKS ── */
-            @@media (max-width: 991.98px) {
-                .shopms-nav {
-                    height: auto;
-                    min-height: var(--navbar-h);
-                }
-
-                .nav-search-wrap {
-                    max-width: 100%;
-                    margin: 0.6rem 0;
-                }
-
-                .shopms-nav .navbar-collapse {
-                    padding: 0.6rem 0 1rem;
-                    gap: 0.3rem;
-                }
-
-                .shopms-nav .navbar-nav {
-                    gap: 0.1rem !important;
-                }
-
-                .shopms-nav .nav-link {
-                    padding: 0.55rem 0.9rem !important;
-                }
-            }
-
-            @@media (max-width: 575.98px) {
-                : root {
-                    --navbar-h: 60px;
-                }
-
-                .shopms-nav .navbar-brand {
-                    font-size: 1.25rem;
-                }
-
-                .brand-icon {
-                    width: 32px;
-                    height: 32px;
-                    font-size: 0.95rem;
-                }
-
-                .footer-social {
-                    gap: 0.5rem !important;
-                }
-            }
-
-            /* Utility */
-            .gap-8 {
-                gap: 0.5rem;
-            }
+        .gap-8 {
+            gap: 0.5rem;
+        }
     </style>
 </head>
 <body>
 
     @{
-        // ✅ Ekbar-e cart count, profile photo, UserType fetch kora hocche (duibar DB query na kore)
         var cartCount = 0;
         string? navUserPhoto = null;
-        bool isStaff = User.IsInRole("Admin"); // ✅ Admin hole shurute-i true
+        bool isStaff = User.IsInRole("Admin");
 
         if (User.Identity?.IsAuthenticated == true)
         {
@@ -562,7 +513,6 @@
 
             navUserPhoto = navUser?.ProfilePhoto;
 
-            // ✅ UserType "Employee" hole isStaff true hobe
             if (navUser?.UserType == "Employee")
                 isStaff = true;
         }
@@ -578,7 +528,7 @@
                 ShopMS
             </a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-label="মেনু">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
@@ -588,7 +538,7 @@
                 <form class="nav-search-wrap d-flex" asp-controller="Product" asp-action="Index" method="get">
                     <div class="input-group">
                         <input class="form-control" type="search" name="search"
-                               placeholder="প্রোডাক্ট খুঁজুন..."
+                               placeholder="Search products..."
                                value="@Context.Request.Query["search"]"
                                autocomplete="off" />
                         <button class="btn btn-search" type="submit">
@@ -601,17 +551,17 @@
                 <ul class="navbar-nav ms-auto align-items-lg-center gap-1">
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Home" asp-action="Index">
-                            <i class="bi bi-house-door"></i><span>হোম</span>
+                            <i class="bi bi-house-door"></i><span>Home</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Product" asp-action="Index">
-                            <i class="bi bi-grid-3x3-gap"></i><span>প্রোডাক্ট</span>
+                            <i class="bi bi-grid-3x3-gap"></i><span>Products</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Combo" asp-action="Index">
-                            <i class="bi bi-gift me-1 text-warning"></i>কম্বো অফার
+                            <i class="bi bi-gift me-1 text-warning"></i>Combo Offers
                         </a>
                     </li>
 
@@ -619,7 +569,7 @@
                     {
                         <!-- Cart -->
                         <li class="nav-item">
-                            <a class="nav-link position-relative" asp-controller="Cart" asp-action="Index" id="navCartLink" title="কার্ট">
+                            <a class="nav-link position-relative" asp-controller="Cart" asp-action="Index" id="navCartLink" title="Cart">
                                 <i class="bi bi-cart3 fs-5"></i>
                                 <span id="navCartBadge" class="cart-badge" style="@(cartCount > 0 ? "display:flex;" : "display:none;")">@cartCount</span>
                             </a>
@@ -627,20 +577,19 @@
 
                         <!-- Wishlist -->
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Wishlist" asp-action="Index" title="উইশলিস্ট">
+                            <a class="nav-link" asp-controller="Wishlist" asp-action="Index" title="Wishlist">
                                 <i class="bi bi-heart fs-5"></i>
                             </a>
                         </li>
 
-                        <!-- ── Chat আইকন (শুধু non-staff authenticated user দের জন্য) ── -->
+                        <!-- Support Chat -->
                         @if (!isStaff)
                         {
                             <li class="nav-item">
                                 <a class="nav-link position-relative" asp-controller="Chat" asp-action="Index"
-                                   title="সাপোর্ট চ্যাট">
+                                   title="Support Chat">
                                     <i class="bi bi-chat-dots fs-5"></i>
-                                    <span id="chatUnreadBadge" class="position-absolute top-0 start-100 translate-middle
-                                    badge rounded-pill bg-danger" style="display:none;font-size:.65rem">0</span>
+                                    <span id="chatUnreadBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none;font-size:.65rem">0</span>
                                 </a>
                             </li>
                         }
@@ -662,29 +611,29 @@
                             <ul class="dropdown-menu dropdown-menu-end shadow">
                                 <li>
                                     <a class="dropdown-item" asp-controller="Account" asp-action="Profile">
-                                        <i class="bi bi-person-circle text-primary"></i> আমার প্রোফাইল
+                                        <i class="bi bi-person-circle text-primary"></i> My Profile
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item" asp-controller="Account" asp-action="EditProfile">
-                                        <i class="bi bi-pencil-square text-primary"></i> প্রোফাইল এডিট
+                                        <i class="bi bi-pencil-square text-primary"></i> Edit Profile
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword">
-                                        <i class="bi bi-shield-lock text-primary"></i> পাসওয়ার্ড পরিবর্তন
+                                        <i class="bi bi-shield-lock text-primary"></i> Change Password
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item" asp-controller="Cart" asp-action="MyOrders">
-                                        <i class="bi bi-bag-check text-primary"></i> আমার অর্ডার
+                                        <i class="bi bi-bag-check text-primary"></i> My Orders
                                     </a>
                                 </li>
                                 @if (isStaff)
                                 {
                                     <li>
                                         <a class="dropdown-item" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
-                                            <i class="bi bi-shield-lock" style="color:#6C3EE8"></i> অ্যাডমিন প্যানেল
+                                            <i class="bi bi-shield-lock" style="color:#6C3EE8"></i> Admin Panel
                                         </a>
                                     </li>
                                 }
@@ -693,7 +642,7 @@
                                     <form asp-controller="Account" asp-action="Logout" method="post">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="dropdown-item text-danger">
-                                            <i class="bi bi-box-arrow-right"></i> লগআউট
+                                            <i class="bi bi-box-arrow-right"></i> Logout
                                         </button>
                                     </form>
                                 </li>
@@ -704,23 +653,15 @@
                     {
                         <li class="nav-item ms-1">
                             <a class="btn btn-nav-login btn-sm" asp-controller="Account" asp-action="Login">
-                                লগইন
+                                Login
                             </a>
                         </li>
                         <li class="nav-item ms-1">
                             <a class="btn btn-nav-register btn-sm" asp-controller="Account" asp-action="Register">
-                                রেজিস্টার
+                                Register
                             </a>
                         </li>
                     }
-
-                    <!-- Language Switcher -->
-                    <li class="nav-item ms-lg-2 ms-1 my-1 my-lg-0">
-                        <button type="button" class="lang-switcher-btn" onclick="toggleSiteLanguage()" title="ভাষা পরিবর্তন / Switch Language">
-                            <i class="bi bi-translate"></i>
-                            <span class="lang-toggle-text">🇬🇧 English</span>
-                        </button>
-                    </li>
                 </ul>
             </div>
         </div>
@@ -729,7 +670,7 @@
     <!-- ── Category quick-links ─────────────────────────────────────────────────── -->
     <div class="cat-bar">
         <div class="container">
-            <span class="cat-bar-label"><i class="bi bi-tag-fill me-1" style="color:var(--accent)"></i>ক্যাটাগরি</span>
+            <span class="cat-bar-label"><i class="bi bi-tag-fill me-1" style="color:var(--accent)"></i>Categories</span>
             @{
                 var allCats = (ViewBag.NavCategories as List<ShopManagementSystem.Models.Category>)
                 ?? Context.RequestServices
@@ -752,7 +693,7 @@
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="bi bi-check-circle-fill"></i>
                 <span>@TempData["Success"]</span>
-                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="বন্ধ"></button>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         }
         @if (TempData["Error"] != null)
@@ -760,7 +701,7 @@
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <i class="bi bi-exclamation-circle-fill"></i>
                 <span>@TempData["Error"]</span>
-                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="বন্ধ"></button>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         }
     </div>
@@ -782,7 +723,7 @@
                         ShopManagementSystem
                     </div>
                     <p class="footer-desc">
-                        সর্বোচ্চ মানের পণ্য, সর্বোত্তম মূল্যে। আমাদের সাথে কেনাকাটার অভিজ্ঞতা উপভোগ করুন — দ্রুত ডেলিভারি, বিশ্বস্ত সেবা।
+                        Premium quality products at unbeatable prices. Enjoy a smooth shopping experience with fast delivery and dependable customer support.
                     </p>
                     <div class="footer-social d-flex gap-2 mt-3">
                         <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
@@ -794,19 +735,19 @@
 
                 <!-- Quick Links -->
                 <div class="col-6 col-sm-4 col-lg-2">
-                    <div class="footer-heading">দ্রুত লিংক</div>
+                    <div class="footer-heading">Quick Links</div>
                     <ul class="footer-links">
-                        <li><a asp-controller="Home" asp-action="Index">হোম</a></li>
-                        <li><a asp-controller="Product" asp-action="Index">সব প্রোডাক্ট</a></li>
-                        <li><a asp-controller="Cart" asp-action="Index">কার্ট</a></li>
-                        <li><a asp-controller="Wishlist" asp-action="Index">উইশলিস্ট</a></li>
-                        <li><a asp-controller="Cart" asp-action="MyOrders">আমার অর্ডার</a></li>
+                        <li><a asp-controller="Home" asp-action="Index">Home</a></li>
+                        <li><a asp-controller="Product" asp-action="Index">All Products</a></li>
+                        <li><a asp-controller="Cart" asp-action="Index">Cart</a></li>
+                        <li><a asp-controller="Wishlist" asp-action="Index">Wishlist</a></li>
+                        <li><a asp-controller="Cart" asp-action="MyOrders">My Orders</a></li>
                     </ul>
                 </div>
 
                 <!-- Categories -->
                 <div class="col-6 col-sm-4 col-lg-3">
-                    <div class="footer-heading">ক্যাটাগরি</div>
+                    <div class="footer-heading">Categories</div>
                     <ul class="footer-links">
                         @foreach (var cat in allCats.Take(5))
                         {
@@ -819,7 +760,7 @@
 
                 <!-- Contact -->
                 <div class="col-12 col-sm-4 col-lg-3">
-                    <div class="footer-heading">যোগাযোগ</div>
+                    <div class="footer-heading">Contact Us</div>
                     <div class="footer-contact-item">
                         <i class="bi bi-telephone-fill"></i>
                         <span>+880 1700-000000</span>
@@ -830,11 +771,11 @@
                     </div>
                     <div class="footer-contact-item">
                         <i class="bi bi-geo-alt-fill"></i>
-                        <span>ঢাকা, বাংলাদেশ</span>
+                        <span>Dhaka, Bangladesh</span>
                     </div>
                     <div class="footer-contact-item">
                         <i class="bi bi-clock-fill"></i>
-                        <span>শনি–বৃহঃ, সকাল ৯টা – সন্ধ্যা ৬টা</span>
+                        <span>Sat – Thu, 9:00 AM – 6:00 PM</span>
                     </div>
                 </div>
             </div>
@@ -842,7 +783,7 @@
             <hr class="footer-divider" />
 
             <div class="footer-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
-                <span>&copy; @DateTime.Now.Year ShopManagementSystem — সকল স্বত্ব সংরক্ষিত</span>
+                <span>&copy; @DateTime.Now.Year ShopManagementSystem — All Rights Reserved</span>
                 <span>Developed by <span class="dev-credit">Md Firoz</span></span>
             </div>
         </div>
@@ -875,32 +816,29 @@
 
     @RenderSection("Scripts", required: false)
 
-    @* ── Chat Unread Count Script (শুধু non-staff authenticated user দের জন্য) ── *@
+    @* ── Chat Unread Count Script (for non-staff authenticated users) ── *@
     @if (User.Identity?.IsAuthenticated == true && !isStaff)
     {
         <script>
-                // প্রতি ৩০ সেকেন্ডে unread count চেক করো
-                function checkChatUnread() {
-                    fetch('/Chat/UnreadCount')
-                        .then(function(r) { return r.json(); })
-                        .then(function(data) {
-                            var badge = document.getElementById('chatUnreadBadge');
-                            if (badge) {
-                                if (data.count > 0) {
-                                    badge.textContent = data.count;
-                                    badge.style.display = 'inline-block';
-                                } else {
-                                    badge.style.display = 'none';
-                                }
+            function checkChatUnread() {
+                fetch('/Chat/UnreadCount')
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        var badge = document.getElementById('chatUnreadBadge');
+                        if (badge) {
+                            if (data.count > 0) {
+                                badge.textContent = data.count;
+                                badge.style.display = 'inline-block';
+                            } else {
+                                badge.style.display = 'none';
                             }
-                        }).catch(function() { });
-                }
-                checkChatUnread();
-                setInterval(checkChatUnread, 30000);
+                        }
+                    }).catch(function() { });
+            }
+            checkChatUnread();
+            setInterval(checkChatUnread, 30000);
         </script>
     }
-
-    <!-- ── Fast Native Language Switcher ── -->
-    <script src="~/js/language-switcher.js"></script>
 </body>
+</html>
 </html>

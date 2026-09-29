@@ -15,7 +15,7 @@ namespace ShopManagementSystem.Repository.Interfaces
         Task ClearCartAsync(List<Cart> items);
         Task<int> GetCartCountAsync(string userId);
 
-        // Product (cart এর জন্য)
+ // Product (cart )
         Task<Product?> GetActiveProductWithSizesAsync(int productId);
 
         // Order
@@ -26,7 +26,7 @@ namespace ShopManagementSystem.Repository.Interfaces
         Task<List<Order>> GetMyOrdersAsync(string userId);
         Task UpdateOrderStatusAsync(Order? order, string status);
 
-        // ── নতুন: Online payment fulfillment এর জন্য ──
+ // ── : Online payment fulfillment ──
         Task<Order?> GetOrderByIdAsync(int orderId);
 
         // Payment

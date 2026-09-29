@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShopManagementSystem.Areas.Admin.Repository.Interfaces;
 using ShopManagementSystem.Interfaces;
@@ -55,21 +55,21 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             var ret = await _returnRepo.GetWithOrderAsync(id);
             if (ret == null)
             {
-                TempData["Error"] = "রিটার্ন রিকোয়েস্ট পাওয়া যায়নি।";
+                TempData["Error"] = "Return request not found.";
                 return RedirectToAction("Index");
             }
 
-            // Valid transition চেক
+            // Valid status transition check
             var allowed = _nextStatuses.GetValueOrDefault(ret.Status, Array.Empty<string>());
             if (!allowed.Contains(status))
             {
-                TempData["Error"] = $"'{ret.Status}' থেকে '{status}' তে পরিবর্তন করা যাবে না।";
+                TempData["Error"] = $"Cannot change status from '{ret.Status}' to '{status}'.";
                 return RedirectToAction("Details", new { id });
             }
 
             await _returnRepo.UpdateStatusAsync(ret, status, adminNote);
 
-            TempData["Success"] = $"রিটার্ন #{id} — {status} করা হয়েছে।";
+            TempData["Success"] = $"Return #{id} status updated to {status}.";
             return RedirectToAction("Details", new { id });
         }
     }

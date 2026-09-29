@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ShopManagementSystem.Data;
 using ShopManagementSystem.ViewModels;
@@ -23,7 +23,7 @@ namespace ShopManagementSystem.Controllers
                 .Include(s => s.Products).ThenInclude(sp => sp.Product)
                     .ThenInclude(p => p!.Sizes)
                 .Include(s => s.Products).ThenInclude(sp => sp.Product)
-                    .ThenInclude(p => p!.Category)   // ← যোগ করা হয়েছে
+                    .ThenInclude(p => p!.Category)
                 .OrderBy(s => s.SortOrder)
                 .ToListAsync();
 

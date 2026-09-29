@@ -18,7 +18,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
 
         // ── Index ─────────────────────────────────────────────────────────────
 
-        // Search, category ও active filter সহ product list
+ // Search, category active filter product list
         public async Task<List<Product>> GetFilteredProductsAsync(string? search, int? categoryId, bool? isActive)
         {
             var query = _db.Products
@@ -41,13 +41,13 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
             return await query.OrderByDescending(p => p.CreatedAt).ToListAsync();
         }
 
-        // শুধু active category গুলো (Index/Create dropdown)
+ // active category (Index/Create dropdown)
         public async Task<List<Category>> GetActiveCategoriesAsync()
         {
             return await _db.Categories.Where(c => c.IsActive).ToListAsync();
         }
 
-        // সব category (Edit dropdown)
+ // category (Edit dropdown)
         public async Task<List<Category>> GetAllCategoriesAsync()
         {
             return await _db.Categories.ToListAsync();
@@ -55,7 +55,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
 
         // ── Create ────────────────────────────────────────────────────────────
 
-        // ViewModel থেকে Product তৈরি করে save করে
+ // ViewModel Product save 
         public async Task<Product> CreateProductAsync(ProductCreateViewModel vm)
         {
             var product = new Product
@@ -80,7 +80,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
             return product;
         }
 
-        // Product images upload করে save করে (প্রথমটি primary)
+ // Product images upload save ( primary)
         public async Task AddProductImagesAsync(int productId, IList<IFormFile> images, IImageService imageService)
         {
             bool isFirst = true;
@@ -98,7 +98,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
             await _db.SaveChangesAsync();
         }
 
-        // Product sizes save করে
+ // Product sizes save 
         public async Task AddProductSizesAsync(int productId, List<ProductSizeEntry> sizes)
         {
             foreach (var s in sizes.Where(s => !string.IsNullOrWhiteSpace(s.SizeName)))
@@ -118,7 +118,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
 
         // ── Edit ──────────────────────────────────────────────────────────────
 
-        // Images ও sizes সহ product খোঁজে
+ // Images sizes product 
         public async Task<Product?> GetProductWithImagesAndSizesAsync(int id)
         {
             return await _db.Products
@@ -127,7 +127,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        // Product এর basic fields update করে
+ // Product basic fields update 
         public async Task UpdateProductAsync(Product product, ProductCreateViewModel vm)
         {
             product.Name = vm.Name;
@@ -147,7 +147,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
             await _db.SaveChangesAsync();
         }
 
-        // Primary image পরিবর্তন করে
+ // Primary image 
         public async Task UpdatePrimaryImageAsync(Product product, int? primaryImageId)
         {
             if (!primaryImageId.HasValue) return;
@@ -156,7 +156,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
             await _db.SaveChangesAsync();
         }
 
-        // নির্দিষ্ট images মুছে ফেলে, primary না থাকলে প্রথমটাকে primary করে
+ // images , primary primary 
         public async Task RemoveImagesAsync(Product product, List<int> removeIds, IImageService imageService)
         {
             if (!removeIds.Any()) return;
@@ -168,7 +168,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
                 _db.ProductImages.Remove(img);
             }
 
-            // Primary না থাকলে remaining এর প্রথমটাকে primary করো
+ // Primary remaining primary 
             var remaining = product.Images.Where(i => !removeIds.Contains(i.Id)).ToList();
             if (remaining.Any() && !remaining.Any(i => i.IsPrimary))
                 remaining.First().IsPrimary = true;
@@ -176,7 +176,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
             await _db.SaveChangesAsync();
         }
 
-        // নতুন images যোগ করে (primary না থাকলে প্রথমটাকে primary করে)
+ // images (primary primary )
         public async Task AddNewImagesAsync(int productId, Product product, IList<IFormFile> images, IImageService imageService)
         {
             bool noPrimary = !product.Images.Any(i => i.IsPrimary);
@@ -196,7 +196,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
             await _db.SaveChangesAsync();
         }
 
-        // Size গুলো update/add/remove করে
+ // Size update/add/remove 
         public async Task UpdateSizesAsync(int productId, Product product, List<ProductSizeEntry> sizes)
         {
             foreach (var entry in sizes)
@@ -239,20 +239,20 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
 
         // ── Toggle / Delete ───────────────────────────────────────────────────
 
-        // Id দিয়ে product খোঁজে
+ // Id product 
         public async Task<Product?> GetByIdAsync(int id)
         {
             return await _db.Products.FindAsync(id);
         }
 
-        // IsActive toggle করে
+ // IsActive toggle 
         public async Task ToggleActiveAsync(Product product)
         {
             product.IsActive = !product.IsActive;
             await _db.SaveChangesAsync();
         }
 
-        // Product ও সব image মুছে ফেলে
+ // Product image 
         public async Task DeleteProductAsync(Product product, IImageService imageService)
         {
             var productWithImages = await _db.Products
@@ -271,3 +271,4 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
         public async Task SaveAsync() => await _db.SaveChangesAsync();
     }
 }
+

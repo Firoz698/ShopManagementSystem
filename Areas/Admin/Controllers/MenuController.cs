@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShopManagementSystem.Areas.Admin.Repository.Interfaces;
 using ShopManagementSystem.Models;
 
 namespace ShopManagementSystem.Areas.Admin.Controllers
 {
-    [Area("Admin"), Authorize(Roles = "Admin")] // শুধু Admin — Employee এখানে ঢুকতে পারবে না
+    [Area("Admin"), Authorize(Roles = "Admin")]
     public class MenuController : Controller
     {
         private readonly IAdminMenuRepository _repo;
@@ -33,7 +33,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             }
 
             await _repo.CreateAsync(model);
-            TempData["Success"] = "মেনু তৈরি হয়েছে।";
+            TempData["Success"] = "Menu created successfully.";
             return RedirectToAction("Index");
         }
 
@@ -56,7 +56,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             }
 
             await _repo.UpdateAsync(model);
-            TempData["Success"] = "মেনু আপডেট হয়েছে।";
+            TempData["Success"] = "Menu updated successfully.";
             return RedirectToAction("Index");
         }
 
@@ -64,7 +64,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             await _repo.DeleteAsync(id);
-            TempData["Success"] = "মেনু ডিলিট হয়েছে (চাইল্ড থাকলে ডিলিট হবে না)।";
+            TempData["Success"] = "Menu deleted successfully.";
             return RedirectToAction("Index");
         }
     }

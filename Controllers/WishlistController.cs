@@ -27,7 +27,7 @@ namespace ShopManagementSystem.Controllers
             return View(items);
         }
 
-        // POST /Wishlist/Toggle — থাকলে সরায়, না থাকলে যোগ করে
+        // POST /Wishlist/Toggle - removes if exists, adds if not
         [HttpPost]
         public async Task<IActionResult> Toggle(int productId)
         {
@@ -36,12 +36,12 @@ namespace ShopManagementSystem.Controllers
             if (item == null)
             {
                 await _wishlistRepo.AddAsync(UserId, productId);
-                TempData["Success"] = "উইশলিস্টে যোগ করা হয়েছে।";
+                TempData["Success"] = "Added to your wishlist.";
             }
             else
             {
                 await _wishlistRepo.RemoveAsync(item);
-                TempData["Success"] = "উইশলিস্ট থেকে সরানো হয়েছে।";
+                TempData["Success"] = "Removed from your wishlist.";
             }
 
             return RedirectToAction("Detail", "Product", new { id = productId });

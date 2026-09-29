@@ -1,6 +1,6 @@
 @model HomeViewModel
 @{
-    ViewData["Title"] = "হোম";
+    ViewData["Title"] = "Home";
 }
 
 <!-- ── Slider ──────────────────────────────────────────────────────────────── -->
@@ -92,8 +92,7 @@
                                         }
                                         else
                                         {
-                                            <div class="bg-warning rounded-circle d-inline-flex align-items-center
-                                                                        justify-content-center mb-2"
+                                            <div class="bg-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
                                                  style="width:64px;height:64px">
                                                 <i class="bi bi-grid fs-4 text-dark"></i>
                                             </div>
@@ -148,7 +147,7 @@
                                 @if (savePct > 0)
                                 {
                                     <div class="position-absolute top-0 start-0 m-2">
-                                        <span class="badge bg-danger fs-6 px-3 py-2">@savePct% সাশ্রয়</span>
+                                        <span class="badge bg-danger fs-6 px-3 py-2">Save @savePct%</span>
                                     </div>
                                 }
 
@@ -183,7 +182,7 @@
                                                 ৳@combo.OriginalPrice.Value.ToString("N0")
                                             </span>
                                             <span class="badge bg-success-subtle text-success small">
-                                                ৳@savings.ToString("N0") সাশ্রয়
+                                                Save ৳@savings.ToString("N0")
                                             </span>
                                         }
                                     </div>
@@ -192,7 +191,7 @@
                                     {
                                         <div class="small text-muted mb-3">
                                             <i class="bi bi-clock me-1"></i>
-                                            অফার শেষ: @combo.EndDate.Value.ToString("dd MMM yyyy")
+                                            Offer Ends: @combo.EndDate.Value.ToString("dd MMM yyyy")
                                         </div>
                                     }
                                 </div>
@@ -200,7 +199,7 @@
                                 <div class="card-footer bg-white border-0 pb-3 px-3 d-flex gap-2">
                                     <a asp-controller="Combo" asp-action="Detail" asp-route-id="@combo.Id"
                                        class="btn btn-outline-dark btn-sm flex-fill">
-                                        <i class="bi bi-eye me-1"></i>বিস্তারিত
+                                        <i class="bi bi-eye me-1"></i>Details
                                     </a>
                                     @if (User.Identity?.IsAuthenticated == true)
                                     {
@@ -208,7 +207,7 @@
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="id" value="@combo.Id" />
                                             <button type="submit" class="btn btn-danger btn-sm w-100">
-                                                <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ
+                                                <i class="bi bi-cart-plus me-1"></i>Add to Cart
                                             </button>
                                         </form>
                                     }
@@ -216,7 +215,7 @@
                                     {
                                         <a asp-controller="Account" asp-action="Login"
                                            class="btn btn-danger btn-sm flex-fill">
-                                            <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ
+                                            <i class="bi bi-cart-plus me-1"></i>Add to Cart
                                         </a>
                                     }
                                 </div>
@@ -253,7 +252,7 @@
                                            class="text-decoration-none text-dark">@p.Name</a>
                                     </h6>
                                     <span class="fw-bold text-danger">
-                                        ৳@price.ToString("N0")@(hasSizes ? " থেকে" : "")
+                                        ৳@price.ToString("N0")@(hasSizes ? " onwards" : "")
                                     </span>
                                 </div>
                                 <div class="card-footer bg-transparent border-0 pb-3 px-3">
@@ -263,14 +262,14 @@
                                         {
                                             <a asp-controller="Product" asp-action="Detail" asp-route-id="@p.Id"
                                                class="btn btn-dark btn-sm w-100">
-                                                <i class="bi bi-eye me-1"></i>সাইজ দেখুন
+                                                <i class="bi bi-eye me-1"></i>View Sizes
                                             </a>
                                         }
                                         else
                                         {
                                             <button class="btn btn-dark btn-sm w-100"
                                                     onclick="quickAddToCart(@p.Id, this)">
-                                                <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ
+                                                <i class="bi bi-cart-plus me-1"></i>Add to Cart
                                             </button>
                                         }
                                     }
@@ -278,7 +277,7 @@
                                     {
                                         <a asp-controller="Account" asp-action="Login"
                                            class="btn btn-dark btn-sm w-100">
-                                            <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ
+                                            <i class="bi bi-cart-plus me-1"></i>Add to Cart
                                         </a>
                                     }
                                 </div>
@@ -287,13 +286,12 @@
                     }
                 </div>
 
-                <!-- সব দেখুন Button -->
                 @if (sectionProducts.Count > 4)
                 {
                     <div class="text-center mt-4">
                         <a href="@(string.IsNullOrEmpty(sec.ButtonUrl) ? "/Product" : sec.ButtonUrl)"
                            class="btn btn-outline-dark px-5 py-2 fw-semibold">
-                            <i class="bi bi-grid me-2"></i>সব পণ্য দেখুন
+                            <i class="bi bi-grid me-2"></i>View All Products
                             <span class="badge bg-dark ms-1">@sectionProducts.Count</span>
                         </a>
                     </div>
@@ -329,22 +327,22 @@
         <div class="col-md-4">
             <div class="p-3 rounded-3 text-center bg-primary bg-opacity-10 border border-primary border-opacity-25">
                 <i class="bi bi-truck fs-2 text-primary"></i>
-                <div class="fw-semibold mt-1">দ্রুত ডেলিভারি</div>
-                <small class="text-muted">ঢাকায় ১-২ দিন, বাইরে ৩-৫ দিন</small>
+                <div class="fw-semibold mt-1">Fast Delivery</div>
+                <small class="text-muted">1-2 days inside Dhaka, 3-5 days outside</small>
             </div>
         </div>
         <div class="col-md-4">
             <div class="p-3 rounded-3 text-center bg-success bg-opacity-10 border border-success border-opacity-25">
                 <i class="bi bi-shield-check fs-2 text-success"></i>
-                <div class="fw-semibold mt-1">১০০% অরিজিনাল</div>
-                <small class="text-muted">গ্যারান্টিযুক্ত পণ্য</small>
+                <div class="fw-semibold mt-1">100% Authentic</div>
+                <small class="text-muted">Guaranteed quality products</small>
             </div>
         </div>
         <div class="col-md-4">
             <div class="p-3 rounded-3 text-center bg-warning bg-opacity-10 border border-warning border-opacity-25">
                 <i class="bi bi-arrow-counterclockwise fs-2 text-warning"></i>
-                <div class="fw-semibold mt-1">সহজ রিটার্ন</div>
-                <small class="text-muted">৭ দিনের মধ্যে</small>
+                <div class="fw-semibold mt-1">Easy Returns</div>
+                <small class="text-muted">Within 7 days of delivery</small>
             </div>
         </div>
     </div>
@@ -354,7 +352,7 @@
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index:9999">
     <div id="cartToast" class="toast align-items-center text-bg-success border-0" role="alert">
         <div class="d-flex">
-            <div class="toast-body fw-medium"><i class="bi bi-check-circle me-2"></i>কার্টে যোগ হয়েছে!</div>
+            <div class="toast-body fw-medium"><i class="bi bi-check-circle me-2"></i>Added to Cart!</div>
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
         </div>
     </div>
@@ -365,10 +363,10 @@
         transition: transform .2s, box-shadow .2s;
     }
 
-        .combo-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 30px rgba(0,0,0,.12) !important;
-        }
+    .combo-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0,0,0,.12) !important;
+    }
 
     .slider-img {
         height: 480px;
@@ -400,9 +398,10 @@
                     new bootstrap.Toast(document.getElementById('cartToast'), { delay: 2500 }).show();
                     if (window.updateCartBadge) window.updateCartBadge(data.cartCount);
                 } else { alert(data.message); }
-                if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>কার্টে যোগ'; }
+                if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Add to Cart'; }
             })
-            .catch(() => { if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>কার্টে যোগ'; } });
+            .catch(() => { if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Add to Cart'; } });
         }
     </script>
+}
 }

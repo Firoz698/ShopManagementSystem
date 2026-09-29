@@ -60,7 +60,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             if (vm.Sizes != null && vm.Sizes.Any())
                 await _productRepo.AddProductSizesAsync(product.Id, vm.Sizes);
 
-            TempData["Success"] = "প্রোডাক্ট সফলভাবে যোগ করা হয়েছে।";
+            TempData["Success"] = "Product created successfully.";
             return RedirectToAction("Index");
         }
 
@@ -129,7 +129,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             if (vm.Sizes != null)
                 await _productRepo.UpdateSizesAsync(id, product, vm.Sizes);
 
-            TempData["Success"] = "প্রোডাক্ট আপডেট করা হয়েছে।";
+            TempData["Success"] = "Product updated successfully.";
             return RedirectToAction("Index");
         }
 
@@ -152,7 +152,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             if (product != null)
             {
                 await _productRepo.DeleteProductAsync(product, _imageService);
-                TempData["Success"] = "প্রোডাক্ট মুছে ফেলা হয়েছে।";
+                TempData["Success"] = "Product deleted successfully.";
             }
             return RedirectToAction("Index");
         }

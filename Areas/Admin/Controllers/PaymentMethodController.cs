@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShopManagementSystem.Areas.Admin.Repository.Interfaces;
 using ShopManagementSystem.Models;
@@ -36,7 +36,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
                 return View(model);
 
             await _repo.CreateAsync(model);
-            TempData["Success"] = "পেমেন্ট মেথড যোগ করা হয়েছে।";
+            TempData["Success"] = "Payment method added successfully.";
             return RedirectToAction("Index");
         }
 
@@ -56,7 +56,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
                 return View(model);
 
             await _repo.UpdateAsync(model);
-            TempData["Success"] = "পেমেন্ট মেথড আপডেট করা হয়েছে।";
+            TempData["Success"] = "Payment method updated successfully.";
             return RedirectToAction("Index");
         }
 
@@ -65,7 +65,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
         public async Task<IActionResult> ToggleActive(int id)
         {
             await _repo.ToggleActiveAsync(id);
-            TempData["Success"] = "স্ট্যাটাস পরিবর্তন করা হয়েছে।";
+            TempData["Success"] = "Status updated successfully.";
             return RedirectToAction("Index");
         }
 
@@ -74,7 +74,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             await _repo.DeleteAsync(id);
-            TempData["Success"] = "পেমেন্ট মেথড ডিলিট করা হয়েছে।";
+            TempData["Success"] = "Payment method deleted successfully.";
             return RedirectToAction("Index");
         }
     }

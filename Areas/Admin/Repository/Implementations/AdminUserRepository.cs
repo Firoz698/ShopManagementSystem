@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ShopManagementSystem.Areas.Admin.Repository.Interfaces;
 using ShopManagementSystem.Data;
@@ -17,7 +17,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
             _userManager = userManager;
         }
 
-        // ✅ শুধু Customer — Employee রা এখানে দেখাবে না (তাদের জন্য আলাদা EmployeeController আছে)
+        // Customers only - Employees are managed separately in EmployeeController
         public async Task<List<ApplicationUser>> GetAllUsersAsync()
         {
             return await _db.Users
@@ -71,7 +71,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
             return result.Succeeded;
         }
 
-        // ✅ "User" এর বদলে "Customer" role ব্যবহার করা হলো (নতুন role scheme অনুযায়ী)
+        // Toggle role between Admin and Customer
         public async Task ToggleRoleAsync(ApplicationUser user)
         {
             if (await _userManager.IsInRoleAsync(user, "Admin"))
@@ -169,14 +169,13 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
 
             var result = await _userManager.UpdateAsync(user);
             return result.Succeeded
-                ? (true, "আপডেট সফল হয়েছে।")
+                ? (true, "Profile updated successfully.")
                 : (false, string.Join(", ", result.Errors.Select(e => e.Description)));
         }
 
-        // ✅ Admin diye password reset — current password chara-i
+        // Admin password reset - without requiring current password
         public async Task<IdentityResult> AdminResetPasswordAsync(ApplicationUser user, string newPassword)
         {
-            // ⚠️ Age purono corrupt data thik kore nao
             await RepairIdentityFieldsAsync(user, user.Email ?? "");
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);

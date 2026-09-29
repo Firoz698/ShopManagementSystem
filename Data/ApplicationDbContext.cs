@@ -41,26 +41,26 @@ namespace ShopManagementSystem.Data
         {
             base.OnModelCreating(builder);
 
-            // এক user + এক menu = একটাই permission row
+            // One user + one menu = unique permission row
             builder.Entity<UserMenuPermission>()
                 .HasIndex(p => new { p.UserId, p.MenuId })
                 .IsUnique();
 
-            // Menu → Parent (self-reference) cascade delete বন্ধ, নাহলে SQL Server error দিবে
+            // Menu -> Parent (self-reference) restrict cascade delete to prevent SQL Server cycle error
             builder.Entity<Menu>()
                 .HasOne(m => m.Parent)
                 .WithMany(m => m.Children)
                 .HasForeignKey(m => m.ParentId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Employee ডিলিট হলে তার permission গুলোও ডিলিট হয়ে যাক
+            // Cascade delete permissions when user/employee is deleted
             builder.Entity<UserMenuPermission>()
                 .HasOne(p => p.User)
                 .WithMany(u => u.MenuPermissions)
                 .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Menu ডিলিট হলে তার permission গুলোও ডিলিট হয়ে যাক
+            // Cascade delete permissions when menu is deleted
             builder.Entity<UserMenuPermission>()
                 .HasOne(p => p.Menu)
                 .WithMany(m => m.UserPermissions)

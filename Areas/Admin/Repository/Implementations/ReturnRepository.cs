@@ -14,7 +14,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
             _db = db;
         }
 
-        // Filter সহ সব return request — user, product, order সহ
+ // Filter return request — user, product, order 
         public async Task<List<ReturnRequest>> GetAllAsync(string? status)
         {
             var query = _db.ReturnRequests
@@ -29,13 +29,13 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
             return await query.OrderByDescending(r => r.CreatedAt).ToListAsync();
         }
 
-        // Pending status এর মোট count (badge এর জন্য)
+ // Pending status count (badge )
         public async Task<int> GetPendingCountAsync()
         {
             return await _db.ReturnRequests.CountAsync(r => r.Status == "Pending");
         }
 
-        // Detail page এর জন্য — product images ও order details সহ
+ // Detail page — product images order details 
         public async Task<ReturnRequest?> GetDetailAsync(int id)
         {
             return await _db.ReturnRequests
@@ -45,7 +45,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 
-        // Status update এর জন্য — order সহ
+ // Status update — order 
         public async Task<ReturnRequest?> GetWithOrderAsync(int id)
         {
             return await _db.ReturnRequests
@@ -53,7 +53,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 
-        // Status, adminNote ও order status একসাথে update করে
+ // Status, adminNote order status update 
         public async Task UpdateStatusAsync(ReturnRequest ret, string status, string? adminNote)
         {
             ret.Status = status;
@@ -75,3 +75,4 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
         }
     }
 }
+

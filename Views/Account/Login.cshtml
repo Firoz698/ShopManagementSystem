@@ -1,6 +1,6 @@
 @model LoginViewModel
 @{
-    ViewData["Title"] = "লগইন"; Layout = "_Layout";
+    ViewData["Title"] = "Login"; Layout = "_Layout";
 }
 
 <div class="container my-5">
@@ -10,8 +10,8 @@
                 <div class="card-body p-4">
                     <div class="text-center mb-4">
                         <i class="bi bi-person-circle display-4 text-dark"></i>
-                        <h4 class="fw-bold mt-2 mb-0">লগইন করুন</h4>
-                        <p class="text-muted small">আপনার অ্যাকাউন্টে প্রবেশ করুন</p>
+                        <h4 class="fw-bold mt-2 mb-0">Sign In</h4>
+                        <p class="text-muted small">Access your account</p>
                     </div>
 
                     <form asp-action="Login" method="post" autocomplete="on">
@@ -19,14 +19,14 @@
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
 
                         <div class="mb-3">
-                            <label asp-for="Email" class="form-label fw-medium small">ইমেইল</label>
+                            <label asp-for="Email" class="form-label fw-medium small">Email</label>
                             <input asp-for="Email" type="email" class="form-control" placeholder="your@email.com"
                                    autocomplete="username" />
                             <span asp-validation-for="Email" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="Password" class="form-label fw-medium small">পাসওয়ার্ড</label>
+                            <label asp-for="Password" class="form-label fw-medium small">Password</label>
                             <div class="input-group">
                                 <input asp-for="Password" id="passwordInput" type="password" class="form-control" placeholder="••••••"
                                        autocomplete="current-password" />
@@ -40,17 +40,17 @@
                         <div class="mb-3 d-flex justify-content-between align-items-center">
                             <div class="form-check">
                                 <input asp-for="RememberMe" type="checkbox" class="form-check-input" />
-                                <label asp-for="RememberMe" class="form-check-label small">মনে রাখুন</label>
+                                <label asp-for="RememberMe" class="form-check-label small">Remember me</label>
                             </div>
-                            <a asp-action="ForgotPassword" class="small text-dark fw-medium">পাসওয়ার্ড ভুলে গেছেন?</a>
+                            <a asp-action="ForgotPassword" class="small text-dark fw-medium">Forgot password?</a>
                         </div>
 
-                        <button type="submit" class="btn btn-dark w-100">লগইন</button>
+                        <button type="submit" class="btn btn-dark w-100">Sign In</button>
                     </form>
 
                     <div class="d-flex align-items-center my-3">
                         <hr class="flex-grow-1" />
-                        <span class="px-2 text-muted small">অথবা</span>
+                        <span class="px-2 text-muted small">OR</span>
                         <hr class="flex-grow-1" />
                     </div>
 
@@ -58,19 +58,19 @@
                         <a asp-action="ExternalLogin" asp-route-provider="Google" asp-route-returnUrl="@ViewBag.ReturnUrl"
                            class="btn btn-outline-dark d-flex align-items-center justify-content-center gap-2">
                             <img src="https://www.svgrepo.com/show/475656/google-color.svg" width="18" height="18" alt="Google" />
-                            Google দিয়ে লগইন
+                            Sign in with Google
                         </a>
                         <a asp-action="ExternalLogin" asp-route-provider="Facebook" asp-route-returnUrl="@ViewBag.ReturnUrl"
                            class="btn btn-primary d-flex align-items-center justify-content-center gap-2">
                             <i class="bi bi-facebook"></i>
-                            Facebook দিয়ে লগইন
+                            Sign in with Facebook
                         </a>
                     </div>
 
                     <hr class="my-3" />
                     <p class="text-center small mb-0">
-                        অ্যাকাউন্ট নেই?
-                        <a asp-action="Register" class="text-dark fw-semibold">রেজিস্টার করুন</a>
+                        Don't have an account?
+                        <a asp-action="Register" class="text-dark fw-semibold">Register here</a>
                     </p>
                 </div>
             </div>
@@ -95,4 +95,5 @@
             }
         });
     </script>
+}
 }

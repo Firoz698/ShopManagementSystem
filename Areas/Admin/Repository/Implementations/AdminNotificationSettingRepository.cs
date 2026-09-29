@@ -50,7 +50,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository
                 existing.SmtpPort = setting.SmtpPort;
                 existing.SmtpUsername = setting.SmtpUsername;
 
-                // password field ফাঁকা রেখে submit করলে পুরনোটাই থাকবে
+ // password field submit 
                 if (!string.IsNullOrWhiteSpace(setting.SmtpPassword))
                     existing.SmtpPassword = setting.SmtpPassword;
 

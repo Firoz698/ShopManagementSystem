@@ -25,7 +25,7 @@
             var senderId = settings["SenderId"];
             var baseUrl = settings["ApiUrl"]; // e.g. https://bulksmsbd.net/api/smsapi
 
-            // ফোন নম্বর ফরম্যাট ঠিক করা (01XXXXXXXXX -> 8801XXXXXXXXX)
+ // (01XXXXXXXXX -> 8801XXXXXXXXX)
             var formattedNumber = phoneNumber.StartsWith("0") ? "88" + phoneNumber : phoneNumber;
 
             var url = $"{baseUrl}?api_key={apiKey}&type=text&number={formattedNumber}" +

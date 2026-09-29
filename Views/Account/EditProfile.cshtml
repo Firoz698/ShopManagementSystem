@@ -1,6 +1,6 @@
-﻿@model EditProfileViewModel
+@model EditProfileViewModel
 @{
-    ViewData["Title"] = "প্রোফাইল এডিট"; Layout = "_Layout";
+    ViewData["Title"] = "Edit Profile"; Layout = "_Layout";
 }
 
 <div class="container my-5">
@@ -8,7 +8,7 @@
         <div class="col-md-6">
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
-                    <h4 class="fw-bold mb-3">প্রোফাইল এডিট করুন</h4>
+                    <h4 class="fw-bold mb-3">Edit Profile</h4>
                     <form asp-action="EditProfile" method="post" enctype="multipart/form-data">
                         @Html.AntiForgeryToken()
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
@@ -23,37 +23,38 @@
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="FullName" class="form-label small">পুরো নাম</label>
+                            <label asp-for="FullName" class="form-label small">Full Name</label>
                             <input asp-for="FullName" class="form-control" />
                         </div>
                         <div class="mb-3">
-                            <label asp-for="PhoneNumber" class="form-label small">ফোন নম্বর</label>
+                            <label asp-for="PhoneNumber" class="form-label small">Phone Number</label>
                             <input asp-for="PhoneNumber" class="form-control" />
                         </div>
                         <div class="mb-3">
-                            <label asp-for="Address" class="form-label small">ঠিকানা</label>
+                            <label asp-for="Address" class="form-label small">Address</label>
                             <textarea asp-for="Address" class="form-control" rows="2"></textarea>
                         </div>
                         <div class="row g-2 mb-3">
                             <div class="col-md-6">
-                                <label asp-for="Gender" class="form-label small">লিঙ্গ</label>
+                                <label asp-for="Gender" class="form-label small">Gender</label>
                                 <select asp-for="Gender" class="form-select">
-                                    <option value="">নির্বাচন করুন</option>
-                                    <option value="Male">পুরুষ</option>
-                                    <option value="Female">মহিলা</option>
-                                    <option value="Other">অন্যান্য</option>
+                                    <option value="">Select</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label asp-for="DateOfBirth" class="form-label small">জন্ম তারিখ</label>
+                                <label asp-for="DateOfBirth" class="form-label small">Date of Birth</label>
                                 <input asp-for="DateOfBirth" type="date" class="form-control" />
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-dark w-100">আপডেট করুন</button>
+                        <button type="submit" class="btn btn-dark w-100">Save Changes</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+</div>
 </div>

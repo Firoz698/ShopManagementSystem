@@ -14,7 +14,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
             _db = db;
         }
 
-        // Status filter সহ সব order — user ও details সহ
+ // Status filter order — user details 
         public async Task<List<Order>> GetFilteredOrdersAsync(string? status)
         {
             var query = _db.Orders
@@ -28,13 +28,13 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
             return await query.OrderByDescending(o => o.OrderDate).ToListAsync();
         }
 
-        // Pending order count (badge এর জন্য)
+ // Pending order count (badge )
         public async Task<int> GetPendingOrdersCountAsync()
         {
             return await _db.Orders.CountAsync(o => o.Status == "Pending");
         }
 
-        // ReturnRequest GET এর জন্য — order + user সহ
+ // ReturnRequest GET — order + user 
         public async Task<Order?> GetOrderWithUserAsync(int orderId)
         {
             return await _db.Orders
@@ -42,28 +42,28 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
                 .FirstOrDefaultAsync(o => o.Id == orderId);
         }
 
-        // ReturnRequest GET এর জন্য — product খোঁজে
+ // ReturnRequest GET — product 
         public async Task<Product?> GetProductByIdAsync(int productId)
         {
             return await _db.Products
                 .FirstOrDefaultAsync(p => p.Id == productId);
         }
 
-        // এই order+product এ আগে return request দেওয়া হয়েছে কিনা
+ // order+product return request 
         public async Task<bool> HasReturnRequestAsync(int orderId, int productId, string userId)
         {
             return await _db.ReturnRequests
                 .AnyAsync(r => r.OrderId == orderId && r.ProductId == productId && r.UserId == userId);
         }
 
-        // Order টি এই user এর কিনা verify করে
+ // Order user verify 
         public async Task<Order?> GetUserOrderAsync(int orderId, string userId)
         {
             return await _db.Orders
                 .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
         }
 
-        // নতুন return request save করে
+ // return request save 
         public async Task AddReturnRequestAsync(int orderId, int productId, string userId, string reason)
         {
             _db.ReturnRequests.Add(new ReturnRequest
@@ -77,7 +77,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
             await _db.SaveChangesAsync();
         }
 
-        // Order detail page এর জন্য — user, orderDetails, product, images সহ
+ // Order detail page — user, orderDetails, product, images 
         public async Task<Order?> GetOrderDetailAsync(int id)
         {
             return await _db.Orders
@@ -88,13 +88,13 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
 
-        // Id দিয়ে order খোঁজে (UpdateStatus ও Delete এর জন্য)
+ // Id order (UpdateStatus Delete )
         public async Task<Order?> GetByIdAsync(int id)
         {
             return await _db.Orders.FindAsync(id);
         }
 
-        // Order status ও UpdatedAt update করে
+ // Order status UpdatedAt update 
         public async Task UpdateStatusAsync(Order order, string status)
         {
             order.Status = status;
@@ -102,7 +102,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
             await _db.SaveChangesAsync();
         }
 
-        // Order delete করে
+ // Order delete 
         public async Task DeleteAsync(Order order)
         {
             _db.Orders.Remove(order);
@@ -110,3 +110,4 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
         }
     }
 }
+

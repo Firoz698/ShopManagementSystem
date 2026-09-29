@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace ShopManagementSystem.Models
 {
@@ -6,22 +6,22 @@ namespace ShopManagementSystem.Models
     {
         public int Id { get; set; }
 
-        // যেমন: bKash, Nagad, Rocket, Bank Transfer
+        // E.g.: bKash, Nagad, Rocket, Bank Transfer
         [Required, MaxLength(100)]
         public string MethodName { get; set; } = string.Empty;
 
-        // Personal / Merchant / Bank — কাস্টমারকে বোঝানোর জন্য
+        // Personal / Merchant / Bank
         [MaxLength(50)]
         public string? AccountType { get; set; }
 
-        // Wallet Number অথবা Bank Account Number
+        // Wallet Number or Bank Account Number
         [Required, MaxLength(100)]
         public string AccountNumber { get; set; } = string.Empty;
 
         [MaxLength(150)]
         public string? AccountHolderName { get; set; }
 
-        // শুধু Bank Transfer হলে কাজে লাগবে
+        // Bank Transfer specific fields
         [MaxLength(150)]
         public string? BankName { get; set; }
         [MaxLength(150)]
@@ -29,11 +29,11 @@ namespace ShopManagementSystem.Models
         [MaxLength(100)]
         public string? RoutingOrSwift { get; set; }
 
-        // কাস্টমারকে কীভাবে পেমেন্ট করতে হবে তার নির্দেশনা
+        // Payment instructions for customers
         [MaxLength(1000)]
         public string? Instructions { get; set; }
 
-        // লিস্টে/checkout এ আইকন দেখানোর জন্য (optional)
+        // Icon/logo for checkout display (optional)
         public string? LogoUrl { get; set; }
 
         public bool IsActive { get; set; } = true;

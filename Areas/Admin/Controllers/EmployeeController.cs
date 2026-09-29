@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ShopManagementSystem.Areas.Admin.Repository.Interfaces;
@@ -66,7 +66,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             if (!string.IsNullOrEmpty(vm.RoleName))
                 await _userManager.AddToRoleAsync(user, vm.RoleName);
 
-            TempData["Success"] = "এমপ্লয়ি তৈরি হয়েছে। এখন মেনু পারমিশন সেট করুন।";
+            TempData["Success"] = "Employee created successfully. Please configure menu permissions.";
             return RedirectToAction("Permissions", new { id = user.Id });
         }
 
@@ -79,7 +79,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             var permMap = await _repo.GetPermissionMapAsync(id);
 
             ViewBag.Employee = user;
-            ViewBag.PermissionMap = permMap; // MenuId → UserMenuPermission
+            ViewBag.PermissionMap = permMap; // MenuId -> UserMenuPermission
             return View(allMenus);
         }
 
@@ -87,7 +87,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
         public async Task<IActionResult> Permissions(string userId, List<MenuPermissionInput> permissions)
         {
             await _repo.SaveMenuPermissionsAsync(userId, permissions ?? new List<MenuPermissionInput>());
-            TempData["Success"] = "পারমিশন সেভ হয়েছে।";
+            TempData["Success"] = "Permissions saved successfully.";
             return RedirectToAction("Index");
         }
     }

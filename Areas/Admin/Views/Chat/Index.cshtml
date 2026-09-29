@@ -1,14 +1,14 @@
-﻿@model List<ShopManagementSystem.Models.ChatSession>
+@model List<ShopManagementSystem.Models.ChatSession>
 @inject ShopManagementSystem.Services.IPermissionChecker PermissionChecker
 @{
-    ViewData["Title"] = "চ্যাট সাপোর্ট";
+    ViewData["Title"] = "Chat Support";
     var perm = await PermissionChecker.GetPermissionsAsync(User, "Chat");
 }
 
 @if (!perm.CanView)
 {
     <div class="alert alert-danger">
-        <i class="bi bi-shield-lock me-2"></i>এই পেজ দেখার অনুমতি আপনার নেই।
+        <i class="bi bi-shield-lock me-2"></i>You do not have permission to view this page.
     </div>
     return;
 }
@@ -20,7 +20,7 @@
         <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h6 class="fw-bold mb-0">
-                    <i class="bi bi-chat-dots me-2 text-primary"></i>কথোপকথন
+                    <i class="bi bi-chat-dots me-2 text-primary"></i>Conversations
                 </h6>
                 <span class="badge bg-danger rounded-pill @((int)ViewBag.TotalUnread > 0 ? "" : "d-none")"
                       id="totalUnreadBadge">@ViewBag.TotalUnread</span>
@@ -31,7 +31,7 @@
                 {
                     <div class="text-center py-5 text-muted">
                         <i class="bi bi-chat-square display-3 d-block mb-2 opacity-25"></i>
-                        <p class="small">কোনো চ্যাট নেই</p>
+                        <p class="small">No active chats</p>
                     </div>
                 }
                 @foreach (var session in Model)
@@ -78,15 +78,15 @@
         </div>
     </div>
 
-    <!-- ── Right panel — AJAX দিয়ে conversation লোড হবে এখানে ──────────── -->
+    <!-- ── Right panel — AJAX conversation loaded here ──────────── -->
     <div class="col-lg-8">
         <div id="chatPanel" data-can-reply="@perm.CanCreate.ToString().ToLower()">
             <div class="card border-0 shadow-sm h-100 d-flex align-items-center justify-content-center"
                  style="min-height:400px" id="chatPlaceholder">
                 <div class="text-center text-muted">
                     <i class="bi bi-chat-left-dots display-2 d-block mb-3 opacity-25"></i>
-                    <h5>একটি কথোপকথন নির্বাচন করুন</h5>
-                    <p class="small">বাম দিক থেকে ইউজার নির্বাচন করুন।</p>
+                    <h5>Select a Conversation</h5>
+                    <p class="small">Choose a user from the left list to view or reply to messages.</p>
                 </div>
             </div>
         </div>
@@ -111,7 +111,6 @@
             .withAutomaticReconnect()
             .build();
 
-        // ── বাম পাশে ইউজার সিলেক্ট করলে ডান পাশে conversation লোড হবে (page reload হয় না) ──
         function loadConversation(userId, linkEl) {
             document.querySelectorAll('.chat-session-item').forEach(function(item) {
                 item.classList.remove('active-session');
@@ -130,7 +129,6 @@
                     scrollToBottom();
                     connection.invoke("MarkAsRead", userId).catch(function() { });
 
-                    // এই ইউজারের unread badge ক্লিয়ার করে দাও, আর total থেকেও বিয়োগ করো
                     if (linkEl) {
                         var badge = linkEl.querySelector('.session-unread-badge');
                         if (badge) {
@@ -144,7 +142,7 @@
                 .catch(function(err) {
                     console.error('Conversation load error:', err);
                     document.getElementById('chatPanel').innerHTML =
-                        '<div class="alert alert-danger m-0">কথোপকথন লোড করা যায়নি। আবার চেষ্টা করুন।</div>';
+                        '<div class="alert alert-danger m-0">Failed to load conversation. Please try again.</div>';
                 });
         }
 
@@ -156,7 +154,6 @@
             totalBadge.classList.toggle('d-none', totalUnreadCount === 0);
         }
 
-        // নতুন user message এলে
         connection.on("ReceiveMessage", function(data) {
             if (!data.isFromAdmin) {
                 if (data.senderId === currentUserId) {
@@ -193,7 +190,7 @@
             if (user.userId === currentUserId) {
                 var el = document.getElementById('onlineStatus');
                 if (el) {
-                    el.textContent = '● অনলাইন';
+                    el.textContent = '● Online';
                     el.className = 'badge bg-success rounded-pill px-2';
                 }
             }
@@ -203,7 +200,7 @@
             if (userId === currentUserId) {
                 var el = document.getElementById('onlineStatus');
                 if (el) {
-                    el.textContent = '○ অফলাইন';
+                    el.textContent = '○ Offline';
                     el.className = 'badge bg-secondary rounded-pill px-2';
                 }
             }
@@ -233,7 +230,7 @@
 
             connection.invoke("SendMessageToUser", currentUserId, msg).catch(function(err) {
                 console.error("Send error:", err);
-                alert('মেসেজ পাঠানো যায়নি।');
+                alert('Failed to send message.');
             });
         }
 
@@ -304,4 +301,5 @@
             } catch (e) { }
         }
     </script>
+}
 }

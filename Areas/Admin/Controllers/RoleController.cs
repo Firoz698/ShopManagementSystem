@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,18 +21,18 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
         {
             if (string.IsNullOrWhiteSpace(roleName))
             {
-                TempData["Error"] = "রোলের নাম লিখুন।";
+                TempData["Error"] = "Please enter a role name.";
                 return RedirectToAction("Index");
             }
 
             if (await _roleManager.RoleExistsAsync(roleName))
             {
-                TempData["Error"] = "এই রোল আগে থেকেই আছে।";
+                TempData["Error"] = "This role already exists.";
                 return RedirectToAction("Index");
             }
 
             await _roleManager.CreateAsync(new IdentityRole(roleName));
-            TempData["Success"] = "রোল তৈরি হয়েছে।";
+            TempData["Success"] = "Role created successfully.";
             return RedirectToAction("Index");
         }
 
@@ -42,15 +42,15 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             var role = await _roleManager.FindByIdAsync(id);
             if (role == null) return NotFound();
 
-            // Admin/Employee — core role ডিলিট হতে দেওয়া যাবে না
+            // Core roles cannot be deleted
             if (role.Name == "Admin" || role.Name == "Employee" || role.Name == "Customer")
             {
-                TempData["Error"] = "এই ডিফল্ট রোল ডিলিট করা যাবে না।";
+                TempData["Error"] = "This default role cannot be deleted.";
                 return RedirectToAction("Index");
             }
 
             await _roleManager.DeleteAsync(role);
-            TempData["Success"] = "রোল ডিলিট হয়েছে।";
+            TempData["Success"] = "Role deleted successfully.";
             return RedirectToAction("Index");
         }
     }

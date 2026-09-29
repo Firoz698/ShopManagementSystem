@@ -55,9 +55,9 @@ namespace ShopManagementSystem.ViewModels
     public class CartViewModel
     {
         public List<CartItemViewModel> Items { get; set; } = new();
-        public string DeliveryZone { get; set; } = "ঢাকার ভিতর";
+        public string DeliveryZone { get; set; } = "Inside Dhaka";
         public decimal SubTotal => Items.Sum(i => i.SubTotal);
-        public decimal ShippingFee => DeliveryZone == "ঢাকার বাইরে" ? 120 : 60;
+        public decimal ShippingFee => (DeliveryZone == "Outside Dhaka") ? 120 : 60;
         public decimal Total => SubTotal + ShippingFee;
     }
 
@@ -139,14 +139,13 @@ namespace ShopManagementSystem.ViewModels
         [Display(Name = "Payment Method")]
         public string PaymentMethod { get; set; } = "Cash on Delivery";
 
-        // ── নতুন ──────────────────────────────────────────────────────────────────
         [Required, Display(Name = "Delivery Zone")]
-        public string DeliveryZone { get; set; } = "ঢাকার ভিতর";
+        public string DeliveryZone { get; set; } = "Inside Dhaka";
 
         public string? Notes { get; set; }
         public CartViewModel Cart { get; set; } = new();
 
-        // ── নতুন: Manual Payment (bKash/Nagad/Rocket/Bank) ──────────────────────────
+        // ── Manual Payment (bKash/Nagad/Rocket/Bank) ──────────────────────────
         [Display(Name = "Payment Method")]
         public int? PaymentMethodSettingId { get; set; }
 
@@ -156,7 +155,6 @@ namespace ShopManagementSystem.ViewModels
         [Display(Name = "Transaction ID")]
         public string? TransactionId { get; set; }
 
-        // শুধু View তে dropdown/list দেখানোর জন্য — POST এ bind হবে না
         public List<PaymentMethodSetting>? AvailablePaymentMethods { get; set; }
     }
 
@@ -186,12 +184,12 @@ namespace ShopManagementSystem.ViewModels
         public int PendingOrders { get; set; }
         public decimal TotalRevenue { get; set; }
 
-        // ── আজকের তথ্য ───────────────────────────────────────────────────────────
+        // ── Today's Stats ──────────────────────────────────────────────────────────
         public int TodayOrderCount { get; set; }
         public decimal TodayRevenue { get; set; }
         public int TodayNewUsers { get; set; }
 
-        // ── Date Filter তথ্য ─────────────────────────────────────────────────────
+        // ── Date Filter Stats ────────────────────────────────────────────────────
         public int FilteredOrderCount { get; set; }
         public decimal FilteredRevenue { get; set; }
         public int FilteredPending { get; set; }
@@ -243,7 +241,7 @@ namespace ShopManagementSystem.ViewModels
 
     public class ProductSizeEntry
     {
-        public int? Id { get; set; } // edit এর জন্য
+        public int? Id { get; set; } // for edit
         public string SizeName { get; set; } = string.Empty;
         public string? SizeCode { get; set; }
         public decimal SalesPrice { get; set; }
@@ -261,10 +259,6 @@ namespace ShopManagementSystem.ViewModels
             "Pending", "Processing", "Shipped", "Completed", "Cancelled"
         };
     }
-
-
-
-
 
 }
 

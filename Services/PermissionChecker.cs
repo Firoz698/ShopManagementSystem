@@ -20,7 +20,7 @@ namespace ShopManagementSystem.Services
         public async Task<(bool CanView, bool CanCreate, bool CanEdit, bool CanDelete)> GetPermissionsAsync(
             ClaimsPrincipal user, string controller)
         {
-            // Admin সবসময় সব পারবে
+ // Admin 
             if (user.IsInRole("Admin"))
                 return (true, true, true, true);
 

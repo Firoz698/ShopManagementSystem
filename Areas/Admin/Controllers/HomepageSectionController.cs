@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ShopManagementSystem.Data;
@@ -69,7 +69,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
                 _db.HomepageSectionProducts.Add(new HomepageSectionProduct { SectionId = section.Id, ProductId = prodId });
 
             await _db.SaveChangesAsync();
-            TempData["Success"] = "হোমপেজ সেকশন যোগ হয়েছে।";
+            TempData["Success"] = "Homepage section created successfully.";
             return RedirectToAction("Index");
         }
 
@@ -148,7 +148,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
                 _db.HomepageSectionProducts.Add(new HomepageSectionProduct { SectionId = section.Id, ProductId = prodId });
 
             await _db.SaveChangesAsync();
-            TempData["Success"] = "সেকশন আপডেট হয়েছে।";
+            TempData["Success"] = "Homepage section updated successfully.";
             return RedirectToAction("Index");
         }
 
@@ -189,7 +189,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
                 if (!string.IsNullOrEmpty(section.BannerImageUrl)) _imageService.Delete(section.BannerImageUrl);
                 _db.HomepageSections.Remove(section);
                 await _db.SaveChangesAsync();
-                TempData["Success"] = "সেকশন মুছে ফেলা হয়েছে।";
+                TempData["Success"] = "Homepage section deleted successfully.";
             }
             return RedirectToAction("Index");
         }

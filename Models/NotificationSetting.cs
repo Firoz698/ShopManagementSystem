@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace ShopManagementSystem.Models
 {
@@ -22,13 +22,13 @@ namespace ShopManagementSystem.Models
         public string? SmsApiKey { get; set; }
         public string? SmsSenderId { get; set; }
 
-        // ── Notification কোথায় যাবে ──
+        // ── Notification Recipients ──
         [Required]
         public string AdminEmail { get; set; } = string.Empty;
         [Required]
         public string AdminPhone { get; set; } = string.Empty;
 
-        // ── কোন কোন event এ পাঠাবে ──
+        // ── Events to Notify ──
         public bool NotifyOnNewOrder { get; set; } = true;
         public bool NotifyOnNewChatMessage { get; set; } = true;
 

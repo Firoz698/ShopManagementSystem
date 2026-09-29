@@ -1,5 +1,5 @@
 @model ProductListViewModel
-@{ ViewData["Title"] = "সব প্রোডাক্ট"; }
+@{ ViewData["Title"] = "All Products"; }
 
 <div class="container my-4">
     <div class="row g-4">
@@ -9,27 +9,27 @@
             <form method="get" asp-controller="Product" asp-action="Index" id="filterForm">
                 <div class="card border-0 shadow-sm mb-3">
                     <div class="card-header bg-dark text-white fw-semibold">
-                        <i class="bi bi-funnel me-2"></i>ফিল্টার
+                        <i class="bi bi-funnel me-2"></i>Filters
                     </div>
                     <div class="card-body">
 
-                        <!-- সার্চ -->
+                        <!-- Search -->
                         <div class="mb-3">
-                            <label class="form-label fw-medium small">সার্চ</label>
+                            <label class="form-label fw-medium small">Search</label>
                             <input type="text" name="search" id="searchInput"
                                    class="form-control form-control-sm"
-                                   placeholder="প্রোডাক্টের নাম..."
+                                   placeholder="Product name..."
                                    value="@Model.SearchTerm" />
                         </div>
 
-                        <!-- ক্যাটাগরি — click করলেই submit -->
+                        <!-- Category -->
                         <div class="mb-3">
-                            <label class="form-label fw-medium small">ক্যাটাগরি</label>
+                            <label class="form-label fw-medium small">Category</label>
                             <div class="form-check">
                                 <input class="form-check-input auto-filter" type="radio"
                                        name="categoryId" value="" id="catAll"
                                        @(Model.CategoryId == null ? "checked" : "") />
-                                <label class="form-check-label small" for="catAll">সব ক্যাটাগরি</label>
+                                <label class="form-check-label small" for="catAll">All Categories</label>
                             </div>
                             @foreach (var cat in Model.Categories)
                             {
@@ -42,43 +42,43 @@
                             }
                         </div>
 
-                        <!-- মূল্য পরিসর -->
+                        <!-- Price Range -->
                         <div class="mb-3">
-                            <label class="form-label fw-medium small">মূল্য পরিসর (৳)</label>
+                            <label class="form-label fw-medium small">Price Range (৳)</label>
                             <div class="row g-2">
                                 <div class="col-6">
                                     <input type="number" name="minPrice" id="minPrice"
                                            class="form-control form-control-sm"
-                                           placeholder="সর্বনিম্ন"
+                                           placeholder="Min"
                                            value="@Model.MinPrice" min="0" />
                                 </div>
                                 <div class="col-6">
                                     <input type="number" name="maxPrice" id="maxPrice"
                                            class="form-control form-control-sm"
-                                           placeholder="সর্বোচ্চ"
+                                           placeholder="Max"
                                            value="@Model.MaxPrice" min="0" />
                                 </div>
                             </div>
                         </div>
 
-                        <!-- সাজানো — change করলেই submit -->
+                        <!-- Sort By -->
                         <div class="mb-3">
-                            <label class="form-label fw-medium small">সাজানো</label>
+                            <label class="form-label fw-medium small">Sort By</label>
                             <select name="sortBy" class="form-select form-select-sm auto-filter">
-                                <option value="">নতুন আগে</option>
-                                <option value="price_asc" @@(Model.SortBy == "price_asc"  ? "selected" : "")>মূল্য: কম থেকে বেশি</option>
-                                <option value="price_desc" @@(Model.SortBy == "price_desc" ? "selected" : "")>মূল্য: বেশি থেকে কম</option>
-                                <option value="name"       @@(Model.SortBy == "name"       ? "selected" : "")>নাম অনুযায়ী</option>
+                                <option value="">Newest First</option>
+                                <option value="price_asc" @@(Model.SortBy == "price_asc"  ? "selected" : "")>Price: Low to High</option>
+                                <option value="price_desc" @@(Model.SortBy == "price_desc" ? "selected" : "")>Price: High to Low</option>
+                                <option value="name"       @@(Model.SortBy == "name"       ? "selected" : "")>Product Name</option>
                             </select>
                         </div>
 
-                        <!-- মূল্য ফিল্টার বাটন (শুধু price range এর জন্য) -->
+                        <!-- Submit Button -->
                         <button type="submit" class="btn btn-dark btn-sm w-100">
-                            <i class="bi bi-search me-1"></i>সার্চ করুন
+                            <i class="bi bi-search me-1"></i>Apply Filters
                         </button>
                         <a asp-controller="Product" asp-action="Index"
                            class="btn btn-outline-secondary btn-sm w-100 mt-2">
-                            <i class="bi bi-x-circle me-1"></i>রিসেট
+                            <i class="bi bi-x-circle me-1"></i>Reset
                         </a>
                     </div>
                 </div>
@@ -89,7 +89,7 @@
         <div class="col-lg-9">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div class="text-muted small">
-                    মোট <strong>@Model.TotalCount</strong>টি প্রোডাক্ট
+                    Showing <strong>@Model.TotalCount</strong> products
                     @if (!string.IsNullOrEmpty(Model.SearchTerm))
                     {
                         <span class="badge bg-secondary ms-1">"@Model.SearchTerm"</span>
@@ -109,9 +109,9 @@
             {
                 <div class="text-center py-5 text-muted">
                     <i class="bi bi-search display-3 d-block mb-3 opacity-25"></i>
-                    <h5>কোনো প্রোডাক্ট পাওয়া যায়নি</h5>
+                    <h5>No products found</h5>
                     <a asp-controller="Product" asp-action="Index" class="btn btn-outline-dark btn-sm mt-2">
-                        সব প্রোডাক্ট দেখুন
+                        View All Products
                     </a>
                 </div>
             }
@@ -146,7 +146,7 @@
                                     <div class="d-flex align-items-center gap-2 mb-1">
                                         @if (hasSizes)
                                         {
-                                            <span class="fw-bold">৳@minPrice.ToString("N0") থেকে</span>
+                                            <span class="fw-bold">৳@minPrice.ToString("N0") onwards</span>
                                         }
                                         else if (p.DiscountPrice.HasValue)
                                         {
@@ -161,7 +161,7 @@
                                     @if (p.Stock <= 5 && p.Stock > 0 && !hasSizes)
                                     {
                                         <small class="text-warning">
-                                            <i class="bi bi-exclamation-circle me-1"></i>মাত্র @p.Stock টি বাকি
+                                            <i class="bi bi-exclamation-circle me-1"></i>Only @p.Stock left
                                         </small>
                                     }
                                 </div>
@@ -174,14 +174,14 @@
                                             {
                                                 <a asp-controller="Product" asp-action="Detail" asp-route-id="@p.Id"
                                                    class="btn btn-dark btn-sm w-100">
-                                                    <i class="bi bi-eye me-1"></i>সাইজ দেখুন
+                                                    <i class="bi bi-eye me-1"></i>View Sizes
                                                 </a>
                                             }
                                             else
                                             {
                                                 <button class="btn btn-dark btn-sm w-100"
                                                         onclick="quickAddToCart(@p.Id, this)">
-                                                    <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ
+                                                    <i class="bi bi-cart-plus me-1"></i>Add to Cart
                                                 </button>
                                             }
                                         }
@@ -189,13 +189,13 @@
                                         {
                                             <a asp-controller="Account" asp-action="Login"
                                                class="btn btn-dark btn-sm w-100">
-                                                <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ
+                                                <i class="bi bi-cart-plus me-1"></i>Add to Cart
                                             </a>
                                         }
                                     }
                                     else
                                     {
-                                        <button class="btn btn-secondary btn-sm w-100" disabled>স্টক নেই</button>
+                                        <button class="btn btn-secondary btn-sm w-100" disabled>Out of Stock</button>
                                     }
                                 </div>
                             </div>
@@ -246,7 +246,7 @@
     <div id="cartToast" class="toast align-items-center text-bg-success border-0" role="alert">
         <div class="d-flex">
             <div class="toast-body fw-medium">
-                <i class="bi bi-check-circle me-2"></i>কার্টে যোগ হয়েছে!
+                <i class="bi bi-check-circle me-2"></i>Added to Cart!
             </div>
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
         </div>
@@ -255,14 +255,12 @@
 
 @section Scripts {
 <script>
-    // ── Auto-filter: category radio & sort select click/change করলেই submit ──
     document.querySelectorAll('.auto-filter').forEach(function (el) {
         el.addEventListener('change', function () {
             document.getElementById('filterForm').submit();
         });
     });
 
-    // ── Search: Enter চাপলে submit ────────────────────────────────────────────
     document.getElementById('searchInput').addEventListener('keydown', function (e) {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -270,7 +268,6 @@
         }
     });
 
-    // ── Quick Add to Cart ─────────────────────────────────────────────────────
     const _token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
 
     function quickAddToCart(productId, btnEl) {
@@ -292,25 +289,26 @@
                 new bootstrap.Toast(document.getElementById('cartToast'), { delay: 2500 }).show();
                 if (btnEl) {
                     btnEl.disabled = false;
-                    btnEl.innerHTML = '<i class="bi bi-check-circle me-1 text-success"></i>যোগ হয়েছে!';
+                    btnEl.innerHTML = '<i class="bi bi-check-circle me-1 text-success"></i>Added!';
                     setTimeout(function () {
-                        btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>কার্টে যোগ';
+                        btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Add to Cart';
                     }, 2000);
                 }
             } else {
-                alert(data.message || 'কার্টে যোগ করা যায়নি।');
+                alert(data.message || 'Failed to add product to cart.');
                 if (btnEl) {
                     btnEl.disabled = false;
-                    btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>কার্টে যোগ';
+                    btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Add to Cart';
                 }
             }
         })
         .catch(function () {
             if (btnEl) {
                 btnEl.disabled = false;
-                btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>কার্টে যোগ';
+                btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Add to Cart';
             }
         });
     }
 </script>
 }
+

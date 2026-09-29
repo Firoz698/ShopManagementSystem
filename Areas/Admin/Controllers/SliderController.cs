@@ -36,7 +36,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
         {
             if (image == null || image.Length == 0)
             {
-                ModelState.AddModelError("ImageUrl", "স্লাইডার ইমেজ আপলোড করুন।");
+                ModelState.AddModelError("ImageUrl", "Please upload a slider image.");
                 return View(model);
             }
 
@@ -46,7 +46,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             await _sliderRepo.AddAsync(model);
             await _sliderRepo.SaveAsync();
 
-            TempData["Success"] = "স্লাইডার যোগ করা হয়েছে।";
+            TempData["Success"] = "Slider created successfully.";
             return RedirectToAction("Index");
         }
 
@@ -82,7 +82,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             await _sliderRepo.UpdateAsync(slider);
             await _sliderRepo.SaveAsync();
 
-            TempData["Success"] = "স্লাইডার আপডেট করা হয়েছে।";
+            TempData["Success"] = "Slider updated successfully.";
             return RedirectToAction("Index");
         }
 
@@ -96,7 +96,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
                 _imageService.Delete(slider.ImageUrl);
                 await _sliderRepo.DeleteAsync(slider);
                 await _sliderRepo.SaveAsync();
-                TempData["Success"] = "স্লাইডার মুছে ফেলা হয়েছে।";
+                TempData["Success"] = "Slider deleted successfully.";
             }
             return RedirectToAction("Index");
         }

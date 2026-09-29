@@ -10,7 +10,7 @@ namespace ShopManagementSystem.Repository.Interfaces
         Task ResetUnreadCountAsync(ChatSession session);
         Task<int> GetUnreadCountAsync(string userId);
 
-        // ── নতুন: User থেকে Admin কে message পাঠানোর জন্য ──
+ // ── : User Admin message ──
         Task<ChatMessage> AddUserMessageAsync(string userId, string messageText);
     }
 }

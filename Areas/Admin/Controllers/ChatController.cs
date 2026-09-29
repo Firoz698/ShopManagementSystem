@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ShopManagementSystem.Areas.Admin.Repository.Interfaces;
@@ -25,7 +25,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             _permissionChecker = permissionChecker;
         }
 
-        // GET /Admin/Chat — সব sessions দেখাবে
+        // GET /Admin/Chat - show all sessions
         public async Task<IActionResult> Index()
         {
             var perm = await _permissionChecker.GetPermissionsAsync(User, "Chat");
@@ -37,8 +37,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             return View(sessions);
         }
 
-        // GET /Admin/Chat/Conversation/userId
-        // (সরাসরি লিংক/ডিপ-লিংক এর জন্য রাখা হলো — full page)
+        // GET /Admin/Chat/Conversation/userId (full page)
         public async Task<IActionResult> Conversation(string userId)
         {
             var perm = await _permissionChecker.GetPermissionsAsync(User, "Chat");
@@ -53,7 +52,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
 
             var messages = await _chatRepo.GetConversationMessagesAsync(userId);
 
-            // Mark as read — শুধু CanView পাশ করলেই এখানে পৌঁছাবে
+            // Mark as read
             var session = await _chatRepo.GetSessionByUserIdAsync(userId);
             if (session != null)
                 await _chatRepo.ResetSessionUnreadCountAsync(session);
@@ -66,13 +65,13 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
         }
 
         // GET /Admin/Chat/ConversationPartial?userId=...
-        // ── AJAX দিয়ে ডান পাশের প্যানেল লোড করার জন্য (page reload হয় না) ──
+        // AJAX endpoint to load the right panel without page reload
         [HttpGet]
         public async Task<IActionResult> ConversationPartial(string userId)
         {
             var perm = await _permissionChecker.GetPermissionsAsync(User, "Chat");
             if (!perm.CanView)
-                return Forbid(); // fetch() রেসপন্সে res.ok === false পাবে, JS ইতিমধ্যে সেটা handle করে
+                return Forbid();
 
             if (string.IsNullOrWhiteSpace(userId))
                 return NotFound();

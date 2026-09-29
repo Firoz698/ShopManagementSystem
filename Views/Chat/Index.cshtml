@@ -1,6 +1,6 @@
-﻿@model List<ShopManagementSystem.Models.ChatMessage>
+@model List<ShopManagementSystem.Models.ChatMessage>
 @{
-    ViewData["Title"] = "সাপোর্ট চ্যাট";
+    ViewData["Title"] = "Support Chat";
 }
 
 @{
@@ -28,13 +28,13 @@
                         </div>
                     }
                     <div>
-                        <div class="fw-bold">ShopMS সাপোর্ট</div>
+                        <div class="fw-bold">ShopMS Support</div>
                         <div class="small opacity-75" id="adminStatus">
-                            <span class="badge bg-success rounded-pill px-2 py-1">● অনলাইন</span>
+                            <span class="badge bg-success rounded-pill px-2 py-1">● Online</span>
                         </div>
                     </div>
                     <div class="ms-auto small opacity-75">
-                        <i class="bi bi-lock-fill me-1"></i>সুরক্ষিত চ্যাট
+                        <i class="bi bi-lock-fill me-1"></i>Secure Chat
                     </div>
                 </div>
 
@@ -45,7 +45,7 @@
                     <!-- Welcome message -->
                     <div class="text-center mb-3">
                         <span class="badge bg-secondary rounded-pill px-3 py-2 small">
-                            চ্যাট শুরু হয়েছে
+                            Chat started
                         </span>
                     </div>
 
@@ -53,7 +53,7 @@
                     {
                         <div class="text-center text-muted py-4" id="emptyChat">
                             <i class="bi bi-chat-dots display-4 d-block mb-2 opacity-25"></i>
-                            <p class="small">আমাদের সাথে চ্যাট করুন। আমরা সাহায্য করতে প্রস্তুত!</p>
+                            <p class="small">How can we help you today? Send us a message!</p>
                         </div>
                     }
 
@@ -126,7 +126,7 @@
                         <span class="typing-dots">
                             <span></span><span></span><span></span>
                         </span>
-                        অ্যাডমিন টাইপ করছেন...
+                        Support is typing...
                     </span>
                 </div>
 
@@ -134,7 +134,7 @@
                 <div class="card-footer bg-white border-top p-3">
                     <div class="d-flex gap-2">
                         <input type="text" id="messageInput" class="form-control"
-                               placeholder="মেসেজ লিখুন..."
+                               placeholder="Type your message..."
                                maxlength="1000"
                                onkeypress="if(event.key==='Enter') sendMessage()" />
                         <button class="btn btn-dark px-4 flex-shrink-0" onclick="sendMessage()">
@@ -143,7 +143,7 @@
                     </div>
                     <div class="text-muted mt-1" style="font-size:.72rem">
                         <i class="bi bi-shield-check me-1 text-success"></i>
-                        আপনার মেসেজ সুরক্ষিত। সাধারণত ৫-১০ মিনিটের মধ্যে উত্তর পাওয়া যায়।
+                        Your messages are encrypted. We typically reply within 5-10 minutes.
                     </div>
                 </div>
             </div>
@@ -193,34 +193,26 @@
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script>
-        const userId = '@@_userManager.GetUserId(User)';
+        const userId = '@(currentUser?.Id ?? "")';
         const userPhoto = '@Html.Raw(currentUser?.ProfilePhoto ?? "")';
         const userInitial = '@(currentUser?.FullName?.FirstOrDefault().ToString().ToUpper() ?? "U")';
         const adminPhoto = '@Html.Raw(adminPhoto ?? "")';
 
-        // SignalR connection
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/chatHub")
             .withAutomaticReconnect()
             .build();
 
-        // ── Events ─────────────────────────────────────────────────────────────────
-
-        // Admin এর মেসেজ পাওয়া
         connection.on("ReceiveMessage", function(data) {
             if (data.isFromAdmin) {
                 appendAdminMessage(data);
-                // Notification sound
                 playNotificationSound();
             }
         });
 
-        // নিজের মেসেজ confirm
         connection.on("MessageSent", function(data) {
-            // already appended
         });
 
-        // Admin typing indicator
         connection.on("AdminTyping", function() {
             document.getElementById('typingIndicator').style.display = 'block';
             clearTimeout(window._typingTimer);
@@ -229,7 +221,6 @@
             }, 3000);
         });
 
-        // ── Connect ────────────────────────────────────────────────────────────────
         connection.start()
             .then(function() {
                 console.log("Chat connected");
@@ -239,17 +230,14 @@
                 console.error("Chat error:", err);
             });
 
-        // ── Send Message ───────────────────────────────────────────────────────────
         function sendMessage() {
             var input = document.getElementById('messageInput');
             var msg = input.value.trim();
             if (!msg) return;
 
-            // Optimistic UI — নিজের মেসেজ আগেই দেখাও
-            appendUserMessage(msg, new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', hour12: true }));
+            appendUserMessage(msg, new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }));
             input.value = '';
 
-            // Empty chat hide
             var emptyChat = document.getElementById('emptyChat');
             if (emptyChat) emptyChat.style.display = 'none';
 
@@ -258,7 +246,6 @@
             });
         }
 
-        // ── Append Messages ────────────────────────────────────────────────────────
         function appendUserMessage(text, time) {
             var area = document.getElementById('messageArea');
             var avatarHtml = userPhoto
@@ -330,4 +317,5 @@
             } catch (e) { }
         }
     </script>
+}
 }

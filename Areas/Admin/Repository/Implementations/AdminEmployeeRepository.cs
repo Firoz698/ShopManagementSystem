@@ -19,7 +19,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository
                 .ToListAsync();
         }
 
-        // ✅ MenuId → UserMenuPermission ম্যাপ, যাতে View তে সহজে CanView/CanCreate/CanEdit/CanDelete চেক করা যায়
+ // ✅ MenuId → UserMenuPermission , View CanView/CanCreate/CanEdit/CanDelete 
         public async Task<Dictionary<int, UserMenuPermission>> GetPermissionMapAsync(string userId)
         {
             var list = await _db.UserMenuPermissions
@@ -28,7 +28,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository
             return list.ToDictionary(p => p.MenuId, p => p);
         }
 
-        // ✅ পুরো permission সেট রিপ্লেস করে (delete + re-insert, simple ও নিরাপদ)
+ // ✅ permission (delete + re-insert, simple )
         public async Task SaveMenuPermissionsAsync(string userId, List<MenuPermissionInput> permissions)
         {
             var existing = await _db.UserMenuPermissions.Where(p => p.UserId == userId).ToListAsync();

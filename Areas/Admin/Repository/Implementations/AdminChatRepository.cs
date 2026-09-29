@@ -14,7 +14,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
             _db = db;
         }
 
-        // সব session — user সহ, সর্বশেষ message অনুযায়ী সাজানো
+ // session — user , message 
         public async Task<List<ChatSession>> GetAllSessionsAsync()
         {
             return await _db.ChatSessions
@@ -23,13 +23,13 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
                 .ToListAsync();
         }
 
-        // সব session এর মোট unread count (navbar badge এর জন্য)
+ // session unread count (navbar badge )
         public async Task<int> GetTotalUnreadCountAsync()
         {
             return await _db.ChatSessions.SumAsync(s => s.UnreadCount);
         }
 
-        // নির্দিষ্ট user এর সব messages — সর্বোচ্চ ২০০টি
+ // user messages — 
         public async Task<List<ChatMessage>> GetConversationMessagesAsync(string userId)
         {
             return await _db.ChatMessages
@@ -39,21 +39,21 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
                 .ToListAsync();
         }
 
-        // UserId দিয়ে session খোঁজে
+ // UserId session 
         public async Task<ChatSession?> GetSessionByUserIdAsync(string userId)
         {
             return await _db.ChatSessions
                 .FirstOrDefaultAsync(s => s.UserId == userId);
         }
 
-        // Session এর UnreadCount শূন্য করে save করে
+ // Session UnreadCount save 
         public async Task ResetSessionUnreadCountAsync(ChatSession session)
         {
             session.UnreadCount = 0;
             await _db.SaveChangesAsync();
         }
 
-        // User এর unread messages গুলো IsRead = true করে
+ // User unread messages IsRead = true 
         public async Task MarkUserMessagesAsReadAsync(string userId)
         {
             await _db.ChatMessages
@@ -64,3 +64,4 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
         }
     }
 }
+

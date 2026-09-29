@@ -1,16 +1,16 @@
 @model CartViewModel
-@{ ViewData["Title"] = "আমার কার্ট"; }
+@{ ViewData["Title"] = "My Cart"; }
 
 <div class="container my-4">
-    <h4 class="fw-bold mb-4"><i class="bi bi-cart3 me-2"></i>আমার কার্ট</h4>
+    <h4 class="fw-bold mb-4"><i class="bi bi-cart3 me-2"></i>My Cart</h4>
 
     @if (!Model.Items.Any())
     {
         <div class="text-center py-5">
             <i class="bi bi-cart-x display-2 text-muted d-block mb-3"></i>
-            <h5 class="text-muted">আপনার কার্ট খালি</h5>
+            <h5 class="text-muted">Your cart is empty</h5>
             <a asp-controller="Product" asp-action="Index" class="btn btn-dark mt-3">
-                <i class="bi bi-arrow-left me-2"></i>কেনাকাটা শুরু করুন
+                <i class="bi bi-arrow-left me-2"></i>Start Shopping
             </a>
         </div>
     }
@@ -30,7 +30,7 @@
                                 </div>
                                 <div class="col-5 col-md-5">
                                     <h6 class="fw-semibold mb-1">@item.Name</h6>
-                                    <div class="text-muted small">একক মূল্য: ৳@item.Price.ToString("N0")</div>
+                                    <div class="text-muted small">Unit Price: ৳@item.Price.ToString("N0")</div>
                                 </div>
                                 <div class="col-4 col-md-3">
                                     <form asp-action="UpdateQuantity" method="post" class="d-flex align-items-center gap-1">
@@ -47,7 +47,7 @@
                                     <div class="fw-bold mt-1 small text-center">৳@item.SubTotal.ToString("N0")</div>
                                 </div>
                                 <div class="col-12 col-md-2 text-end">
-                                    <form asp-action="Remove" method="post" onsubmit="return confirm('সরিয়ে দিন?')">
+                                    <form asp-action="Remove" method="post" onsubmit="return confirm('Remove this item from your cart?')">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="cartId" value="@item.CartId" />
                                         <button type="submit" class="btn btn-outline-danger btn-sm">
@@ -64,26 +64,26 @@
             <!-- Order Summary -->
             <div class="col-lg-4">
                 <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-dark text-white fw-semibold">অর্ডার সারসংক্ষেপ</div>
+                    <div class="card-header bg-dark text-white fw-semibold">Order Summary</div>
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">সাবটোটাল</span>
+                            <span class="text-muted">Subtotal</span>
                             <span>৳@Model.SubTotal.ToString("N0")</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">ডেলিভারি চার্জ</span>
+                            <span class="text-muted">Delivery Charge</span>
                             <span>৳@Model.ShippingFee.ToString("N0")</span>
                         </div>
                         <hr />
                         <div class="d-flex justify-content-between fw-bold fs-5">
-                            <span>মোট</span>
+                            <span>Total</span>
                             <span class="text-danger">৳@Model.Total.ToString("N0")</span>
                         </div>
                         <a asp-action="Checkout" class="btn btn-dark w-100 mt-3">
-                            <i class="bi bi-credit-card me-2"></i>চেকআউট করুন
+                            <i class="bi bi-credit-card me-2"></i>Proceed to Checkout
                         </a>
                         <a asp-controller="Product" asp-action="Index" class="btn btn-outline-secondary w-100 mt-2 btn-sm">
-                            কেনাকাটা চালিয়ে যান
+                            Continue Shopping
                         </a>
                     </div>
                 </div>
@@ -91,3 +91,4 @@
         </div>
     }
 </div>
+

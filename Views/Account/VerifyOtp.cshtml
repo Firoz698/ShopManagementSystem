@@ -1,6 +1,6 @@
-﻿@model VerifyOtpViewModel
+@model VerifyOtpViewModel
 @{
-    ViewData["Title"] = "OTP যাচাই"; Layout = "_Layout";
+    ViewData["Title"] = "Verify OTP"; Layout = "_Layout";
 }
 
 <div class="container my-5">
@@ -8,20 +8,21 @@
         <div class="col-md-5">
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
-                    <h4 class="fw-bold mb-3">OTP যাচাই করুন</h4>
+                    <h4 class="fw-bold mb-3">Verify OTP</h4>
                     <form asp-action="VerifyOtp" method="post">
                         @Html.AntiForgeryToken()
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
                         <input type="hidden" asp-for="PhoneNumber" />
                         <div class="mb-3">
-                            <label asp-for="OtpCode" class="form-label small">৬ ডিজিটের OTP কোড</label>
+                            <label asp-for="OtpCode" class="form-label small">6-Digit OTP Code</label>
                             <input asp-for="OtpCode" class="form-control" maxlength="6" />
                             <span asp-validation-for="OtpCode" class="text-danger small"></span>
                         </div>
-                        <button type="submit" class="btn btn-dark w-100">যাচাই করুন</button>
+                        <button type="submit" class="btn btn-dark w-100">Verify</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+</div>
 </div>

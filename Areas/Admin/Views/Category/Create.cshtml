@@ -1,6 +1,6 @@
 @model ShopManagementSystem.Models.Category
 @{
-    ViewData["Title"] = "নতুন ক্যাটাগরি";
+    ViewData["Title"] = "New Category";
 }
 
 <div class="card border-0 shadow-sm" style="max-width:600px">
@@ -10,28 +10,26 @@
             <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
             <div class="mb-3">
-                <label class="form-label fw-medium">ক্যাটাগরির নাম <span class="text-danger">*</span></label>
-                <input asp-for="Name" class="form-control" placeholder="যেমন: Electronics" required />
+                <label class="form-label fw-medium">Category Name <span class="text-danger">*</span></label>
+                <input asp-for="Name" class="form-control" placeholder="e.g. Electronics" required />
                 <span asp-validation-for="Name" class="text-danger small"></span>
             </div>
             <div class="mb-3">
-                <label class="form-label fw-medium">ক্যাটাগরি ছবি</label>
+                <label class="form-label fw-medium">Category Image</label>
                 <input type="file" name="image" class="form-control" accept="image/*"
                        onchange="document.getElementById('catPreview').src=URL.createObjectURL(this.files[0])" />
                 <img id="catPreview" src="#" class="mt-2 rounded" style="width:80px;height:80px;object-fit:cover;display:none"
                      onload="this.style.display='block'" />
             </div>
             <div class="form-check form-switch mb-4">
-                <!-- checked অবস্থা মডেল থেকেই আসবে; controller এর GET action এ
-                     "new Category { IsActive = true }" পাস করলে ডিফল্ট সক্রিয় থাকবে -->
                 <input asp-for="IsActive" class="form-check-input" type="checkbox" />
-                <label asp-for="IsActive" class="form-check-label fw-medium">সক্রিয়</label>
+                <label asp-for="IsActive" class="form-check-label fw-medium">Active</label>
             </div>
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-dark px-4">
-                    <i class="bi bi-check-circle me-2"></i>সেভ করুন
+                    <i class="bi bi-check-circle me-2"></i>Save Category
                 </button>
-                <a asp-action="Index" class="btn btn-outline-secondary">বাতিল</a>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
             </div>
         </form>
     </div>
@@ -39,4 +37,5 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+}
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ShopManagementSystem.Interfaces;
@@ -29,19 +29,14 @@ namespace ShopManagementSystem.Controllers
         // GET /Chat — User chat page
         public async Task<IActionResult> Index()
         {
-            // Session নিশ্চিত করো
             var session = await _chatRepo.GetOrCreateSessionAsync(UserId);
-
-            // পুরনো messages লোড করো
             var messages = await _chatRepo.GetMessagesAsync(UserId);
 
-            // Unread reset
             await _chatRepo.ResetUnreadCountAsync(session);
             await _chatRepo.MarkMessagesAsReadAsync(UserId);
 
             ViewBag.CurrentUser = await _userManager.GetUserAsync(User);
 
-            // ✅ Admin-er photo dekhanor jonno — প্রথম Admin role-er user খুঁজে বের করো
             var adminUsers = await _userManager.GetUsersInRoleAsync("Admin");
             ViewBag.AdminPhoto = adminUsers.FirstOrDefault()?.ProfilePhoto;
 
@@ -56,12 +51,12 @@ namespace ShopManagementSystem.Controllers
             return Json(new { count });
         }
 
-        // ── POST /Chat/SendMessage — User থেকে Admin কে message পাঠানো (AJAX) ──
+        // POST /Chat/SendMessage
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> SendMessage(string messageText)
         {
             if (string.IsNullOrWhiteSpace(messageText))
-                return Json(new { success = false, message = "মেসেজ লিখুন।" });
+                return Json(new { success = false, message = "Please write a message." });
 
             var message = await _chatRepo.AddUserMessageAsync(UserId, messageText);
 
@@ -73,7 +68,6 @@ namespace ShopManagementSystem.Controllers
             }
             catch
             {
-                // notification ব্যর্থ হলেও chat message পাঠানো যেন থেমে না যায়
             }
 
             return Json(new

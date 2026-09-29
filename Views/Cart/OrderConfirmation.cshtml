@@ -1,5 +1,5 @@
 @model ShopManagementSystem.Models.Order
-@{ ViewData["Title"] = "অর্ডার নিশ্চিত হয়েছে"; }
+@{ ViewData["Title"] = "Order Confirmed"; }
 
 <div class="container my-5 text-center">
     <div class="card border-0 shadow-sm mx-auto" style="max-width:600px">
@@ -8,17 +8,17 @@
                  style="width:80px;height:80px">
                 <i class="bi bi-check-circle-fill text-success" style="font-size:2.5rem"></i>
             </div>
-            <h3 class="fw-bold text-success mb-2">অর্ডার সফল হয়েছে!</h3>
-            <p class="text-muted mb-1">অর্ডার নম্বর: <strong>#@Model.Id</strong></p>
-            <p class="text-muted mb-4">আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।</p>
+            <h3 class="fw-bold text-success mb-2">Order Placed Successfully!</h3>
+            <p class="text-muted mb-1">Order ID: <strong>#@Model.Id</strong></p>
+            <p class="text-muted mb-4">We will process and deliver your order shortly.</p>
 
             <div class="table-responsive text-start mb-4">
                 <table class="table table-sm">
                     <thead class="table-dark">
                         <tr>
-                            <th>পণ্য</th>
-                            <th class="text-center">পরিমাণ</th>
-                            <th class="text-end">মূল্য</th>
+                            <th>Product</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-end">Price</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -33,7 +33,7 @@
                     </tbody>
                     <tfoot>
                         <tr class="fw-bold">
-                            <td colspan="2">মোট</td>
+                            <td colspan="2">Total</td>
                             <td class="text-end text-danger">৳@Model.TotalAmount.ToString("N0")</td>
                         </tr>
                     </tfoot>
@@ -41,18 +41,19 @@
             </div>
 
             <div class="text-start bg-light rounded p-3 mb-4">
-                <div><strong>ঠিকানা:</strong> @Model.ShippingAddress</div>
-                <div><strong>ফোন:</strong> @Model.Phone</div>
-                <div><strong>পেমেন্ট:</strong> @Model.PaymentMethod</div>
-                <div><strong>স্ট্যাটাস:</strong>
+                <div><strong>Address:</strong> @Model.ShippingAddress</div>
+                <div><strong>Phone:</strong> @Model.Phone</div>
+                <div><strong>Payment:</strong> @Model.PaymentMethod</div>
+                <div><strong>Status:</strong>
                     <span class="badge bg-warning text-dark">@Model.Status</span>
                 </div>
             </div>
 
             <div class="d-flex gap-2 justify-content-center">
-                <a asp-action="MyOrders" class="btn btn-dark">আমার অর্ডার দেখুন</a>
-                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">হোমে যান</a>
+                <a asp-action="MyOrders" class="btn btn-dark">View My Orders</a>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Go to Home</a>
             </div>
         </div>
     </div>
 </div>
+

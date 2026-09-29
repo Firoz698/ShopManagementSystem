@@ -102,12 +102,12 @@ builder.Services.AddScoped<IAdminEmployeeRepository, AdminEmployeeRepository>();
 // Services
 builder.Services.AddScoped<ISidebarMenuService, SidebarMenuService>();
 
-// Global filter — Admin area এর সব controller এ চলবে
+// Global filter - runs for all controllers in the Admin area
 builder.Services.AddScoped<MenuPermissionFilter>();
 
 builder.Services.AddSignalR();
 
-// ✅ এখানে filter যোগ করা হলো, duplicate call বাদ দেওয়া হলো
+// Register global filter
 builder.Services.AddControllersWithViews(options =>
 {
     options.Filters.AddService<MenuPermissionFilter>();

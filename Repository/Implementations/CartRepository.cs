@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ShopManagementSystem.Data;
 using ShopManagementSystem.Models;
 using ShopManagementSystem.Repository.Interfaces;
@@ -104,7 +104,7 @@ namespace ShopManagementSystem.Implementations
 
         // ── Order ────────────────────────────────────────────────────────────────
 
-        // status প্যারামিটার যোগ হয়েছে — Online payment এর জন্য "Pending Payment" দিয়ে শুরু হবে
+ // status — Online payment "Pending Payment" 
         public async Task<Order> CreateOrderAsync(string userId, CheckoutViewModel vm, decimal total, string status = "Pending")
         {
             var order = new Order
@@ -162,7 +162,7 @@ namespace ShopManagementSystem.Implementations
                 .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
         }
 
-        // ── নতুন: PaymentSuccess/IPN এ order lookup করার জন্য (UserId ভ্যালিডেশন ছাড়াই, কারণ gateway callback এ User লগইন নাও থাকতে পারে) ──
+ // ── : PaymentSuccess/IPN order lookup (UserId , gateway callback User ) ──
         public async Task<Order?> GetOrderByIdAsync(int orderId)
         {
             return await _db.Orders

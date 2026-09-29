@@ -16,7 +16,7 @@ namespace ShopManagementSystem.Repository.Implementations
 
         // ── Review ───────────────────────────────────────────────────────────────
 
-        // শুধু Completed অর্ডার — review দেওয়ার জন্য
+ // Completed — review 
         public async Task<Order?> GetCompletedOrderAsync(int orderId, string userId)
         {
             return await _db.Orders
@@ -83,7 +83,7 @@ namespace ShopManagementSystem.Repository.Implementations
 
         // ── Order Cancel ─────────────────────────────────────────────────────────
 
-        // শুধু Pending/Processing অর্ডার cancel করা যাবে
+ // Pending/Processing cancel 
         public async Task<Order?> GetCancellableOrderAsync(int orderId, string userId)
         {
             return await _db.Orders
@@ -93,7 +93,7 @@ namespace ShopManagementSystem.Repository.Implementations
                     && (o.Status == "Pending" || o.Status == "Processing"));
         }
 
-        // Order cancel করে + stock ফেরত দেয়
+ // Order cancel + stock 
         public async Task CancelOrderAsync(Order order, string? reason)
         {
             foreach (var detail in order.OrderDetails)

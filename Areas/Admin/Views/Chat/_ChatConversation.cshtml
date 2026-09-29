@@ -1,4 +1,4 @@
-﻿@model List<ShopManagementSystem.Models.ChatMessage>
+@model List<ShopManagementSystem.Models.ChatMessage>
 @inject ShopManagementSystem.Services.IPermissionChecker PermissionChecker
 @{
     var targetUser = ViewBag.TargetUser as ShopManagementSystem.Models.ApplicationUser;
@@ -34,7 +34,7 @@
             </div>
         </div>
         <div class="ms-auto">
-            <span class="badge bg-success rounded-pill px-2" id="onlineStatus">● অনলাইন</span>
+            <span class="badge bg-success rounded-pill px-2" id="onlineStatus">● Online</span>
         </div>
     </div>
 
@@ -44,7 +44,7 @@
 
         <div class="text-center mb-3">
             <span class="badge bg-secondary rounded-pill px-3 py-2 small">
-                @targetUser?.FullName এর সাথে কথোপকথন
+                Conversation with @targetUser?.FullName
             </span>
         </div>
 
@@ -52,7 +52,7 @@
         {
             <div class="text-center text-muted py-4">
                 <i class="bi bi-chat-square-dots display-4 d-block mb-2 opacity-25"></i>
-                <p class="small">এখনো কোনো মেসেজ নেই</p>
+                <p class="small">No messages yet</p>
             </div>
         }
 
@@ -109,16 +109,16 @@
 
     <!-- Typing -->
     <div id="typingIndicator" class="px-3 py-1" style="display:none;background:#f8f9fa">
-        <span class="text-muted small">@targetUser?.FullName টাইপ করছেন...</span>
+        <span class="text-muted small">@targetUser?.FullName is typing...</span>
     </div>
 
-    <!-- Input — শুধু CanCreate থাকলে দেখাও -->
+    <!-- Input -->
     @if (perm.CanCreate)
     {
         <div class="card-footer bg-white border-top p-3">
             <div class="d-flex gap-2">
                 <input type="text" id="messageInput" class="form-control"
-                       placeholder="@(targetUser?.FullName) কে মেসেজ লিখুন..."
+                       placeholder="Write a message to @(targetUser?.FullName)..."
                        maxlength="1000"
                        onkeypress="if(event.key==='Enter') sendMessage()" />
                 <button class="btn btn-danger px-4 flex-shrink-0" onclick="sendMessage()">
@@ -130,7 +130,7 @@
     else
     {
         <div class="card-footer bg-light border-top p-3 text-center text-muted small">
-            <i class="bi bi-lock me-1"></i>মেসেজ পাঠানোর অনুমতি আপনার নেই
+            <i class="bi bi-lock me-1"></i>You do not have permission to send messages.
         </div>
     }
 </div>
@@ -144,4 +144,5 @@
         background: #dee2e6;
         border-radius: 4px;
     }
+</style>
 </style>

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ShopManagementSystem.Models;
@@ -20,14 +20,14 @@ namespace ShopManagementSystem.Controllers
 
         private string UserId => _userManager.GetUserId(User)!;
 
-        // ── POST /Order/SubmitReview ─────────────────────────────────────────────
+        // POST /Order/SubmitReview
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> SubmitReview(int productId, int orderId, int rating, string? comment)
         {
             var order = await _orderRepo.GetCompletedOrderAsync(orderId, UserId);
             if (order == null)
             {
-                TempData["Error"] = "শুধুমাত্র সম্পন্ন অর্ডারে রিভিউ দেওয়া যাবে।";
+                TempData["Error"] = "Reviews can only be submitted for completed orders.";
                 return RedirectToAction("MyOrders", "Cart");
             }
 
@@ -35,17 +35,17 @@ namespace ShopManagementSystem.Controllers
             if (!alreadyReviewed)
             {
                 await _orderRepo.AddReviewAsync(UserId, productId, rating, comment);
-                TempData["Success"] = "রিভিউ সফলভাবে জমা দেওয়া হয়েছে।";
+                TempData["Success"] = "Review submitted successfully.";
             }
             else
             {
-                TempData["Error"] = "আপনি এই পণ্যে আগেই রিভিউ দিয়েছেন।";
+                TempData["Error"] = "You have already reviewed this product.";
             }
 
             return RedirectToAction("MyOrders", "Cart");
         }
 
-        // ── GET /Order/ReturnRequest/5 ───────────────────────────────────────────
+        // GET /Order/ReturnRequest/5
         public async Task<IActionResult> ReturnRequest(int orderId, int productId)
         {
             var order = await _orderRepo.GetOrderWithDetailsAsync(orderId, UserId);
@@ -53,14 +53,14 @@ namespace ShopManagementSystem.Controllers
 
             if (order.Status != "Completed" && order.Status != "Shipped")
             {
-                TempData["Error"] = "শুধুমাত্র Shipped বা Completed অর্ডারে রিটার্ন করা যাবে।";
+                TempData["Error"] = "Return requests can only be placed for shipped or completed orders.";
                 return RedirectToAction("MyOrders", "Cart");
             }
 
             var alreadyRequested = await _orderRepo.HasReturnRequestAsync(orderId, productId, UserId);
             if (alreadyRequested)
             {
-                TempData["Error"] = "এই পণ্যের জন্য আপনি ইতোমধ্যে রিটার্ন রিকোয়েস্ট দিয়েছেন।";
+                TempData["Error"] = "You have already submitted a return request for this product.";
                 return RedirectToAction("MyOrders", "Cart");
             }
 
@@ -72,7 +72,7 @@ namespace ShopManagementSystem.Controllers
             return View();
         }
 
-        // ── POST /Order/ReturnRequest ────────────────────────────────────────────
+        // POST /Order/ReturnRequest
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> ReturnRequest(int orderId, int productId, string reason)
         {
@@ -81,29 +81,29 @@ namespace ShopManagementSystem.Controllers
 
             if (string.IsNullOrWhiteSpace(reason))
             {
-                TempData["Error"] = "রিটার্নের কারণ লিখুন।";
+                TempData["Error"] = "Please provide a reason for the return.";
                 return RedirectToAction("ReturnRequest", new { orderId, productId });
             }
 
             await _orderRepo.AddReturnRequestAsync(orderId, productId, UserId, reason);
-            TempData["Success"] = "রিটার্ন রিকোয়েস্ট সফলভাবে জমা দেওয়া হয়েছে। অ্যাডমিন শীঘ্রই যোগাযোগ করবে।";
+            TempData["Success"] = "Return request submitted successfully. Our team will contact you soon.";
             return RedirectToAction("MyOrders", "Cart");
         }
 
-        // ── GET /Order/MyReturns ─────────────────────────────────────────────────
+        // GET /Order/MyReturns
         public async Task<IActionResult> MyReturns()
         {
             var returns = await _orderRepo.GetMyReturnsAsync(UserId);
             return View(returns);
         }
 
-        // ── GET /Order/CancelOrder/5 — cancel confirm পেজ ──────────────────────────
+        // GET /Order/CancelOrder/5
         public async Task<IActionResult> CancelOrder(int orderId)
         {
             var order = await _orderRepo.GetCancellableOrderAsync(orderId, UserId);
             if (order == null)
             {
-                TempData["Error"] = "এই অর্ডারটি বাতিল করা সম্ভব নয় (হয়তো ইতোমধ্যে Shipped/Completed/Cancelled হয়ে গেছে)।";
+                TempData["Error"] = "This order cannot be cancelled (it may have already been Shipped, Completed, or Cancelled).";
                 return RedirectToAction("MyOrders", "Cart");
             }
 
@@ -111,19 +111,19 @@ namespace ShopManagementSystem.Controllers
             return View();
         }
 
-        // ── POST /Order/CancelOrder ──────────────────────────────────────────────
+        // POST /Order/CancelOrder
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> CancelOrder(int orderId, string? reason)
         {
             var order = await _orderRepo.GetCancellableOrderAsync(orderId, UserId);
             if (order == null)
             {
-                TempData["Error"] = "এই অর্ডারটি বাতিল করা সম্ভব নয়।";
+                TempData["Error"] = "This order cannot be cancelled.";
                 return RedirectToAction("MyOrders", "Cart");
             }
 
             await _orderRepo.CancelOrderAsync(order, reason);
-            TempData["Success"] = $"অর্ডার #{order.Id} বাতিল করা হয়েছে।";
+            TempData["Success"] = $"Order #{order.Id} has been cancelled.";
             return RedirectToAction("MyOrders", "Cart");
         }
     }

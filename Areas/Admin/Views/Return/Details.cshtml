@@ -1,6 +1,6 @@
-﻿@model ShopManagementSystem.Models.ReturnRequest
+@model ShopManagementSystem.Models.ReturnRequest
 @{
-    ViewData["Title"] = $"রিটার্ন রিকোয়েস্ট #{Model.Id}";
+    ViewData["Title"] = $"Return Request #{Model.Id}";
     var statusColor = Model.Status switch
     {
         "Approved" => "success",
@@ -27,11 +27,11 @@
 <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
         <h4 class="fw-bold mb-1">
-            <i class="bi bi-arrow-return-left me-2 text-muted"></i>রিটার্ন রিকোয়েস্ট #@Model.Id
+            <i class="bi bi-arrow-return-left me-2 text-muted"></i>Return Request #@Model.Id
         </h4>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb small mb-0">
-                <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Return" asp-action="Index">রিটার্ন লিস্ট</a></li>
+                <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Return" asp-action="Index">Return List</a></li>
                 <li class="breadcrumb-item active">#@Model.Id</li>
             </ol>
         </nav>
@@ -52,30 +52,30 @@
 
 <div class="row g-4">
 
-    <!-- ── বাম কলাম ──────────────────────────────────────────────────────── -->
+    <!-- ── Left Column ──────────────────────────────────────────────────────── -->
     <div class="col-lg-8">
 
         <!-- Customer Info -->
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white fw-semibold border-bottom py-3">
-                <i class="bi bi-person-circle me-2 text-muted"></i>কাস্টমার তথ্য
+                <i class="bi bi-person-circle me-2 text-muted"></i>Customer Information
             </div>
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-sm-6">
-                        <div class="text-muted small mb-1">নাম</div>
+                        <div class="text-muted small mb-1">Name</div>
                         <div class="fw-medium">@Model.User?.FullName</div>
                     </div>
                     <div class="col-sm-6">
-                        <div class="text-muted small mb-1">ইমেইল</div>
+                        <div class="text-muted small mb-1">Email</div>
                         <div class="fw-medium">@Model.User?.Email</div>
                     </div>
                     <div class="col-sm-6">
-                        <div class="text-muted small mb-1">ফোন</div>
+                        <div class="text-muted small mb-1">Phone</div>
                         <div class="fw-medium">@(Model.User?.PhoneNumber ?? "—")</div>
                     </div>
                     <div class="col-sm-6">
-                        <div class="text-muted small mb-1">রিকোয়েস্ট তারিখ</div>
+                        <div class="text-muted small mb-1">Request Date</div>
                         <div class="fw-medium">@Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</div>
                     </div>
                 </div>
@@ -85,7 +85,7 @@
         <!-- Product Info -->
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white fw-semibold border-bottom py-3">
-                <i class="bi bi-box-seam me-2 text-muted"></i>পণ্যের তথ্য
+                <i class="bi bi-box-seam me-2 text-muted"></i>Product Information
             </div>
             <div class="card-body">
                 <div class="d-flex gap-3 align-items-center">
@@ -104,11 +104,11 @@
                     }
                     <div>
                         <div class="fw-semibold">@Model.Product?.Name</div>
-                        <div class="text-muted small mt-1">প্রোডাক্ট ID: #@Model.ProductId</div>
+                        <div class="text-muted small mt-1">Product ID: #@Model.ProductId</div>
                         <a asp-area="Admin" asp-controller="Product" asp-action="Edit"
                            asp-route-id="@Model.ProductId"
                            class="btn btn-outline-secondary btn-sm mt-2" style="font-size:.75rem">
-                            <i class="bi bi-eye me-1"></i>পণ্য দেখুন
+                            <i class="bi bi-eye me-1"></i>View Product
                         </a>
                     </div>
                 </div>
@@ -118,7 +118,7 @@
         <!-- Return Reason -->
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white fw-semibold border-bottom py-3">
-                <i class="bi bi-chat-left-text me-2 text-muted"></i>রিটার্নের কারণ
+                <i class="bi bi-chat-left-text me-2 text-muted"></i>Return Reason
             </div>
             <div class="card-body">
                 <p class="mb-0 text-muted">@Model.Reason</p>
@@ -130,20 +130,20 @@
         {
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white fw-semibold border-bottom py-3 d-flex justify-content-between align-items-center">
-                    <span><i class="bi bi-receipt me-2 text-muted"></i>সংশ্লিষ্ট অর্ডার #@Model.OrderId</span>
+                    <span><i class="bi bi-receipt me-2 text-muted"></i>Associated Order #@Model.OrderId</span>
                     <a asp-area="Admin" asp-controller="Order" asp-action="Detail"
                        asp-route-id="@Model.OrderId"
                        class="btn btn-outline-dark btn-sm" style="font-size:.75rem">
-                        <i class="bi bi-box-arrow-up-right me-1"></i>অর্ডার দেখুন
+                        <i class="bi bi-box-arrow-up-right me-1"></i>View Order
                     </a>
                 </div>
                 <div class="card-body p-0">
                     <table class="table table-sm align-middle mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th class="ps-3">পণ্য</th>
-                                <th class="text-center">পরিমাণ</th>
-                                <th class="text-end pe-3">মূল্য</th>
+                                <th class="ps-3">Product</th>
+                                <th class="text-center">Quantity</th>
+                                <th class="text-end pe-3">Price</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -154,7 +154,7 @@
                                         @od.Product?.Name
                                         @if (od.ProductId == Model.ProductId)
                                         {
-                                            <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem">রিটার্ন পণ্য</span>
+                                            <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem">Returned Product</span>
                                         }
                                     </td>
                                     <td class="text-center small">@od.Quantity</td>
@@ -164,7 +164,7 @@
                         </tbody>
                         <tfoot class="table-light">
                             <tr>
-                                <td colspan="2" class="text-end fw-semibold ps-3">মোট:</td>
+                                <td colspan="2" class="text-end fw-semibold ps-3">Total:</td>
                                 <td class="text-end pe-3 fw-bold">৳@Model.Order.TotalAmount.ToString("N0")</td>
                             </tr>
                         </tfoot>
@@ -179,7 +179,7 @@
         }
     </div>
 
-    <!-- ── ডান কলাম ──────────────────────────────────────────────────────── -->
+    <!-- ── Right Column ──────────────────────────────────────────────────────── -->
     <div class="col-lg-4">
 
         <!-- Admin Note (readonly if already decided) -->
@@ -187,14 +187,14 @@
         {
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white fw-semibold border-bottom py-3">
-                    <i class="bi bi-shield-check me-2 text-muted"></i>অ্যাডমিন নোট
+                    <i class="bi bi-shield-check me-2 text-muted"></i>Admin Note
                 </div>
                 <div class="card-body">
                     <p class="mb-0 small text-muted">@Model.AdminNote</p>
                     @if (Model.UpdatedAt.HasValue)
                     {
                         <div class="text-muted mt-2" style="font-size:.72rem">
-                            আপডেট: @Model.UpdatedAt.Value.ToString("dd MMM yyyy, hh:mm tt")
+                            Updated: @Model.UpdatedAt.Value.ToString("dd MMM yyyy, hh:mm tt")
                         </div>
                     }
                 </div>
@@ -206,7 +206,7 @@
         {
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white fw-semibold border-bottom py-3">
-                    <i class="bi bi-pencil-square me-2 text-muted"></i>সিদ্ধান্ত নিন
+                    <i class="bi bi-pencil-square me-2 text-muted"></i>Take Decision
                 </div>
                 <div class="card-body">
                     <form asp-area="Admin" asp-controller="Return" asp-action="UpdateStatus" method="post">
@@ -214,33 +214,33 @@
                         <input type="hidden" name="id" value="@Model.Id" />
 
                         <div class="mb-3">
-                            <label class="form-label fw-medium small">সিদ্ধান্ত</label>
+                            <label class="form-label fw-medium small">Decision</label>
                             <div class="d-flex gap-3">
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio"
                                            name="status" value="Approved" id="approve" checked />
                                     <label class="form-check-label text-success fw-medium small" for="approve">
-                                        ✅ অনুমোদন
+                                        ✅ Approve
                                     </label>
                                 </div>
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio"
                                            name="status" value="Rejected" id="reject" />
                                     <label class="form-check-label text-danger fw-medium small" for="reject">
-                                        ❌ প্রত্যাখ্যান
+                                        ❌ Reject
                                     </label>
                                 </div>
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-medium small">অ্যাডমিন নোট (ঐচ্ছিক)</label>
+                            <label class="form-label fw-medium small">Admin Note (optional)</label>
                             <textarea name="adminNote" class="form-control form-control-sm" rows="3"
-                                  placeholder="ইউজারকে কারণ জানান..."></textarea>
+                                  placeholder="Provide reason or instructions to user..."></textarea>
                         </div>
 
                         <button type="submit" class="btn btn-dark btn-sm w-100">
-                            <i class="bi bi-check2-circle me-1"></i>সিদ্ধান্ত সেভ করুন
+                            <i class="bi bi-check2-circle me-1"></i>Save Decision
                         </button>
                     </form>
                 </div>
@@ -254,12 +254,12 @@
                     @if (Model.Status == "Approved")
                     {
                         <i class="bi bi-check-circle-fill text-success display-5 d-block mb-2"></i>
-                        <div class="fw-semibold text-success">অনুমোদিত হয়েছে</div>
+                        <div class="fw-semibold text-success">Request Approved</div>
                     }
                     else
                     {
                         <i class="bi bi-x-circle-fill text-danger display-5 d-block mb-2"></i>
-                        <div class="fw-semibold text-danger">প্রত্যাখ্যান করা হয়েছে</div>
+                        <div class="fw-semibold text-danger">Request Rejected</div>
                     }
                     @if (Model.UpdatedAt.HasValue)
                     {
@@ -276,17 +276,18 @@
             <div class="card-body d-grid gap-2">
                 <a asp-area="Admin" asp-controller="Return" asp-action="Index"
                    class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-arrow-left me-1"></i>রিটার্ন লিস্টে ফিরুন
+                    <i class="bi bi-arrow-left me-1"></i>Back to Return List
                 </a>
                 @if (Model.Order != null)
                 {
                     <a asp-area="Admin" asp-controller="Order" asp-action="Detail"
                        asp-route-id="@Model.OrderId"
                        class="btn btn-outline-dark btn-sm">
-                        <i class="bi bi-receipt me-1"></i>অর্ডার #@Model.OrderId দেখুন
+                        <i class="bi bi-receipt me-1"></i>View Order #@Model.OrderId
                     </a>
                 }
             </div>
         </div>
     </div>
 </div>
+

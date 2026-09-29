@@ -50,25 +50,25 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             var userId = _userManager.GetUserId(User);
             if (userId == null) return RedirectToAction("Login", "Account");
 
-            // আগে return request দেওয়া হয়েছে কিনা চেক
+            // Check if return request already exists
             var alreadyExists = await _orderRepo.HasReturnRequestAsync(orderId, productId, userId);
             if (alreadyExists)
             {
-                TempData["Error"] = "এই পণ্যের জন্য ইতিমধ্যে রিটার্ন রিকোয়েস্ট পাঠানো হয়েছে।";
+                TempData["Error"] = "A return request has already been submitted for this item.";
                 return RedirectToAction("Index");
             }
 
-            // Order টি এই user এর কিনা verify
+            // Verify order belongs to user
             var order = await _orderRepo.GetUserOrderAsync(orderId, userId);
             if (order == null)
             {
-                TempData["Error"] = "অর্ডার পাওয়া যায়নি।";
+                TempData["Error"] = "Order not found.";
                 return RedirectToAction("Index");
             }
 
             await _orderRepo.AddReturnRequestAsync(orderId, productId, userId, reason);
 
-            TempData["Success"] = "রিটার্ন রিকোয়েস্ট সফলভাবে পাঠানো হয়েছে।";
+            TempData["Success"] = "Return request submitted successfully.";
             return RedirectToAction("Index");
         }
 
@@ -90,7 +90,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             if (order != null)
             {
                 await _orderRepo.UpdateStatusAsync(order, status);
-                TempData["Success"] = $"অর্ডার #{id} স্ট্যাটাস '{status}' করা হয়েছে।";
+                TempData["Success"] = $"Order #{id} status updated to '{status}'.";
             }
             return RedirectToAction("Detail", new { id });
         }
@@ -103,7 +103,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             if (order != null)
                 await _orderRepo.DeleteAsync(order);
 
-            TempData["Success"] = "অর্ডার মুছে ফেলা হয়েছে।";
+            TempData["Success"] = "Order deleted successfully.";
             return RedirectToAction("Index");
         }
     }

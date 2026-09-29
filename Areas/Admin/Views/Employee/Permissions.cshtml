@@ -1,6 +1,6 @@
-﻿@model List<ShopManagementSystem.Models.Menu>
+@model List<ShopManagementSystem.Models.Menu>
 @{
-    ViewData["Title"] = "মেনু পারমিশন";
+    ViewData["Title"] = "Menu Permissions";
     var employee = (ShopManagementSystem.Models.ApplicationUser)ViewBag.Employee;
     var permMap = (Dictionary<int, ShopManagementSystem.Models.UserMenuPermission>)ViewBag.PermissionMap;
 }
@@ -355,7 +355,7 @@
         @(employee.FullName?.FirstOrDefault().ToString().ToUpper() ?? "?")
     </div>
     <div style="position:relative;z-index:1">
-        <div class="perm-title">@employee.FullName — মেনু পারমিশন</div>
+        <div class="perm-title">@employee.FullName — Menu Permissions</div>
         <div class="perm-legend">
             <i class="bi bi-envelope"></i>@employee.Email
         </div>
@@ -370,14 +370,14 @@
     <div class="bulk-bar">
         <div class="bulk-actions">
             <button type="button" class="btn-bulk btn-bulk-all" id="btnCheckAll">
-                <i class="bi bi-check2-square"></i> সব পারমিশন দিন
+                <i class="bi bi-check2-square"></i> Grant All Permissions
             </button>
             <button type="button" class="btn-bulk btn-bulk-none" id="btnUncheckAll">
-                <i class="bi bi-x-square"></i> সব বাতিল করুন
+                <i class="bi bi-x-square"></i> Revoke All
             </button>
         </div>
         <div class="bulk-count">
-            <strong id="activeMenuCount">0</strong> / @Model.Count টি মেনুতে অ্যাক্সেস দেওয়া আছে
+            <strong id="activeMenuCount">0</strong> / @Model.Count menus accessible
         </div>
     </div>
 
@@ -386,29 +386,29 @@
             <table class="perm-table">
                 <thead>
                     <tr>
-                        <th class="col-menu">মেনু</th>
+                        <th class="col-menu">Menu</th>
                         <th class="col-perm">
                             <div class="col-head-check">
-                                <input type="checkbox" class="perm-check chk-view col-toggle" data-col="view" title="সব দেখা টগল করুন" />
-                                <span>দেখা</span>
+                                <input type="checkbox" class="perm-check chk-view col-toggle" data-col="view" title="Toggle all View" />
+                                <span>View</span>
                             </div>
                         </th>
                         <th class="col-perm">
                             <div class="col-head-check">
-                                <input type="checkbox" class="perm-check chk-create col-toggle" data-col="create" title="সব তৈরি টগল করুন" />
-                                <span>তৈরি</span>
+                                <input type="checkbox" class="perm-check chk-create col-toggle" data-col="create" title="Toggle all Create" />
+                                <span>Create</span>
                             </div>
                         </th>
                         <th class="col-perm">
                             <div class="col-head-check">
-                                <input type="checkbox" class="perm-check chk-edit col-toggle" data-col="edit" title="সব এডিট টগল করুন" />
-                                <span>এডিট</span>
+                                <input type="checkbox" class="perm-check chk-edit col-toggle" data-col="edit" title="Toggle all Edit" />
+                                <span>Edit</span>
                             </div>
                         </th>
                         <th class="col-perm">
                             <div class="col-head-check">
-                                <input type="checkbox" class="perm-check chk-delete col-toggle" data-col="delete" title="সব ডিলিট টগল করুন" />
-                                <span>ডিলিট</span>
+                                <input type="checkbox" class="perm-check chk-delete col-toggle" data-col="delete" title="Toggle all Delete" />
+                                <span>Delete</span>
                             </div>
                         </th>
                     </tr>
@@ -417,7 +417,7 @@
                     @{
                         int i = 0;
                     }
-                    @foreach (var group in Model.GroupBy(m => m.Parent?.Title ?? "অন্যান্য"))
+                    @foreach (var group in Model.GroupBy(m => m.Parent?.Title ?? "Other"))
                     {
                         <tr class="perm-group-row">
                             <td colspan="5"><i class="bi bi-folder2 me-1"></i>@group.Key</td>
@@ -466,10 +466,10 @@
 
     <div class="perm-footer-actions">
         <a asp-action="Index" class="btn-cancel-perm">
-            <i class="bi bi-arrow-left me-1"></i>ফিরে যান
+            <i class="bi bi-arrow-left me-1"></i>Back
         </a>
         <button type="submit" class="btn-save-perm">
-            <i class="bi bi-check-circle"></i>পারমিশন সেভ করুন
+            <i class="bi bi-check-circle"></i>Save Permissions
         </button>
     </div>
 </form>
@@ -506,7 +506,6 @@
             ['view', 'create', 'edit', 'delete'].forEach(syncColumnHeaderState);
         }
 
-        // "দেখা" আনচেক করলে বাকি তিনটাও অটো আনচেক হবে
         allViewChecks.forEach(function(cb) {
             cb.addEventListener('change', function() {
                 var row = this.closest('tr');
@@ -521,7 +520,6 @@
             });
         });
 
-        // বাকি (create/edit/delete) checkbox — টিক দিলে "দেখা" অটো টিক হয়ে যাবে (dependency নিশ্চিত করতে)
         document.querySelectorAll('.perm-table tbody input[type=checkbox]:not(.can-view)').forEach(function(cb) {
             cb.addEventListener('change', function() {
                 var row = this.closest('tr');
@@ -534,7 +532,6 @@
             });
         });
 
-        // কলাম হেডারের mini checkbox — পুরো কলাম টগল
         document.querySelectorAll('.col-toggle').forEach(function(headerCb) {
             headerCb.addEventListener('change', function() {
                 var col = this.dataset.col;
@@ -544,12 +541,10 @@
                 });
 
                 if (col === 'view' && !checked) {
-                    // দেখা বন্ধ করলে সব কলাম বন্ধ হয়ে যাবে
                     document.querySelectorAll('.perm-table tbody input[type=checkbox]').forEach(function(cb) {
                         cb.checked = false;
                     });
                 } else if (col !== 'view' && checked) {
-                    // create/edit/delete চালু করলে view ও চালু হবে
                     document.querySelectorAll('.can-view').forEach(function(cb) { cb.checked = true; });
                 }
 
@@ -559,7 +554,6 @@
             });
         });
 
-        // গ্লোবাল "সব পারমিশন দিন"
         document.getElementById('btnCheckAll').addEventListener('click', function() {
             document.querySelectorAll('.perm-table tbody input[type=checkbox]').forEach(function(cb) {
                 cb.checked = true;
@@ -569,7 +563,6 @@
             syncAllColumnHeaders();
         });
 
-        // গ্লোবাল "সব বাতিল করুন"
         document.getElementById('btnUncheckAll').addEventListener('click', function() {
             document.querySelectorAll('.perm-table tbody input[type=checkbox]').forEach(function(cb) {
                 cb.checked = false;
@@ -579,8 +572,8 @@
             syncAllColumnHeaders();
         });
 
-        // প্রাথমিক state সেট করো (page load এ)
         updateActiveCount();
         syncAllColumnHeaders();
     </script>
+}
 }

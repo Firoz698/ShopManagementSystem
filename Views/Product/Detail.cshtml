@@ -7,8 +7,8 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb small">
-            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">হোম</a></li>
-            <li class="breadcrumb-item"><a asp-controller="Product" asp-action="Index">প্রোডাক্ট</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Product" asp-action="Index">Products</a></li>
             <li class="breadcrumb-item active">@Model.Product.Name</li>
         </ol>
     </nav>
@@ -45,7 +45,7 @@
 
             @if (!string.IsNullOrEmpty(Model.Product.ProductCode))
             {
-                <div class="text-muted small mb-2">কোড: <code>@Model.Product.ProductCode</code></div>
+                <div class="text-muted small mb-2">Code: <code>@Model.Product.ProductCode</code></div>
             }
 
             <!-- Rating -->
@@ -54,7 +54,7 @@
                 {
                     <i class="bi @(i <= Math.Round(Model.AvgRating) ? "bi-star-fill text-warning" : "bi-star text-muted")"></i>
                 }
-                <span class="small text-muted">(@Model.Reviews.Count টি রিভিউ)</span>
+                <span class="small text-muted">(@Model.Reviews.Count reviews)</span>
             </div>
 
             <!-- Price -->
@@ -71,7 +71,7 @@
                         @{
                             var discPct = Math.Round((1 - Model.Product.DiscountPrice.Value / Model.Product.Price) * 100);
                         }
-                        <span class="badge bg-danger">@discPct% ছাড়</span>
+                        <span class="badge bg-danger">@discPct% OFF</span>
                     </div>
                 }
                 else
@@ -81,7 +81,7 @@
                 @if (Model.Product.ProductVat > 0)
                 {
                     <div class="text-muted small mt-1">
-                        <i class="bi bi-info-circle me-1"></i>VAT @Model.Product.ProductVat% অন্তর্ভুক্ত
+                        <i class="bi bi-info-circle me-1"></i>Includes @Model.Product.ProductVat% VAT
                     </div>
                 }
             </div>
@@ -90,7 +90,7 @@
             @if (Model.Product.Sizes.Any(s => s.IsActive))
             {
                 <div class="mb-3">
-                    <label class="form-label fw-medium">সাইজ নির্বাচন করুন <span class="text-danger">*</span></label>
+                    <label class="form-label fw-medium">Select Size <span class="text-danger">*</span></label>
                     <div class="d-flex flex-wrap gap-2" id="sizeOptions">
                         @foreach (var size in Model.Product.Sizes.Where(s => s.IsActive))
                         {
@@ -104,13 +104,13 @@
                                 @size.SizeName
                                 @if (size.Stock == 0)
                                 {
-                                    <span class="d-block" style="font-size:.65rem">শেষ</span>
+                                    <span class="d-block" style="font-size:.65rem">Out</span>
                                 }
                             </button>
                         }
                     </div>
                     <div id="sizeError" class="text-danger small mt-1" style="display:none">
-                        অনুগ্রহ করে একটি সাইজ নির্বাচন করুন
+                        Please select a size.
                     </div>
                 </div>
             }
@@ -120,13 +120,13 @@
                 @if (Model.Product.Stock > 0)
                 {
                     <span class="badge bg-success-subtle text-success px-3 py-2">
-                        <i class="bi bi-check-circle me-1"></i>স্টকে আছে (@Model.Product.Stock টি)
+                        <i class="bi bi-check-circle me-1"></i>In Stock (@Model.Product.Stock available)
                     </span>
                 }
                 else
                 {
                     <span class="badge bg-danger-subtle text-danger px-3 py-2">
-                        <i class="bi bi-x-circle me-1"></i>স্টক শেষ
+                        <i class="bi bi-x-circle me-1"></i>Out of Stock
                     </span>
                 }
             </div>
@@ -145,13 +145,13 @@
                     @if (User.Identity?.IsAuthenticated == true)
                     {
                         <button type="button" class="btn btn-dark px-4" onclick="addMainToCart(@Model.Product.Id)">
-                            <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ করুন
+                            <i class="bi bi-cart-plus me-1"></i>Add to Cart
                         </button>
                     }
                     else
                     {
                         <a asp-controller="Account" asp-action="Login" class="btn btn-dark px-4">
-                            <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ করুন
+                            <i class="bi bi-cart-plus me-1"></i>Add to Cart
                         </a>
                     }
                 </div>
@@ -161,7 +161,7 @@
             }
             else
             {
-                <button class="btn btn-secondary btn-lg" disabled>স্টক নেই</button>
+                <button class="btn btn-secondary btn-lg" disabled>Out of Stock</button>
             }
 
             <!-- Wishlist -->
@@ -172,7 +172,7 @@
                     <input type="hidden" name="productId" value="@Model.Product.Id" />
                     <button type="submit" class="btn @(Model.IsInWishlist ? "btn-danger" : "btn-outline-danger") btn-sm">
                         <i class="bi @(Model.IsInWishlist ? "bi-heart-fill" : "bi-heart") me-1"></i>
-                        @(Model.IsInWishlist ? "উইশলিস্টে আছে" : "উইশলিস্টে যোগ করুন")
+                        @(Model.IsInWishlist ? "In Wishlist" : "Add to Wishlist")
                     </button>
                 </form>
             }
@@ -181,7 +181,7 @@
             @if (!string.IsNullOrWhiteSpace(Model.Product.Description))
             {
                 <hr />
-                <h6 class="fw-semibold">বিবরণ</h6>
+                <h6 class="fw-semibold">Description</h6>
                 <p class="text-muted">@Model.Product.Description</p>
             }
         </div>
@@ -190,37 +190,37 @@
     <!-- ── Reviews ──────────────────────────────────────────────────────────── -->
     <div class="row mb-5">
         <div class="col-lg-8">
-            <h5 class="fw-bold mb-3">রিভিউ ও রেটিং</h5>
+            <h5 class="fw-bold mb-3">Reviews & Ratings</h5>
             @if (User.Identity?.IsAuthenticated == true && !Model.UserReviewed)
             {
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-body">
-                        <h6 class="fw-semibold mb-3">আপনার রিভিউ লিখুন</h6>
+                        <h6 class="fw-semibold mb-3">Write a Review</h6>
                         <form asp-controller="Product" asp-action="AddReview" method="post">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="ProductId" value="@Model.Product.Id" />
                             <div class="mb-3">
-                                <label class="form-label small fw-medium">রেটিং</label>
-                                <select name="Rating" class="form-select form-select-sm" style="width:160px" required>
-                                    <option value="5">⭐⭐⭐⭐⭐ চমৎকার</option>
-                                    <option value="4">⭐⭐⭐⭐ ভালো</option>
-                                    <option value="3">⭐⭐⭐ মোটামুটি</option>
-                                    <option value="2">⭐⭐ খারাপ</option>
-                                    <option value="1">⭐ খুব খারাপ</option>
+                                <label class="form-label small fw-medium">Rating</label>
+                                <select name="Rating" class="form-select form-select-sm" style="width:180px" required>
+                                    <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                                    <option value="4">⭐⭐⭐⭐ Good</option>
+                                    <option value="3">⭐⭐⭐ Average</option>
+                                    <option value="2">⭐⭐ Poor</option>
+                                    <option value="1">⭐ Terrible</option>
                                 </select>
                             </div>
                             <div class="mb-3">
                                 <textarea name="Comment" class="form-control" rows="3"
-                                      placeholder="আপনার অভিজ্ঞতা শেয়ার করুন..."></textarea>
+                                      placeholder="Share your experience with this product..."></textarea>
                             </div>
-                            <button type="submit" class="btn btn-dark btn-sm">রিভিউ জমা দিন</button>
+                            <button type="submit" class="btn btn-dark btn-sm">Submit Review</button>
                         </form>
                     </div>
                 </div>
             }
             @if (!Model.Reviews.Any())
             {
-                <p class="text-muted small">এখনো কোনো রিভিউ নেই।</p>
+                <p class="text-muted small">No reviews yet. Be the first to review this product!</p>
             }
             @foreach (var r in Model.Reviews)
             {
@@ -251,7 +251,7 @@
     <!-- ── Related Products ─────────────────────────────────────────────────── -->
     @if (Model.RelatedItems.Any())
     {
-        <h5 class="fw-bold mb-3">সম্পর্কিত পণ্য</h5>
+        <h5 class="fw-bold mb-3">Related Products</h5>
         <div class="row g-3">
             @foreach (var p in Model.RelatedItems)
             {
@@ -276,20 +276,20 @@
                                     <button type="button"
                                             class="btn btn-dark btn-sm w-100"
                                             onclick="addRelatedToCart(@p.Id, this)">
-                                        <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ
+                                        <i class="bi bi-cart-plus me-1"></i>Add to Cart
                                     </button>
                                 }
                                 else
                                 {
                                     <a asp-controller="Account" asp-action="Login"
                                        class="btn btn-dark btn-sm w-100">
-                                        <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ
+                                        <i class="bi bi-cart-plus me-1"></i>Add to Cart
                                     </a>
                                 }
                             }
                             else
                             {
-                                <button class="btn btn-secondary btn-sm w-100" disabled>স্টক নেই</button>
+                                <button class="btn btn-secondary btn-sm w-100" disabled>Out of Stock</button>
                             }
                         </div>
                     </div>
@@ -301,17 +301,14 @@
 
 @section Scripts {
     <script>
-        // ── Hidden CSRF token ────────────────────────────────────────────────────
         const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
 
-        // ── Qty control ──────────────────────────────────────────────────────────
         function changeQty(delta) {
             var input = document.getElementById('qtyInput');
             var val = parseInt(input.value) + delta;
             input.value = Math.max(1, Math.min(val, parseInt(input.max)));
         }
 
-        // ── Size selection ───────────────────────────────────────────────────────
         var selectedSizeId    = null;
         var selectedSizePrice = null;
 
@@ -327,19 +324,16 @@
             selectedSizePrice = parseFloat(btn.dataset.sizePrice);
             var stock         = parseInt(btn.dataset.sizeStock);
 
-            // Price update
-            document.getElementById('displayPrice').textContent = '৳' + selectedSizePrice.toLocaleString('bn-BD');
+            document.getElementById('displayPrice').textContent = '৳' + selectedSizePrice.toLocaleString('en-US');
 
-            // Stock update
             document.getElementById('qtyInput').max = stock;
             document.getElementById('stockBadge').innerHTML =
                 '<span class="badge bg-success-subtle text-success px-3 py-2">' +
-                '<i class="bi bi-check-circle me-1"></i>স্টকে আছে (' + stock + ' টি)</span>';
+                '<i class="bi bi-check-circle me-1"></i>In Stock (' + stock + ' available)</span>';
 
             document.getElementById('sizeError').style.display = 'none';
         }
 
-        // ── Thumbnail active ─────────────────────────────────────────────────────
         function setActiveThumb(img) {
             document.querySelectorAll('.thumb-img').forEach(function(t) {
                 t.classList.remove('border-dark', 'border-2');
@@ -347,7 +341,6 @@
             img.classList.add('border-dark', 'border-2');
         }
 
-        // ── Main Product কার্টে যোগ (size validation সহ) ────────────────────────
         function addMainToCart(productId) {
             var hasSizes = document.querySelectorAll('.size-btn').length > 0;
             var sizeId   = null;
@@ -364,16 +357,14 @@
             doAddToCart(productId, sizeId, quantity, null);
         }
 
-        // ── Related Product কার্টে যোগ (size validation নেই) ────────────────────
         function addRelatedToCart(productId, btnEl) {
             doAddToCart(productId, null, 1, btnEl);
         }
 
-        // ── Shared fetch logic ───────────────────────────────────────────────────
         function doAddToCart(productId, sizeId, quantity, btnEl) {
             if (btnEl) {
                 btnEl.disabled = true;
-                btnEl.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>যোগ হচ্ছে...';
+                btnEl.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Adding...';
             }
 
             var formData = new FormData();
@@ -389,39 +380,36 @@
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 if (data.success) {
-                    // ── Cart badge update ────────────────────────────────────────
                     if (window.updateCartBadge) window.updateCartBadge(data.cartCount);
 
-                    // ── Main product feedback ────────────────────────────────────
                     var fb = document.getElementById('cartFeedback');
                     if (fb && !btnEl) {
                         fb.className = 'alert alert-success py-2 small';
-                        fb.textContent = '✅ কার্টে যোগ হয়েছে!';
+                        fb.textContent = '✅ Added to cart!';
                         fb.style.display = 'block';
                         setTimeout(function() { fb.style.display = 'none'; }, 3000);
                     }
 
-                    // ── Related product button feedback ──────────────────────────
                     if (btnEl) {
                         btnEl.disabled = false;
-                        btnEl.innerHTML = '<i class="bi bi-check-circle me-1 text-success"></i>যোগ হয়েছে!';
+                        btnEl.innerHTML = '<i class="bi bi-check-circle me-1 text-success"></i>Added!';
                         setTimeout(function() {
-                            btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>কার্টে যোগ';
+                            btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Add to Cart';
                         }, 2000);
                     }
                 } else {
-                    alert(data.message || 'কার্টে যোগ করা যায়নি।');
+                    alert(data.message || 'Could not add to cart.');
                     if (btnEl) {
                         btnEl.disabled = false;
-                        btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>কার্টে যোগ';
+                        btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Add to Cart';
                     }
                 }
             })
             .catch(function() {
-                alert('সংযোগ সমস্যা। আবার চেষ্টা করুন।');
+                alert('Connection error. Please try again.');
                 if (btnEl) {
                     btnEl.disabled = false;
-                    btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>কার্টে যোগ';
+                    btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Add to Cart';
                 }
             });
         }
@@ -438,3 +426,4 @@
         return true;
     }
 }
+

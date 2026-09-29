@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ShopManagementSystem.Models
@@ -11,7 +11,7 @@ namespace ShopManagementSystem.Models
         public string SenderId { get; set; } = string.Empty;
 
         [Required]
-        public string ReceiverId { get; set; } = string.Empty;  // Admin হলে "admin"
+        public string ReceiverId { get; set; } = string.Empty;  // "admin" if addressed to admin
 
         [Required, MaxLength(1000)]
         public string Message { get; set; } = string.Empty;

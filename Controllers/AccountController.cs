@@ -20,11 +20,11 @@ namespace ShopManagementSystem.Controllers
             _env = env;
         }
 
-        // ✅ GET /Account/Register
+        // GET /Account/Register
         [HttpGet]
         public IActionResult Register() => View();
 
-        // ✅ POST /Account/Register
+        // POST /Account/Register
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel vm)
         {
@@ -42,7 +42,7 @@ namespace ShopManagementSystem.Controllers
                 };
                 await _accountRepo.SignInAfterRegisterAsync(user);
 
-                TempData["Success"] = "স্বাগতম! অ্যাকাউন্ট তৈরি হয়েছে।";
+                TempData["Success"] = "Welcome! Your account has been created successfully.";
                 return RedirectToAction("Index", "Home");
             }
 
@@ -52,7 +52,7 @@ namespace ShopManagementSystem.Controllers
             return View(vm);
         }
 
-        // ✅ GET /Account/Login
+        // GET /Account/Login
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
         {
@@ -60,7 +60,7 @@ namespace ShopManagementSystem.Controllers
             return View();
         }
 
-        // ✅ POST /Account/Login
+        // POST /Account/Login
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel vm, string? returnUrl = null)
         {
@@ -76,11 +76,11 @@ namespace ShopManagementSystem.Controllers
                 return LocalRedirect(returnUrl ?? "/");
             }
 
-            ModelState.AddModelError(string.Empty, "ইমেইল বা পাসওয়ার্ড সঠিক নয়।");
+            ModelState.AddModelError(string.Empty, "Invalid email or password.");
             return View(vm);
         }
 
-        // ✅ POST /Account/Logout
+        // POST /Account/Logout
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
@@ -88,10 +88,10 @@ namespace ShopManagementSystem.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // ✅ GET /Account/AccessDenied
+        // GET /Account/AccessDenied
         public IActionResult AccessDenied() => View();
 
-        // ✅ Change Password
+        // Change Password
         [Authorize, HttpGet]
         public IActionResult ChangePassword() => View();
 
@@ -105,7 +105,7 @@ namespace ShopManagementSystem.Controllers
 
             if (result.Succeeded)
             {
-                TempData["Success"] = "পাসওয়ার্ড পরিবর্তন হয়েছে।";
+                TempData["Success"] = "Password has been changed successfully.";
                 return RedirectToAction("Profile");
             }
 
@@ -115,7 +115,7 @@ namespace ShopManagementSystem.Controllers
             return View(vm);
         }
 
-        // ✅ Forgot Password → OTP পাঠায় (SMS)
+        // Forgot Password -> Generate OTP (SMS)
         [HttpGet]
         public IActionResult ForgotPassword() => View();
 
@@ -135,7 +135,7 @@ namespace ShopManagementSystem.Controllers
             return RedirectToAction("VerifyOtp", new { phoneNumber = vm.PhoneNumber });
         }
 
-        // ✅ OTP verify
+        // OTP verify
         [HttpGet]
         public IActionResult VerifyOtp(string phoneNumber) => View(new VerifyOtpViewModel { PhoneNumber = phoneNumber });
 
@@ -147,14 +147,14 @@ namespace ShopManagementSystem.Controllers
             var isValid = await _accountRepo.VerifyOtpAsync(vm.PhoneNumber, vm.OtpCode);
             if (!isValid)
             {
-                ModelState.AddModelError(string.Empty, "OTP সঠিক নয় অথবা মেয়াদ শেষ হয়ে গেছে।");
+                ModelState.AddModelError(string.Empty, "Invalid OTP code or it has expired.");
                 return View(vm);
             }
 
             return RedirectToAction("ResetPassword", new { phoneNumber = vm.PhoneNumber, otpCode = vm.OtpCode });
         }
 
-        // ✅ Reset Password
+        // Reset Password
         [HttpGet]
         public IActionResult ResetPassword(string phoneNumber, string otpCode)
             => View(new ResetPasswordViewModel { PhoneNumber = phoneNumber, OtpCode = otpCode });
@@ -167,7 +167,7 @@ namespace ShopManagementSystem.Controllers
             var result = await _accountRepo.ResetPasswordWithOtpAsync(vm);
             if (result.Succeeded)
             {
-                TempData["Success"] = "পাসওয়ার্ড রিসেট হয়েছে। এখন লগইন করুন।";
+                TempData["Success"] = "Password has been reset. You can now login.";
                 return RedirectToAction("Login");
             }
 
@@ -177,7 +177,7 @@ namespace ShopManagementSystem.Controllers
             return View(vm);
         }
 
-        // ✅ Profile দেখা
+        // Profile
         [Authorize, HttpGet]
         public async Task<IActionResult> Profile()
         {
@@ -187,7 +187,7 @@ namespace ShopManagementSystem.Controllers
             return View(user);
         }
 
-        // ✅ Profile Edit
+        // Profile Edit
         [Authorize, HttpGet]
         public async Task<IActionResult> EditProfile()
         {
@@ -225,7 +225,7 @@ namespace ShopManagementSystem.Controllers
             return RedirectToAction("Profile");
         }
 
-        // ✅ Google/Facebook button click korle eikhane redirect hoy
+        // External Login
         [HttpGet]
         public IActionResult ExternalLogin(string provider, string? returnUrl = null)
         {
@@ -234,24 +234,22 @@ namespace ShopManagementSystem.Controllers
             {
                 RedirectUri = redirectUrl
             };
-            // provider = "Google" ba "Facebook"
             return Challenge(properties, provider);
         }
 
-        // ✅ Google/Facebook login shesh howar por eikhane phirbe
         [HttpGet]
         public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
         {
             if (remoteError != null)
             {
-                TempData["Error"] = "External login ব্যর্থ হয়েছে।";
+                TempData["Error"] = "External login failed.";
                 return RedirectToAction("Login");
             }
 
             var info = await HttpContext.AuthenticateAsync(Microsoft.AspNetCore.Identity.IdentityConstants.ExternalScheme);
             if (info?.Principal == null)
             {
-                TempData["Error"] = "External login তথ্য পাওয়া যায়নি।";
+                TempData["Error"] = "External login details not found.";
                 return RedirectToAction("Login");
             }
 
@@ -260,7 +258,6 @@ namespace ShopManagementSystem.Controllers
             var email = info.Principal.FindFirstValue(ClaimTypes.Email) ?? "";
             var name = info.Principal.FindFirstValue(ClaimTypes.Name) ?? email;
 
-            // Age theke ei provider diye link kora user ache kina check
             var existingUser = await _accountRepo.FindByLoginAsync(provider, providerKey);
 
             if (existingUser != null)
@@ -275,7 +272,6 @@ namespace ShopManagementSystem.Controllers
                 }
             }
 
-            // Notun user — email diye create koro
             var newUser = new ApplicationUser
             {
                 FullName = name,
@@ -288,11 +284,11 @@ namespace ShopManagementSystem.Controllers
             if (createResult.Succeeded)
             {
                 await _accountRepo.ExternalLoginSignInAsync(provider, providerKey);
-                TempData["Success"] = "স্বাগতম! অ্যাকাউন্ট তৈরি হয়েছে।";
+                TempData["Success"] = "Welcome! Your account has been created successfully.";
                 return LocalRedirect(returnUrl ?? "/");
             }
 
-            TempData["Error"] = "অ্যাকাউন্ট তৈরি করা সম্ভব হয়নি।";
+            TempData["Error"] = "Failed to create account.";
             return RedirectToAction("Login");
         }
     }

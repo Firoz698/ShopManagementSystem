@@ -1,6 +1,6 @@
 @model ShopManagementSystem.Models.ApplicationUser
 @{
-    ViewData["Title"] = "ইউজার এডিট";
+    ViewData["Title"] = "Edit User";
 }
 
 <div class="row justify-content-center g-4">
@@ -15,7 +15,7 @@
                 {
                     <div class="rounded-circle bg-dark text-white d-inline-flex align-items-center justify-content-center fw-bold"
                          style="width:40px;height:40px;font-size:1rem">
-                        @Model.FullName[0]
+                        @(Model.FullName?.Length > 0 ? Model.FullName[0].ToString() : "U")
                     </div>
                 }
                 <div>
@@ -51,57 +51,57 @@
 
                     @* Full Name *@
                     <div class="mb-3">
-                        <label asp-for="FullName" class="form-label fw-medium small">পূর্ণ নাম</label>
-                        <input asp-for="FullName" class="form-control form-control-sm" placeholder="পূর্ণ নাম লিখুন" />
+                        <label asp-for="FullName" class="form-label fw-medium small">Full Name</label>
+                        <input asp-for="FullName" class="form-control form-control-sm" placeholder="Enter full name" />
                         <span asp-validation-for="FullName" class="text-danger small"></span>
                     </div>
 
                     @* Email *@
                     <div class="mb-3">
-                        <label asp-for="Email" class="form-label fw-medium small">ইমেইল</label>
+                        <label asp-for="Email" class="form-label fw-medium small">Email</label>
                         <input asp-for="Email" type="email" class="form-control form-control-sm" placeholder="email@example.com" />
                         <span asp-validation-for="Email" class="text-danger small"></span>
                     </div>
 
                     @* Phone *@
                     <div class="mb-3">
-                        <label asp-for="PhoneNumber" class="form-label fw-medium small">ফোন নম্বর</label>
+                        <label asp-for="PhoneNumber" class="form-label fw-medium small">Phone Number</label>
                         <input asp-for="PhoneNumber" class="form-control form-control-sm" placeholder="01XXXXXXXXX" />
                         <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
                     </div>
 
                     @* Address *@
                     <div class="mb-3">
-                        <label asp-for="Address" class="form-label fw-medium small">ঠিকানা</label>
+                        <label asp-for="Address" class="form-label fw-medium small">Address</label>
                         <textarea asp-for="Address" class="form-control form-control-sm" rows="3"
-                                  placeholder="পূর্ণ ঠিকানা লিখুন"></textarea>
+                                  placeholder="Enter complete address"></textarea>
                         <span asp-validation-for="Address" class="text-danger small"></span>
                     </div>
 
                     @* Gender + DOB *@
                     <div class="row g-2 mb-4">
                         <div class="col-md-6">
-                            <label asp-for="Gender" class="form-label fw-medium small">লিঙ্গ</label>
+                            <label asp-for="Gender" class="form-label fw-medium small">Gender</label>
                             <select asp-for="Gender" class="form-select form-select-sm">
-                                <option value="">নির্বাচন করুন</option>
-                                <option value="Male">পুরুষ</option>
-                                <option value="Female">মহিলা</option>
-                                <option value="Other">অন্যান্য</option>
+                                <option value="">Select gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label asp-for="DateOfBirth" class="form-label fw-medium small">জন্ম তারিখ</label>
+                            <label asp-for="DateOfBirth" class="form-label fw-medium small">Date of Birth</label>
                             <input asp-for="DateOfBirth" type="date" class="form-control form-control-sm" />
                         </div>
                     </div>
 
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-dark btn-sm px-4">
-                            <i class="bi bi-check-lg me-1"></i>সংরক্ষণ করুন
+                            <i class="bi bi-check-lg me-1"></i>Save Changes
                         </button>
                         <a asp-action="Detail" asp-route-id="@Model.Id"
                            class="btn btn-outline-secondary btn-sm px-4">
-                            <i class="bi bi-x-lg me-1"></i>বাতিল
+                            <i class="bi bi-x-lg me-1"></i>Cancel
                         </a>
                     </div>
                 </form>
@@ -109,24 +109,24 @@
         </div>
     </div>
 
-    @* ── Password Reset — আলাদা card ── *@
+    @* ── Password Reset ── *@
     <div class="col-md-5">
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white py-3">
-                <h6 class="fw-bold mb-0"><i class="bi bi-shield-lock me-2 text-danger"></i>পাসওয়ার্ড পরিবর্তন</h6>
+                <h6 class="fw-bold mb-0"><i class="bi bi-shield-lock me-2 text-danger"></i>Reset Password</h6>
             </div>
             <div class="card-body p-4">
-                <p class="text-muted small">অ্যাডমিন হিসেবে সরাসরি এই ইউজারের পাসওয়ার্ড পরিবর্তন করতে পারবেন — পুরনো পাসওয়ার্ড লাগবে না।</p>
+                <p class="text-muted small">As an admin, you can directly reset this user's password without entering their old password.</p>
                 <form asp-action="ResetPassword" asp-route-id="@Model.Id" method="post"
-                      onsubmit="return confirm('নিশ্চিতভাবে এই ইউজারের পাসওয়ার্ড পরিবর্তন করবেন?')">
+                      onsubmit="return confirm('Are you sure you want to reset this user\'s password?')">
                     @Html.AntiForgeryToken()
                     <div class="mb-3">
-                        <label class="form-label fw-medium small">নতুন পাসওয়ার্ড</label>
+                        <label class="form-label fw-medium small">New Password</label>
                         <input type="password" name="newPassword" class="form-control form-control-sm"
-                               placeholder="কমপক্ষে ৬ অক্ষর" minlength="6" required />
+                               placeholder="Minimum 6 characters" minlength="6" required />
                     </div>
                     <button type="submit" class="btn btn-outline-danger btn-sm w-100">
-                        <i class="bi bi-key me-1"></i>পাসওয়ার্ড পরিবর্তন করুন
+                        <i class="bi bi-key me-1"></i>Reset Password
                     </button>
                 </form>
             </div>
@@ -137,4 +137,5 @@
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.21.0/jquery.validate.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js"></script>
+}
 }

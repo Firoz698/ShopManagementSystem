@@ -1,10 +1,10 @@
 @model List<ShopManagementSystem.Models.Order>
-@{ ViewData["Title"] = "অর্ডার ম্যানেজমেন্ট"; }
+@{ ViewData["Title"] = "Order Management"; }
 
 <!-- Status filter tabs -->
 <div class="d-flex gap-2 mb-4 flex-wrap">
     <a asp-action="Index" class="btn btn-sm @(ViewBag.Status == null ? "btn-dark" : "btn-outline-dark")">
-        সব
+        All
     </a>
     @foreach (var status in (string[])ViewBag.StatusList)
     {
@@ -25,13 +25,13 @@
             <thead class="table-dark">
                 <tr>
                     <th>#</th>
-                    <th>ইউজার</th>
-                    <th>ফোন</th>
-                    <th>তারিখ</th>
-                    <th>আইটেম</th>
-                    <th>মোট</th>
-                    <th>স্ট্যাটাস</th>
-                    <th class="text-center">অ্যাকশন</th>
+                    <th>Customer</th>
+                    <th>Phone</th>
+                    <th>Date</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th class="text-center">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -57,13 +57,13 @@
                         <td class="text-center">
                             <div class="d-flex gap-1 justify-content-center">
                                 <a asp-action="Detail" asp-route-id="@order.Id"
-                                   class="btn btn-sm btn-outline-primary">
+                                   class="btn btn-sm btn-outline-primary" title="View Details">
                                     <i class="bi bi-eye"></i>
                                 </a>
                                 <form asp-action="Delete" asp-route-id="@order.Id" method="post"
-                                      onsubmit="return confirm('অর্ডার #@order.Id মুছবেন?')">
+                                      onsubmit="return confirm('Are you sure you want to delete order #@order.Id?')">
                                     @Html.AntiForgeryToken()
-                                    <button class="btn btn-sm btn-outline-danger">
+                                    <button class="btn btn-sm btn-outline-danger" title="Delete">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -73,10 +73,11 @@
                 }
                 @if (!Model.Any())
                 {
-                    <tr><td colspan="8" class="text-center text-muted py-5">কোনো অর্ডার নেই</td></tr>
+                    <tr><td colspan="8" class="text-center text-muted py-5">No orders found</td></tr>
                 }
             </tbody>
         </table>
     </div>
-    <div class="card-footer bg-white text-muted small">মোট @Model.Count টি অর্ডার</div>
+    <div class="card-footer bg-white text-muted small">Total @Model.Count orders</div>
 </div>
+

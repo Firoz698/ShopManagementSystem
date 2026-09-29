@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using ShopManagementSystem.Models;
 
 namespace ShopManagementSystem.Services
@@ -29,7 +29,7 @@ namespace ShopManagementSystem.Services
             _logger            = logger;
         }
 
-        // ── Payment শুরু করুন ─────────────────────────────────────────────────────
+ // ── Payment ─────────────────────────────────────────────────────
         public async Task<string> InitiatePaymentAsync(SslPaymentRequest request)
         {
             var storeId  = _config["SSLCommerz:StoreId"];
@@ -135,3 +135,4 @@ namespace ShopManagementSystem.Services
         public string  ProductName     { get; set; } = string.Empty;
     }
 }
+

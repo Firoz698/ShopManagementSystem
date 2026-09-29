@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ShopManagementSystem.Data;
@@ -67,7 +67,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             _db.ComboOffers.Add(combo);
             await _db.SaveChangesAsync();
 
-            // Items যোগ করো
+            // Add items
             decimal originalTotal = 0;
             foreach (var entry in vm.Products.Where(p => p.ProductId > 0))
             {
@@ -86,7 +86,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             combo.OriginalPrice = originalTotal;
             await _db.SaveChangesAsync();
 
-            TempData["Success"] = "কম্বো অফার যোগ হয়েছে।";
+            TempData["Success"] = "Combo offer created successfully.";
             return RedirectToAction("Index");
         }
 
@@ -141,7 +141,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
                 combo.BannerImageUrl = await _imageService.UploadAsync(vm.BannerImage, "combos");
             }
 
-            // Items পুনরায় তৈরি
+            // Recreate items
             _db.ComboItems.RemoveRange(combo.Items);
             decimal originalTotal = 0;
             foreach (var entry in vm.Products.Where(p => p.ProductId > 0))
@@ -154,7 +154,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             combo.OriginalPrice = originalTotal;
 
             await _db.SaveChangesAsync();
-            TempData["Success"] = "কম্বো আপডেট হয়েছে।";
+            TempData["Success"] = "Combo offer updated successfully.";
             return RedirectToAction("Index");
         }
 
@@ -177,7 +177,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
                 if (!string.IsNullOrEmpty(combo.BannerImageUrl)) _imageService.Delete(combo.BannerImageUrl);
                 _db.ComboOffers.Remove(combo);
                 await _db.SaveChangesAsync();
-                TempData["Success"] = "কম্বো মুছে ফেলা হয়েছে।";
+                TempData["Success"] = "Combo offer deleted successfully.";
             }
             return RedirectToAction("Index");
         }

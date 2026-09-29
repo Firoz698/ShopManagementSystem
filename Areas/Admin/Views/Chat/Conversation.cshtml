@@ -1,6 +1,6 @@
-﻿@model List<ShopManagementSystem.Models.ChatMessage>
+@model List<ShopManagementSystem.Models.ChatMessage>
 @{
-    ViewData["Title"] = $"চ্যাট — {(ViewBag.TargetUser as ShopManagementSystem.Models.ApplicationUser)?.FullName}";
+    ViewData["Title"] = $"Chat — {(ViewBag.TargetUser as ShopManagementSystem.Models.ApplicationUser)?.FullName}";
 }
 
 @{
@@ -13,7 +13,7 @@
     <div class="col-12">
         <a asp-area="Admin" asp-controller="Chat" asp-action="Index"
            class="btn btn-sm btn-outline-secondary mb-2">
-            <i class="bi bi-arrow-left me-1"></i>সব চ্যাট
+            <i class="bi bi-arrow-left me-1"></i>All Chats
         </a>
     </div>
 
@@ -43,7 +43,7 @@
                     </div>
                 </div>
                 <div class="ms-auto">
-                    <span class="badge bg-success rounded-pill px-2" id="onlineStatus">● অনলাইন</span>
+                    <span class="badge bg-success rounded-pill px-2" id="onlineStatus">● Online</span>
                 </div>
             </div>
 
@@ -53,7 +53,7 @@
 
                 <div class="text-center mb-3">
                     <span class="badge bg-secondary rounded-pill px-3 py-2 small">
-                        @targetUser?.FullName এর সাথে কথোপকথন
+                        Conversation with @targetUser?.FullName
                     </span>
                 </div>
 
@@ -61,7 +61,7 @@
                 {
                     <div class="text-center text-muted py-4">
                         <i class="bi bi-chat-square-dots display-4 d-block mb-2 opacity-25"></i>
-                        <p class="small">এখনো কোনো মেসেজ নেই</p>
+                        <p class="small">No messages yet</p>
                     </div>
                 }
 
@@ -128,14 +128,14 @@
 
             <!-- Typing -->
             <div id="typingIndicator" class="px-3 py-1" style="display:none;background:#f8f9fa">
-                <span class="text-muted small">@targetUser?.FullName টাইপ করছেন...</span>
+                <span class="text-muted small">@targetUser?.FullName is typing...</span>
             </div>
 
             <!-- Input -->
             <div class="card-footer bg-white border-top p-3">
                 <div class="d-flex gap-2">
                     <input type="text" id="messageInput" class="form-control"
-                           placeholder="@targetUser?.FullName কে মেসেজ লিখুন..."
+                           placeholder="Write a message to @(targetUser?.FullName)..."
                            maxlength="1000"
                            onkeypress="if(event.key==='Enter') sendMessage()" />
                     <button class="btn btn-danger px-4 flex-shrink-0" onclick="sendMessage()">
@@ -170,16 +170,13 @@
             .withAutomaticReconnect()
             .build();
 
-        // User এর মেসেজ পাওয়া
         connection.on("ReceiveMessage", function(data) {
             if (!data.isFromAdmin && data.senderId === targetUserId) {
                 appendUserMessage(data);
-                // Mark as read
                 connection.invoke("MarkAsRead", targetUserId).catch(console.error);
             }
         });
 
-        // Admin নিজের মেসেজ দেখবে
         connection.on("MessageSent", function(data) {
             if (data.targetUserId === targetUserId) {
                 appendAdminMessage(data.payload || data);
@@ -188,14 +185,14 @@
 
         connection.on("UserOnline", function(user) {
             if (user.userId === targetUserId) {
-                document.getElementById('onlineStatus').textContent = '● অনলাইন';
+                document.getElementById('onlineStatus').textContent = '● Online';
                 document.getElementById('onlineStatus').className = 'badge bg-success rounded-pill px-2';
             }
         });
 
         connection.on("UserOffline", function(userId) {
             if (userId === targetUserId) {
-                document.getElementById('onlineStatus').textContent = '○ অফলাইন';
+                document.getElementById('onlineStatus').textContent = '○ Offline';
                 document.getElementById('onlineStatus').className = 'badge bg-secondary rounded-pill px-2';
             }
         });
@@ -215,7 +212,7 @@
 
             connection.invoke("SendMessageToUser", targetUserId, msg).catch(function(err) {
                 console.error("Send error:", err);
-                alert('মেসেজ পাঠানো যায়নি।');
+                alert('Failed to send message.');
             });
         }
 
@@ -272,4 +269,5 @@
             return d.innerHTML;
         }
     </script>
+}
 }
