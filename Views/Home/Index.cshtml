@@ -398,8 +398,7 @@
             .then(data => {
                 if (data.success) {
                     new bootstrap.Toast(document.getElementById('cartToast'), { delay: 2500 }).show();
-                    var badge = document.querySelector('.navbar .badge.rounded-pill');
-                    if (badge) badge.textContent = data.cartCount;
+                    if (window.updateCartBadge) window.updateCartBadge(data.cartCount);
                 } else { alert(data.message); }
                 if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>কার্টে যোগ'; }
             })

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ShopManagementSystem.Data;
 using ShopManagementSystem.Models;
 using ShopManagementSystem.Repository.Interfaces;
@@ -90,7 +90,7 @@ namespace ShopManagementSystem.Implementations
 
         public async Task<int> GetCartCountAsync(string userId)
         {
-            return await _db.Carts.CountAsync(c => c.UserId == userId);
+            return await _db.Carts.Where(c => c.UserId == userId).SumAsync(c => (int?)c.Quantity) ?? 0;
         }
 
         // ── Product ──────────────────────────────────────────────────────────────

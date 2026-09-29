@@ -37,12 +37,12 @@
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="cartId" value="@item.CartId" />
                                         <button type="button" class="btn btn-outline-secondary btn-sm"
-                                                onclick="var i=this.nextElementSibling;i.value=Math.max(1,+i.value-1)">−</button>
+                                                onclick="var i=this.nextElementSibling;var v=Math.max(1,+i.value-1);if(+i.value!==v){i.value=v;i.form.submit();}">−</button>
                                         <input type="number" name="quantity" value="@item.Quantity" min="1" max="@item.Stock"
                                                class="form-control form-control-sm text-center" style="width:55px"
                                                onchange="this.form.submit()" />
                                         <button type="button" class="btn btn-outline-secondary btn-sm"
-                                                onclick="var i=this.previousElementSibling;i.value=Math.min(@item.Stock,+i.value+1);i.form.submit()">+</button>
+                                                onclick="var i=this.previousElementSibling;var v=Math.min(@item.Stock,+i.value+1);if(+i.value!==v){i.value=v;i.form.submit();}">+</button>
                                     </form>
                                     <div class="fw-bold mt-1 small text-center">৳@item.SubTotal.ToString("N0")</div>
                                 </div>

@@ -1,4 +1,4 @@
-﻿@model ShopManagementSystem.ViewModels.ComboCreateViewModel
+@model ShopManagementSystem.ViewModels.ComboCreateViewModel
 @{
     ViewData["Title"] = "কম্বো অফার সম্পাদনা";
     var products = ViewBag.Products as List<ShopManagementSystem.Models.Product>;
@@ -151,7 +151,7 @@
                                                     <option value="@p.Id"
                                                             data-price="@p.Price"
                                                             data-img="@imgUrl"
-                                                    @@(entry.ProductId == p.Id ? "selected" : "")>
+                                                            @@(entry.ProductId == p.Id ? "selected" : "")>
                                                         @p.Name — ৳@p.Price.ToString("N0")
                                                     </option>
                                                 }

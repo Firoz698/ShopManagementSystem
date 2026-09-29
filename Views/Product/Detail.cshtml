@@ -390,19 +390,7 @@
             .then(function(data) {
                 if (data.success) {
                     // ── Cart badge update ────────────────────────────────────────
-                    var badge = document.querySelector('.navbar .badge');
-                    if (badge) {
-                        badge.textContent = data.cartCount;
-                    } else {
-                        var cartIcon = document.querySelector('a[href="/Cart"] i');
-                        if (cartIcon) {
-                            var sp = document.createElement('span');
-                            sp.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark';
-                            sp.textContent = data.cartCount;
-                            cartIcon.parentElement.style.position = 'relative';
-                            cartIcon.parentElement.appendChild(sp);
-                        }
-                    }
+                    if (window.updateCartBadge) window.updateCartBadge(data.cartCount);
 
                     // ── Main product feedback ────────────────────────────────────
                     var fb = document.getElementById('cartFeedback');

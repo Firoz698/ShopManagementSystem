@@ -34,6 +34,17 @@ namespace ShopManagementSystem.Controllers
 
         private string UserId => _userManager.GetUserId(User)!;
 
+        // ── GET /Cart/GetCount ──────────────────────────────────────────────────
+        [HttpGet, AllowAnonymous]
+        public async Task<IActionResult> GetCount()
+        {
+            if (User.Identity?.IsAuthenticated != true)
+                return Json(new { count = 0 });
+
+            var count = await _cartRepo.GetCartCountAsync(UserId);
+            return Json(new { count });
+        }
+
         // ── GET /Cart ────────────────────────────────────────────────────────────
         public async Task<IActionResult> Index()
         {

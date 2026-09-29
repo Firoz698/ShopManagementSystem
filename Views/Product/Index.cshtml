@@ -66,7 +66,7 @@
                             <label class="form-label fw-medium small">সাজানো</label>
                             <select name="sortBy" class="form-select form-select-sm auto-filter">
                                 <option value="">নতুন আগে</option>
-                                <option value="price_asc"  @@(Model.SortBy == "price_asc"  ? "selected" : "")>মূল্য: কম থেকে বেশি</option>
+                                <option value="price_asc" @@(Model.SortBy == "price_asc"  ? "selected" : "")>মূল্য: কম থেকে বেশি</option>
                                 <option value="price_desc" @@(Model.SortBy == "price_desc" ? "selected" : "")>মূল্য: বেশি থেকে কম</option>
                                 <option value="name"       @@(Model.SortBy == "name"       ? "selected" : "")>নাম অনুযায়ী</option>
                             </select>
@@ -288,7 +288,7 @@
         .then(function (res) { return res.json(); })
         .then(function (data) {
             if (data.success) {
-                updateCartBadge(data.cartCount);
+                if (window.updateCartBadge) window.updateCartBadge(data.cartCount);
                 new bootstrap.Toast(document.getElementById('cartToast'), { delay: 2500 }).show();
                 if (btnEl) {
                     btnEl.disabled = false;
@@ -311,19 +311,6 @@
                 btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>কার্টে যোগ';
             }
         });
-    }
-
-    function updateCartBadge(count) {
-        var badge = document.querySelector('.navbar .badge.rounded-pill');
-        if (badge) { badge.textContent = count; return; }
-        var cartLink = document.querySelector('a[href="/Cart"]');
-        if (cartLink) {
-            cartLink.style.position = 'relative';
-            var sp = document.createElement('span');
-            sp.className   = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark';
-            sp.textContent = count;
-            cartLink.appendChild(sp);
-        }
     }
 </script>
 }
