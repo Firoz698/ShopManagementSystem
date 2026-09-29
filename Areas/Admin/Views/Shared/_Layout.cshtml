@@ -161,6 +161,49 @@
                     display: block;
                 }
             }
+
+            /* ── LANGUAGE SWITCHER ── */
+            .goog-te-banner-frame.skiptranslate,
+            .goog-te-banner-frame,
+            #goog-gt-tt,
+            .goog-te-balloon-frame {
+                display: none !important;
+            }
+            body {
+                top: 0px !important;
+                position: static !important;
+            }
+            .goog-te-gadget {
+                display: none !important;
+            }
+            .goog-text-highlight {
+                background: none !important;
+                box-shadow: none !important;
+            }
+            .skiptranslate iframe {
+                display: none !important;
+            }
+            .lang-switcher-admin-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                background: #f8fafc;
+                color: #334155 !important;
+                border: 1px solid #cbd5e1;
+                border-radius: 50px;
+                padding: 0.32rem 0.85rem;
+                font-size: 0.84rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                text-decoration: none;
+                user-select: none;
+            }
+            .lang-switcher-admin-btn:hover {
+                background: #e2e8f0;
+                color: #0f172a !important;
+                border-color: #94a3b8;
+            }
     </style>
 </head>
 <body>
@@ -194,6 +237,12 @@
                 <h6 class="mb-0 fw-semibold text-secondary">@ViewData["Title"]</h6>
             </div>
             <div class="d-flex align-items-center gap-3">
+                <!-- Language Switcher -->
+                <button type="button" class="lang-switcher-admin-btn" onclick="toggleSiteLanguage()" title="ভাষা পরিবর্তন / Switch Language">
+                    <i class="bi bi-translate text-primary"></i>
+                    <span class="lang-toggle-text">🇬🇧 English</span>
+                </button>
+
                 @if (TempData["Success"] != null)
                 {
                     <span class="badge bg-success-subtle text-success py-2 px-3 rounded-pill">
@@ -300,5 +349,8 @@
                 });
             })();
     </script>
+
+    <!-- ── Fast Native Language Switcher ── -->
+    <script src="~/js/language-switcher.js"></script>
 </body>
 </html>

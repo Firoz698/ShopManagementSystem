@@ -247,6 +247,50 @@
                 flex-shrink: 0;
             }
 
+            /* ── LANGUAGE SWITCHER ── */
+            .goog-te-banner-frame.skiptranslate,
+            .goog-te-banner-frame,
+            #goog-gt-tt,
+            .goog-te-balloon-frame {
+                display: none !important;
+            }
+            body {
+                top: 0px !important;
+                position: static !important;
+            }
+            .goog-te-gadget {
+                display: none !important;
+            }
+            .goog-text-highlight {
+                background: none !important;
+                box-shadow: none !important;
+            }
+            .skiptranslate iframe {
+                display: none !important;
+            }
+            .lang-switcher-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                background: rgba(255, 255, 255, 0.15);
+                color: #fff !important;
+                border: 1.5px solid rgba(255, 255, 255, 0.4);
+                border-radius: 50px;
+                padding: 0.32rem 0.85rem;
+                font-size: 0.84rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                text-decoration: none;
+                user-select: none;
+            }
+            .lang-switcher-btn:hover {
+                background: rgba(255, 255, 255, 0.28);
+                border-color: rgba(255, 255, 255, 0.75);
+                color: #fff !important;
+                transform: translateY(-1px);
+            }
+
             /* ── CATEGORY BAR ── */
             .cat-bar {
                 background: var(--surface);
@@ -669,6 +713,14 @@
                             </a>
                         </li>
                     }
+
+                    <!-- Language Switcher -->
+                    <li class="nav-item ms-lg-2 ms-1 my-1 my-lg-0">
+                        <button type="button" class="lang-switcher-btn" onclick="toggleSiteLanguage()" title="ভাষা পরিবর্তন / Switch Language">
+                            <i class="bi bi-translate"></i>
+                            <span class="lang-toggle-text">🇬🇧 English</span>
+                        </button>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -847,5 +899,8 @@
                 setInterval(checkChatUnread, 30000);
         </script>
     }
+
+    <!-- ── Fast Native Language Switcher ── -->
+    <script src="~/js/language-switcher.js"></script>
 </body>
 </html>
