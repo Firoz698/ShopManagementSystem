@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using ShopManagementSystem.Data;
 using ShopManagementSystem.Models;
@@ -22,6 +22,14 @@ namespace ShopManagementSystem.Services
                 .ToListAsync();
 
             bool isAdmin = principal.IsInRole("Admin");
+            if (!isAdmin && !string.IsNullOrEmpty(userId))
+            {
+                var user = await _db.Users.FindAsync(userId);
+                if (user != null && (user.UserType == "Admin" || user.Email == "admin@shopmanagement.com"))
+                {
+                    isAdmin = true;
+                }
+            }
 
             HashSet<int> allowedIds;
             if (isAdmin)

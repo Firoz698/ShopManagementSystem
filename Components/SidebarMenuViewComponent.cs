@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ShopManagementSystem.Models;
 using ShopManagementSystem.Services;
@@ -18,7 +18,7 @@ namespace ShopManagementSystem.Components
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            var userId = _userManager.GetUserId(HttpContext.User)!;
+            var userId = _userManager.GetUserId(HttpContext.User) ?? string.Empty;
             var tree = await _sidebarService.GetVisibleMenuTreeAsync(HttpContext.User, userId);
             return View(tree);
         }

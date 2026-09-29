@@ -70,6 +70,24 @@ namespace ShopManagementSystem.Data
             builder.Entity<ReturnRequest>()
                 .HasIndex(r => new { r.OrderId, r.ProductId, r.UserId });
 
+            builder.Entity<ReturnRequest>()
+                .HasOne(r => r.Order)
+                .WithMany()
+                .HasForeignKey(r => r.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ReturnRequest>()
+                .HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<ReturnRequest>()
+                .HasOne(r => r.Product)
+                .WithMany()
+                .HasForeignKey(r => r.ProductId)
+                .OnDelete(DeleteBehavior.NoAction);
+
             builder.Entity<ComboOffer>()
                 .HasMany(c => c.Items)
                 .WithOne(i => i.Combo)
@@ -87,11 +105,23 @@ namespace ShopManagementSystem.Data
                 .HasForeignKey(sc => sc.SectionId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<HomepageSectionCategory>()
+                .HasOne(sc => sc.Category)
+                .WithMany()
+                .HasForeignKey(sc => sc.CategoryId)
+                .OnDelete(DeleteBehavior.NoAction);
+
             builder.Entity<HomepageSection>()
                 .HasMany(s => s.Products)
                 .WithOne(sp => sp.Section)
                 .HasForeignKey(sp => sp.SectionId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<HomepageSectionProduct>()
+                .HasOne(sp => sp.Product)
+                .WithMany()
+                .HasForeignKey(sp => sp.ProductId)
+                .OnDelete(DeleteBehavior.NoAction);
 
 
             builder.Entity<ChatMessage>()
@@ -123,10 +153,16 @@ namespace ShopManagementSystem.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<Cart>()
+                .HasOne(c => c.Product)
+                .WithMany(p => p.CartItems)
+                .HasForeignKey(c => c.ProductId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<Cart>()
                 .HasOne(c => c.ProductSize)
                 .WithMany()
                 .HasForeignKey(c => c.ProductSizeId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.NoAction);
 
 
             builder.Entity<PaymentTransaction>()

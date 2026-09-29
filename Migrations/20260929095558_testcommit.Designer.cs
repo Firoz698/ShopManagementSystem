@@ -12,8 +12,8 @@ using ShopManagementSystem.Data;
 namespace ShopManagementSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260815154009_AddProfileAndOtpFields")]
-    partial class AddProfileAndOtpFields
+    [Migration("20260929095558_testcommit")]
+    partial class testcommit
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -193,7 +193,8 @@ namespace ShopManagementSystem.Migrations
                         .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("Gender")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -219,7 +220,8 @@ namespace ShopManagementSystem.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("ProfilePhoto")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
@@ -230,6 +232,11 @@ namespace ShopManagementSystem.Migrations
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("UserType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
 
@@ -315,7 +322,7 @@ namespace ShopManagementSystem.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 8, 15, 21, 40, 6, 105, DateTimeKind.Local).AddTicks(1280),
+                            CreatedAt = new DateTime(2026, 9, 29, 15, 55, 56, 475, DateTimeKind.Local).AddTicks(94),
                             IsActive = true,
                             Name = "Electronics",
                             Slug = "electronics"
@@ -323,7 +330,7 @@ namespace ShopManagementSystem.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 8, 15, 21, 40, 6, 105, DateTimeKind.Local).AddTicks(1294),
+                            CreatedAt = new DateTime(2026, 9, 29, 15, 55, 56, 475, DateTimeKind.Local).AddTicks(96),
                             IsActive = true,
                             Name = "Clothing",
                             Slug = "clothing"
@@ -331,7 +338,7 @@ namespace ShopManagementSystem.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2026, 8, 15, 21, 40, 6, 105, DateTimeKind.Local).AddTicks(1302),
+                            CreatedAt = new DateTime(2026, 9, 29, 15, 55, 56, 475, DateTimeKind.Local).AddTicks(98),
                             IsActive = true,
                             Name = "Books",
                             Slug = "books"
@@ -339,7 +346,7 @@ namespace ShopManagementSystem.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2026, 8, 15, 21, 40, 6, 105, DateTimeKind.Local).AddTicks(1309),
+                            CreatedAt = new DateTime(2026, 9, 29, 15, 55, 56, 475, DateTimeKind.Local).AddTicks(99),
                             IsActive = true,
                             Name = "Home & Garden",
                             Slug = "home-garden"
@@ -583,6 +590,54 @@ namespace ShopManagementSystem.Migrations
                     b.HasIndex("SectionId");
 
                     b.ToTable("HomepageSectionProducts");
+                });
+
+            modelBuilder.Entity("ShopManagementSystem.Models.Menu", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Area")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Controller")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Icon")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
+
+                    b.ToTable("Menus");
                 });
 
             modelBuilder.Entity("ShopManagementSystem.Models.NotificationSetting", b =>
@@ -1155,7 +1210,7 @@ namespace ShopManagementSystem.Migrations
                             Id = 1,
                             ButtonText = "Shop Now",
                             ButtonUrl = "/Product",
-                            CreatedAt = new DateTime(2026, 8, 15, 21, 40, 6, 105, DateTimeKind.Local).AddTicks(2686),
+                            CreatedAt = new DateTime(2026, 9, 29, 15, 55, 56, 475, DateTimeKind.Local).AddTicks(223),
                             ImageUrl = "/images/uploads/slider1.jpg",
                             IsActive = true,
                             SortOrder = 1,
@@ -1167,13 +1222,53 @@ namespace ShopManagementSystem.Migrations
                             Id = 2,
                             ButtonText = "View Deals",
                             ButtonUrl = "/Product",
-                            CreatedAt = new DateTime(2026, 8, 15, 21, 40, 6, 105, DateTimeKind.Local).AddTicks(2699),
+                            CreatedAt = new DateTime(2026, 9, 29, 15, 55, 56, 475, DateTimeKind.Local).AddTicks(225),
                             ImageUrl = "/images/uploads/slider2.jpg",
                             IsActive = true,
                             SortOrder = 2,
                             SubTitle = "Limited time offer",
                             Title = "Summer Sale — Up to 50% Off"
                         });
+                });
+
+            modelBuilder.Entity("ShopManagementSystem.Models.UserMenuPermission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("CanAccess")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanCreate")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanDelete")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanEdit")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MenuId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MenuId");
+
+                    b.HasIndex("UserId", "MenuId")
+                        .IsUnique();
+
+                    b.ToTable("UserMenuPermissions");
                 });
 
             modelBuilder.Entity("ShopManagementSystem.Models.Wishlist", b =>
@@ -1260,13 +1355,13 @@ namespace ShopManagementSystem.Migrations
                     b.HasOne("ShopManagementSystem.Models.Product", "Product")
                         .WithMany("CartItems")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("ShopManagementSystem.Models.ProductSize", "ProductSize")
                         .WithMany()
                         .HasForeignKey("ProductSizeId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("ShopManagementSystem.Models.ApplicationUser", "User")
                         .WithMany("CartItems")
@@ -1332,7 +1427,7 @@ namespace ShopManagementSystem.Migrations
                     b.HasOne("ShopManagementSystem.Models.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("ShopManagementSystem.Models.HomepageSection", "Section")
@@ -1351,7 +1446,7 @@ namespace ShopManagementSystem.Migrations
                     b.HasOne("ShopManagementSystem.Models.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("ShopManagementSystem.Models.HomepageSection", "Section")
@@ -1363,6 +1458,16 @@ namespace ShopManagementSystem.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("Section");
+                });
+
+            modelBuilder.Entity("ShopManagementSystem.Models.Menu", b =>
+                {
+                    b.HasOne("ShopManagementSystem.Models.Menu", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Parent");
                 });
 
             modelBuilder.Entity("ShopManagementSystem.Models.Order", b =>
@@ -1456,13 +1561,13 @@ namespace ShopManagementSystem.Migrations
                     b.HasOne("ShopManagementSystem.Models.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("ShopManagementSystem.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Order");
@@ -1491,6 +1596,25 @@ namespace ShopManagementSystem.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("ShopManagementSystem.Models.UserMenuPermission", b =>
+                {
+                    b.HasOne("ShopManagementSystem.Models.Menu", "Menu")
+                        .WithMany("UserPermissions")
+                        .HasForeignKey("MenuId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ShopManagementSystem.Models.ApplicationUser", "User")
+                        .WithMany("MenuPermissions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Menu");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("ShopManagementSystem.Models.Wishlist", b =>
                 {
                     b.HasOne("ShopManagementSystem.Models.Product", "Product")
@@ -1513,6 +1637,8 @@ namespace ShopManagementSystem.Migrations
             modelBuilder.Entity("ShopManagementSystem.Models.ApplicationUser", b =>
                 {
                     b.Navigation("CartItems");
+
+                    b.Navigation("MenuPermissions");
 
                     b.Navigation("Orders");
 
@@ -1541,6 +1667,13 @@ namespace ShopManagementSystem.Migrations
                     b.Navigation("Categories");
 
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("ShopManagementSystem.Models.Menu", b =>
+                {
+                    b.Navigation("Children");
+
+                    b.Navigation("UserPermissions");
                 });
 
             modelBuilder.Entity("ShopManagementSystem.Models.Order", b =>

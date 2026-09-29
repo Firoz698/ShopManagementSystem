@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShopManagementSystem.Data;
 
@@ -11,9 +12,11 @@ using ShopManagementSystem.Data;
 namespace ShopManagementSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260929095428_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -319,7 +322,7 @@ namespace ShopManagementSystem.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 9, 29, 15, 55, 56, 475, DateTimeKind.Local).AddTicks(94),
+                            CreatedAt = new DateTime(2026, 9, 29, 15, 54, 28, 478, DateTimeKind.Local).AddTicks(6528),
                             IsActive = true,
                             Name = "Electronics",
                             Slug = "electronics"
@@ -327,7 +330,7 @@ namespace ShopManagementSystem.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 9, 29, 15, 55, 56, 475, DateTimeKind.Local).AddTicks(96),
+                            CreatedAt = new DateTime(2026, 9, 29, 15, 54, 28, 478, DateTimeKind.Local).AddTicks(6530),
                             IsActive = true,
                             Name = "Clothing",
                             Slug = "clothing"
@@ -335,7 +338,7 @@ namespace ShopManagementSystem.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2026, 9, 29, 15, 55, 56, 475, DateTimeKind.Local).AddTicks(98),
+                            CreatedAt = new DateTime(2026, 9, 29, 15, 54, 28, 478, DateTimeKind.Local).AddTicks(6532),
                             IsActive = true,
                             Name = "Books",
                             Slug = "books"
@@ -343,7 +346,7 @@ namespace ShopManagementSystem.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2026, 9, 29, 15, 55, 56, 475, DateTimeKind.Local).AddTicks(99),
+                            CreatedAt = new DateTime(2026, 9, 29, 15, 54, 28, 478, DateTimeKind.Local).AddTicks(6533),
                             IsActive = true,
                             Name = "Home & Garden",
                             Slug = "home-garden"
@@ -1207,7 +1210,7 @@ namespace ShopManagementSystem.Migrations
                             Id = 1,
                             ButtonText = "Shop Now",
                             ButtonUrl = "/Product",
-                            CreatedAt = new DateTime(2026, 9, 29, 15, 55, 56, 475, DateTimeKind.Local).AddTicks(223),
+                            CreatedAt = new DateTime(2026, 9, 29, 15, 54, 28, 478, DateTimeKind.Local).AddTicks(6666),
                             ImageUrl = "/images/uploads/slider1.jpg",
                             IsActive = true,
                             SortOrder = 1,
@@ -1219,7 +1222,7 @@ namespace ShopManagementSystem.Migrations
                             Id = 2,
                             ButtonText = "View Deals",
                             ButtonUrl = "/Product",
-                            CreatedAt = new DateTime(2026, 9, 29, 15, 55, 56, 475, DateTimeKind.Local).AddTicks(225),
+                            CreatedAt = new DateTime(2026, 9, 29, 15, 54, 28, 478, DateTimeKind.Local).AddTicks(6669),
                             ImageUrl = "/images/uploads/slider2.jpg",
                             IsActive = true,
                             SortOrder = 2,

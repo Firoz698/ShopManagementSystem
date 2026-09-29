@@ -90,10 +90,6 @@ builder.Services.AddScoped<IPermissionChecker, PermissionChecker>();
 builder.Services.AddScoped<IAdminMenuRepository, AdminMenuRepository>();
 builder.Services.AddScoped<IAdminEmployeeRepository, AdminEmployeeRepository>();
 
-// Repositories
-builder.Services.AddScoped<IAdminMenuRepository, AdminMenuRepository>();
-builder.Services.AddScoped<IAdminEmployeeRepository, AdminEmployeeRepository>();
-
 // Services
 builder.Services.AddScoped<ISidebarMenuService, SidebarMenuService>();
 
@@ -126,14 +122,15 @@ using (var scope = app.Services.CreateScope())
 
     await db.Database.MigrateAsync();
 
-    string[] roles = { "Admin", "User" };
+    string[] roles = { "Admin", "User", "Employee" };
     foreach (var role in roles)
         if (!await roleManager.RoleExistsAsync(role))
             await roleManager.CreateAsync(new IdentityRole(role));
 
     // Default admin
     const string adminEmail = "admin@shopmanagement.com";
-    if (await userManager.FindByEmailAsync(adminEmail) is null)
+    var existingAdmin = await userManager.FindByEmailAsync(adminEmail);
+    if (existingAdmin is null)
     {
         var admin = new ApplicationUser
         {
@@ -141,11 +138,22 @@ using (var scope = app.Services.CreateScope())
             UserName = adminEmail,
             Email = adminEmail,
             PhoneNumber = "01700000000",
-            EmailConfirmed = true
+            EmailConfirmed = true,
+            UserType = "Admin"
         };
         var result = await userManager.CreateAsync(admin, "Admin@1234");
         if (result.Succeeded) await userManager.AddToRoleAsync(admin, "Admin");
     }
+    else
+    {
+        if (!await userManager.IsInRoleAsync(existingAdmin, "Admin"))
+        {
+            await userManager.AddToRoleAsync(existingAdmin, "Admin");
+        }
+    }
+
+    // Seed default admin menus
+    await DbSeeder.SeedMenusAsync(db);
 }
 
 // ── Middleware ───────────────────────────────────────────────────────────────────
