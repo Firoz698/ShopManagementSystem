@@ -103,34 +103,45 @@ namespace ShopManagementSystem.Controllers
         }
 
         // POST /Cart/AddAjax
-        [HttpPost, IgnoreAntiforgeryToken]
+        [HttpPost, IgnoreAntiforgeryToken, AllowAnonymous]
         public async Task<IActionResult> AddAjax(int productId, int quantity = 1, int? productSizeId = null)
         {
-            if (!User.Identity!.IsAuthenticated)
-                return Json(new { success = false, message = "Please login first" });
+            try
+            {
+                if (User.Identity?.IsAuthenticated != true)
+                    return Json(new { success = false, message = "Please login first to add items to your cart.", requireLogin = true });
 
-            var product = await _cartRepo.GetActiveProductWithSizesAsync(productId);
+                var userId = _userManager.GetUserId(User);
+                if (string.IsNullOrEmpty(userId))
+                    return Json(new { success = false, message = "Please login first to add items to your cart.", requireLogin = true });
 
-            if (product == null || !product.IsActive)
-                return Json(new { success = false, message = "Product not found." });
+                var product = await _cartRepo.GetActiveProductWithSizesAsync(productId);
 
-            if (productSizeId.HasValue && productSizeId.Value <= 0)
-                productSizeId = null;
+                if (product == null || !product.IsActive)
+                    return Json(new { success = false, message = "Product not found or unavailable." });
 
-            if (productSizeId == null && product.Sizes.Any(s => s.IsActive && s.Stock > 0))
-                productSizeId = product.Sizes.First(s => s.IsActive && s.Stock > 0).Id;
+                if (productSizeId.HasValue && productSizeId.Value <= 0)
+                    productSizeId = null;
 
-            int availableStock = productSizeId.HasValue
-                ? product.Sizes.FirstOrDefault(s => s.Id == productSizeId.Value)?.Stock ?? 0
-                : product.Stock;
+                if (productSizeId == null && product.Sizes != null && product.Sizes.Any(s => s.IsActive && s.Stock > 0))
+                    productSizeId = product.Sizes.First(s => s.IsActive && s.Stock > 0).Id;
 
-            if (availableStock < quantity)
-                return Json(new { success = false, message = "Not enough stock available." });
+                int availableStock = productSizeId.HasValue
+                    ? product.Sizes?.FirstOrDefault(s => s.Id == productSizeId.Value)?.Stock ?? 0
+                    : product.Stock;
 
-            await _cartRepo.AddToCartAsync(UserId, productId, productSizeId, quantity);
+                if (availableStock < quantity)
+                    return Json(new { success = false, message = "Not enough stock available." });
 
-            var cartCount = await _cartRepo.GetCartCountAsync(UserId);
-            return Json(new { success = true, cartCount, message = "Product added to cart." });
+                await _cartRepo.AddToCartAsync(userId, productId, productSizeId, quantity);
+
+                var cartCount = await _cartRepo.GetCartCountAsync(userId);
+                return Json(new { success = true, cartCount, message = "Product added to cart." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error adding to cart: " + ex.Message });
+            }
         }
 
         // POST /Cart/UpdateQuantity

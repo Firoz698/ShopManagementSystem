@@ -13,19 +13,30 @@ namespace ShopManagementSystem.Repository.Implementations
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ApplicationDbContext _db;
         private readonly ISmsSender _smsSender;
 
         public AccountRepository(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
+            RoleManager<IdentityRole> roleManager,
             ApplicationDbContext db,
             ISmsSender smsSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _roleManager = roleManager;
             _db = db;
             _smsSender = smsSender;
+        }
+
+        private async Task EnsureRoleExistsAsync(string roleName)
+        {
+            if (!await _roleManager.RoleExistsAsync(roleName))
+            {
+                await _roleManager.CreateAsync(new IdentityRole(roleName));
+            }
         }
 
         public async Task<IdentityResult> RegisterAsync(RegisterViewModel vm)
@@ -45,7 +56,10 @@ namespace ShopManagementSystem.Repository.Implementations
 
             var result = await _userManager.CreateAsync(user, vm.Password);
             if (result.Succeeded)
+            {
+                await EnsureRoleExistsAsync("Customer");
                 await _userManager.AddToRoleAsync(user, "Customer");
+            }
 
             return result;
         }
@@ -199,6 +213,7 @@ namespace ShopManagementSystem.Repository.Implementations
             var createResult = await _userManager.CreateAsync(user);
             if (!createResult.Succeeded) return createResult;
 
+            await EnsureRoleExistsAsync("Customer");
             await _userManager.AddToRoleAsync(user, "Customer");
 
             var loginInfo = new UserLoginInfo(provider, providerKey, provider);

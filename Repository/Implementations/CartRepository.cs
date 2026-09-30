@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ShopManagementSystem.Data;
 using ShopManagementSystem.Models;
 using ShopManagementSystem.Repository.Interfaces;
@@ -28,10 +28,20 @@ namespace ShopManagementSystem.Implementations
 
         public async Task<Cart?> GetCartItemAsync(string userId, int productId, int? productSizeId)
         {
-            return await _db.Carts.FirstOrDefaultAsync(c =>
-                c.UserId == userId &&
-                c.ProductId == productId &&
-                c.ProductSizeId == productSizeId);
+            if (productSizeId.HasValue)
+            {
+                return await _db.Carts.FirstOrDefaultAsync(c =>
+                    c.UserId == userId &&
+                    c.ProductId == productId &&
+                    c.ProductSizeId == productSizeId.Value);
+            }
+            else
+            {
+                return await _db.Carts.FirstOrDefaultAsync(c =>
+                    c.UserId == userId &&
+                    c.ProductId == productId &&
+                    c.ProductSizeId == null);
+            }
         }
 
         public async Task<Cart?> GetCartByIdAsync(int cartId, string userId)
@@ -60,9 +70,10 @@ namespace ShopManagementSystem.Implementations
             {
                 var product = await GetActiveProductWithSizesAsync(productId);
                 int maxStock = productSizeId.HasValue
-                    ? product?.Sizes.FirstOrDefault(s => s.Id == productSizeId.Value)?.Stock ?? 0
+                    ? product?.Sizes?.FirstOrDefault(s => s.Id == productSizeId.Value)?.Stock ?? 0
                     : product?.Stock ?? 0;
 
+                if (maxStock <= 0) maxStock = 999;
                 cart.Quantity = Math.Min(cart.Quantity + quantity, maxStock);
             }
 

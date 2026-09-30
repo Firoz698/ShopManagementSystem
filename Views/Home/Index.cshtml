@@ -386,22 +386,44 @@
         const _token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
 
         function quickAddToCart(productId, btnEl) {
-            if (btnEl) { btnEl.disabled = true; btnEl.innerHTML = '<span class="spinner-border spinner-border-sm"></span>'; }
+            if (btnEl) {
+                btnEl.disabled = true;
+                btnEl.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            }
             var fd = new FormData();
             fd.append('productId', productId);
             fd.append('quantity',  1);
-            fd.append('__RequestVerificationToken', _token);
+            if (_token) fd.append('__RequestVerificationToken', _token);
+
             fetch('/Cart/AddAjax', { method: 'POST', body: fd })
-            .then(r => r.json())
-            .then(data => {
+            .then(function(r) {
+                return r.json().catch(function() {
+                    return { success: false, message: 'Unexpected server response.' };
+                });
+            })
+            .then(function(data) {
+                if (data.requireLogin) {
+                    window.location.href = '/Account/Login?ReturnUrl=' + encodeURIComponent(window.location.pathname + window.location.search);
+                    return;
+                }
                 if (data.success) {
                     new bootstrap.Toast(document.getElementById('cartToast'), { delay: 2500 }).show();
                     if (window.updateCartBadge) window.updateCartBadge(data.cartCount);
-                } else { alert(data.message); }
-                if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Add to Cart'; }
+                } else {
+                    alert(data.message || 'Failed to add product to cart.');
+                }
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Add to Cart';
+                }
             })
-            .catch(() => { if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Add to Cart'; } });
+            .catch(function() {
+                alert('Connection error. Please try again.');
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Add to Cart';
+                }
+            });
         }
     </script>
-}
 }

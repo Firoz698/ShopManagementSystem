@@ -370,15 +370,24 @@
             var formData = new FormData();
             formData.append('productId', productId);
             formData.append('quantity',  quantity);
-            formData.append('__RequestVerificationToken', token);
+            if (token) formData.append('__RequestVerificationToken', token);
             if (sizeId) formData.append('productSizeId', sizeId);
 
             fetch('/Cart/AddAjax', {
                 method: 'POST',
                 body: formData
             })
-            .then(function(res) { return res.json(); })
+            .then(function(res) {
+                return res.json().catch(function() {
+                    return { success: false, message: 'Unexpected server response.' };
+                });
+            })
             .then(function(data) {
+                if (data.requireLogin) {
+                    window.location.href = '/Account/Login?ReturnUrl=' + encodeURIComponent(window.location.pathname + window.location.search);
+                    return;
+                }
+
                 if (data.success) {
                     if (window.updateCartBadge) window.updateCartBadge(data.cartCount);
 
@@ -398,14 +407,22 @@
                         }, 2000);
                     }
                 } else {
-                    alert(data.message || 'Could not add to cart.');
+                    var fb = document.getElementById('cartFeedback');
+                    if (fb && !btnEl) {
+                        fb.className = 'alert alert-danger py-2 small';
+                        fb.textContent = data.message || 'Could not add to cart.';
+                        fb.style.display = 'block';
+                        setTimeout(function() { fb.style.display = 'none'; }, 4000);
+                    } else {
+                        alert(data.message || 'Could not add to cart.');
+                    }
                     if (btnEl) {
                         btnEl.disabled = false;
                         btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Add to Cart';
                     }
                 }
             })
-            .catch(function() {
+            .catch(function(err) {
                 alert('Connection error. Please try again.');
                 if (btnEl) {
                     btnEl.disabled = false;

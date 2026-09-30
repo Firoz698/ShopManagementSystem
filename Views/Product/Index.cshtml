@@ -279,11 +279,20 @@
         var formData = new FormData();
         formData.append('productId', productId);
         formData.append('quantity',  1);
-        formData.append('__RequestVerificationToken', _token);
+        if (_token) formData.append('__RequestVerificationToken', _token);
 
         fetch('/Cart/AddAjax', { method: 'POST', body: formData })
-        .then(function (res) { return res.json(); })
+        .then(function (res) {
+            return res.json().catch(function() {
+                return { success: false, message: 'Unexpected server response.' };
+            });
+        })
         .then(function (data) {
+            if (data.requireLogin) {
+                window.location.href = '/Account/Login?ReturnUrl=' + encodeURIComponent(window.location.pathname + window.location.search);
+                return;
+            }
+
             if (data.success) {
                 if (window.updateCartBadge) window.updateCartBadge(data.cartCount);
                 new bootstrap.Toast(document.getElementById('cartToast'), { delay: 2500 }).show();
@@ -303,6 +312,7 @@
             }
         })
         .catch(function () {
+            alert('Connection error. Please try again.');
             if (btnEl) {
                 btnEl.disabled = false;
                 btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Add to Cart';

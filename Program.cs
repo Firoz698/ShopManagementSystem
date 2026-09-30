@@ -131,7 +131,7 @@ using (var scope = app.Services.CreateScope())
 
     await db.Database.MigrateAsync();
 
-    string[] roles = { "Admin", "User", "Employee" };
+    string[] roles = { "Admin", "User", "Employee", "Customer" };
     foreach (var role in roles)
         if (!await roleManager.RoleExistsAsync(role))
             await roleManager.CreateAsync(new IdentityRole(role));
