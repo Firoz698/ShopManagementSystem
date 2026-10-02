@@ -1,6 +1,7 @@
 @model ShopManagementSystem.Models.ApplicationUser
 @{
     ViewData["Title"] = "User Details";
+    var orderPerm = await PermissionChecker.GetPermissionsAsync(User, "Order");
 }
 
 <div class="row g-4">
@@ -94,10 +95,13 @@
                                         <span class="badge badge-status-@o.Status rounded-pill">@o.Status</span>
                                     </td>
                                     <td>
-                                        <a asp-area="Admin" asp-controller="Order" asp-action="Detail"
-                                           asp-route-id="@o.Id" class="btn btn-sm btn-light" title="View Order">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
+                                        @if (orderPerm.CanView)
+                                        {
+                                            <a asp-area="Admin" asp-controller="Order" asp-action="Detail"
+                                               asp-route-id="@o.Id" class="btn btn-sm btn-light" title="View Order">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        }
                                     </td>
                                 </tr>
                             }

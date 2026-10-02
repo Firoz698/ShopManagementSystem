@@ -1,20 +1,27 @@
 @model List<ShopManagementSystem.Models.HomepageSection>
 @{
     ViewData["Title"] = "Homepage Section Management";
+    var perm = await PermissionChecker.GetPermissionsAsync(User, "HomepageSection");
 }
 
-<div class="d-flex justify-content-end mb-4">
-    <a asp-action="Create" class="btn btn-dark">
-        <i class="bi bi-plus-circle me-2"></i>New Section
-    </a>
-</div>
+@if (perm.CanCreate)
+{
+    <div class="d-flex justify-content-end mb-4">
+        <a asp-action="Create" class="btn btn-dark">
+            <i class="bi bi-plus-circle me-2"></i>New Section
+        </a>
+    </div>
+}
 
 @if (!Model.Any())
 {
     <div class="text-center py-5 text-muted">
         <i class="bi bi-layout-text-window display-3 d-block mb-3 opacity-25"></i>
         <h5>No sections found</h5>
-        <a asp-action="Create" class="btn btn-dark mt-2">Create First Section</a>
+        @if (perm.CanCreate)
+        {
+            <a asp-action="Create" class="btn btn-dark mt-2">Create First Section</a>
+        }
     </div>
 }
 else
@@ -30,7 +37,10 @@ else
                         <th>Items</th>
                         <th>Color</th>
                         <th class="text-center">Status</th>
-                        <th class="text-center">Action</th>
+                        @if (perm.CanEdit || perm.CanDelete)
+                        {
+                            <th class="text-center">Action</th>
+                        }
                     </tr>
                 </thead>
                 <tbody>
@@ -38,21 +48,28 @@ else
                     {
                         <tr>
                             <td>
-                                <div class="d-flex flex-column gap-1">
-                                    <form asp-action="MoveUp" asp-route-id="@sec.Id" method="post" class="d-inline">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-xs btn-light p-1 lh-1" title="Move Up">
-                                            <i class="bi bi-chevron-up" style="font-size:.7rem"></i>
-                                        </button>
-                                    </form>
-                                    <span class="fw-bold text-center small">@sec.SortOrder</span>
-                                    <form asp-action="MoveDown" asp-route-id="@sec.Id" method="post" class="d-inline">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-xs btn-light p-1 lh-1" title="Move Down">
-                                            <i class="bi bi-chevron-down" style="font-size:.7rem"></i>
-                                        </button>
-                                    </form>
-                                </div>
+                                @if (perm.CanEdit)
+                                {
+                                    <div class="d-flex flex-column gap-1">
+                                        <form asp-action="MoveUp" asp-route-id="@sec.Id" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-xs btn-light p-1 lh-1" title="Move Up">
+                                                <i class="bi bi-chevron-up" style="font-size:.7rem"></i>
+                                            </button>
+                                        </form>
+                                        <span class="fw-bold text-center small">@sec.SortOrder</span>
+                                        <form asp-action="MoveDown" asp-route-id="@sec.Id" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-xs btn-light p-1 lh-1" title="Move Down">
+                                                <i class="bi bi-chevron-down" style="font-size:.7rem"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="fw-bold small">@sec.SortOrder</span>
+                                }
                             </td>
                             <td>
                                 <div class="fw-semibold small">@sec.Title</div>
@@ -107,29 +124,48 @@ else
                                 </div>
                             </td>
                             <td class="text-center">
-                                <form asp-action="ToggleActive" asp-route-id="@sec.Id" method="post">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-sm @(sec.IsActive ? "btn-success" : "btn-secondary")"
-                                            style="min-width:70px">
-                                        @(sec.IsActive ? "Active" : "Inactive")
-                                    </button>
-                                </form>
-                            </td>
-                            <td class="text-center">
-                                <div class="d-flex gap-1 justify-content-center">
-                                    <a asp-action="Edit" asp-route-id="@sec.Id"
-                                       class="btn btn-sm btn-outline-primary" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <form asp-action="Delete" asp-route-id="@sec.Id" method="post"
-                                          onsubmit="return confirm('Delete this section?')">
+                                @if (perm.CanEdit)
+                                {
+                                    <form asp-action="ToggleActive" asp-route-id="@sec.Id" method="post">
                                         @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                            <i class="bi bi-trash"></i>
+                                        <button type="submit" class="btn btn-sm @(sec.IsActive ? "btn-success" : "btn-secondary")"
+                                                style="min-width:70px">
+                                            @(sec.IsActive ? "Active" : "Inactive")
                                         </button>
                                     </form>
-                                </div>
+                                }
+                                else
+                                {
+                                    <span class="btn btn-sm @(sec.IsActive ? "btn-success" : "btn-secondary") disabled"
+                                          style="min-width:70px;opacity:1;cursor:default">
+                                        @(sec.IsActive ? "Active" : "Inactive")
+                                    </span>
+                                }
                             </td>
+                            @if (perm.CanEdit || perm.CanDelete)
+                            {
+                                <td class="text-center">
+                                    <div class="d-flex gap-1 justify-content-center">
+                                        @if (perm.CanEdit)
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@sec.Id"
+                                               class="btn btn-sm btn-outline-primary" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                        }
+                                        @if (perm.CanDelete)
+                                        {
+                                            <form asp-action="Delete" asp-route-id="@sec.Id" method="post"
+                                                  onsubmit="return confirm('Delete this section?')">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            }
                         </tr>
                     }
                 </tbody>

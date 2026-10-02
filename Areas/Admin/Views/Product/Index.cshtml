@@ -1,5 +1,8 @@
 @model List<ShopManagementSystem.Models.Product>
-@{ ViewData["Title"] = "Product Management"; }
+@{ 
+    ViewData["Title"] = "Product Management";
+    var perm = await PermissionChecker.GetPermissionsAsync(User, "Product");
+}
 
 <style>
     .prod-toolbar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:1.25rem; background:#fff; border:1px solid #e9ecef; border-radius:12px; padding:12px 14px; }
@@ -99,10 +102,13 @@
         </form>
     </div>
 
-    <a asp-action="Create" class="btn-add-prod">
-        <i class="bi bi-plus-circle" style="font-size:15px"></i>
-        Add Product
-    </a>
+    @if (perm.CanCreate)
+    {
+        <a asp-action="Create" class="btn-add-prod">
+            <i class="bi bi-plus-circle" style="font-size:15px"></i>
+            Add Product
+        </a>
+    }
 </div>
 
 <div class="prod-card">
@@ -117,7 +123,10 @@
                     <th>Price</th>
                     <th class="tc">Stock</th>
                     <th class="tc">Status</th>
-                    <th class="tc">Actions</th>
+                    @if (perm.CanEdit || perm.CanDelete)
+                    {
+                        <th class="tc">Actions</th>
+                    }
                 </tr>
             </thead>
             <tbody>
@@ -153,34 +162,52 @@
                         </td>
                         <td class="tc"><span class="@stockClass">@p.Stock</span></td>
                         <td class="tc">
-                            <form asp-action="ToggleActive" asp-route-id="@p.Id" method="post" style="display:contents">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="@(p.IsActive ? "toggle-on-btn" : "toggle-off-btn")">
-                                    @(p.IsActive ? "Active" : "Inactive")
-                                </button>
-                            </form>
-                        </td>
-                        <td class="tc">
-                            <div class="act-wrap-p">
-                                <a asp-action="Edit" asp-route-id="@p.Id" class="btn-act-p btn-edit-p" title="Edit">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <form asp-action="Delete" asp-route-id="@p.Id" method="post"
-                                      onsubmit="return confirm('Delete this product? This action cannot be undone.')"
-                                      style="display:contents">
+                            @if (perm.CanEdit)
+                            {
+                                <form asp-action="ToggleActive" asp-route-id="@p.Id" method="post" style="display:contents">
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn-act-p btn-del-p" title="Delete">
-                                        <i class="bi bi-trash"></i>
+                                    <button type="submit" class="@(p.IsActive ? "toggle-on-btn" : "toggle-off-btn")">
+                                        @(p.IsActive ? "Active" : "Inactive")
                                     </button>
                                 </form>
-                            </div>
+                            }
+                            else
+                            {
+                                <span class="@(p.IsActive ? "toggle-on-btn" : "toggle-off-btn")" style="cursor:default">
+                                    @(p.IsActive ? "Active" : "Inactive")
+                                </span>
+                            }
                         </td>
+                        @if (perm.CanEdit || perm.CanDelete)
+                        {
+                            <td class="tc">
+                                <div class="act-wrap-p">
+                                    @if (perm.CanEdit)
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@p.Id" class="btn-act-p btn-edit-p" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    }
+                                    @if (perm.CanDelete)
+                                    {
+                                        <form asp-action="Delete" asp-route-id="@p.Id" method="post"
+                                              onsubmit="return confirm('Delete this product? This action cannot be undone.')"
+                                              style="display:contents">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn-act-p btn-del-p" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        }
                     </tr>
                 }
                 @if (!Model.Any())
                 {
                     <tr>
-                        <td colspan="7" style="text-align:center;color:#adb5bd;padding:48px 16px;font-size:14px">
+                        <td colspan="@(perm.CanEdit || perm.CanDelete ? 7 : 6)" style="text-align:center;color:#adb5bd;padding:48px 16px;font-size:14px">
                             No products found
                         </td>
                     </tr>
@@ -218,26 +245,44 @@
                             <span style="font-size:13px;font-weight:600;color:#212529">৳@p.Price.ToString("N0")</span>
                         }
                         <span class="@stockClass2">Stock: @p.Stock</span>
-                        <form asp-action="ToggleActive" asp-route-id="@p.Id" method="post" style="display:contents">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="@(p.IsActive ? "toggle-on-btn" : "toggle-off-btn")">
+                        @if (perm.CanEdit)
+                        {
+                            <form asp-action="ToggleActive" asp-route-id="@p.Id" method="post" style="display:contents">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="@(p.IsActive ? "toggle-on-btn" : "toggle-off-btn")">
+                                    @(p.IsActive ? "Active" : "Inactive")
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="@(p.IsActive ? "toggle-on-btn" : "toggle-off-btn")" style="cursor:default">
                                 @(p.IsActive ? "Active" : "Inactive")
-                            </button>
-                        </form>
+                            </span>
+                        }
                     </div>
-                    <div class="act-wrap-p">
-                        <a asp-action="Edit" asp-route-id="@p.Id" class="btn-act-p btn-edit-p">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <form asp-action="Delete" asp-route-id="@p.Id" method="post"
-                              onsubmit="return confirm('Delete this product?')"
-                              style="display:contents">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn-act-p btn-del-p">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </form>
-                    </div>
+                    @if (perm.CanEdit || perm.CanDelete)
+                    {
+                        <div class="act-wrap-p">
+                            @if (perm.CanEdit)
+                            {
+                                <a asp-action="Edit" asp-route-id="@p.Id" class="btn-act-p btn-edit-p">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            }
+                            @if (perm.CanDelete)
+                            {
+                                <form asp-action="Delete" asp-route-id="@p.Id" method="post"
+                                      onsubmit="return confirm('Delete this product?')"
+                                      style="display:contents">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn-act-p btn-del-p">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    }
                 </div>
             </div>
         }

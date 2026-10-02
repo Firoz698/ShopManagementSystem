@@ -1,11 +1,17 @@
 @model List<ShopManagementSystem.Models.Slider>
-@{ ViewData["Title"] = "Slider Management"; }
+@{ 
+    ViewData["Title"] = "Slider Management";
+    var perm = await PermissionChecker.GetPermissionsAsync(User, "Slider");
+}
 
-<div class="d-flex justify-content-end mb-4">
-    <a asp-action="Create" class="btn btn-dark">
-        <i class="bi bi-plus-circle me-2"></i>New Slider
-    </a>
-</div>
+@if (perm.CanCreate)
+{
+    <div class="d-flex justify-content-end mb-4">
+        <a asp-action="Create" class="btn btn-dark">
+            <i class="bi bi-plus-circle me-2"></i>New Slider
+        </a>
+    </div>
+}
 
 <div class="row g-3">
     @foreach (var s in Model)
@@ -33,18 +39,27 @@
                         <span class="badge bg-warning text-dark mt-1">Button: @s.ButtonText</span>
                     }
                 </div>
-                <div class="card-footer bg-white border-0 d-flex gap-2 pt-0 pb-3 px-3">
-                    <a asp-action="Edit" asp-route-id="@s.Id" class="btn btn-sm btn-outline-primary flex-fill">
-                        <i class="bi bi-pencil me-1"></i>Edit
-                    </a>
-                    <form asp-action="Delete" asp-route-id="@s.Id" method="post"
-                          onsubmit="return confirm('Delete this slider?')" class="flex-fill">
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-sm btn-outline-danger w-100">
-                            <i class="bi bi-trash me-1"></i>Delete
-                        </button>
-                    </form>
-                </div>
+                @if (perm.CanEdit || perm.CanDelete)
+                {
+                    <div class="card-footer bg-white border-0 d-flex gap-2 pt-0 pb-3 px-3">
+                        @if (perm.CanEdit)
+                        {
+                            <a asp-action="Edit" asp-route-id="@s.Id" class="btn btn-sm btn-outline-primary flex-fill">
+                                <i class="bi bi-pencil me-1"></i>Edit
+                            </a>
+                        }
+                        @if (perm.CanDelete)
+                        {
+                            <form asp-action="Delete" asp-route-id="@s.Id" method="post"
+                                  onsubmit="return confirm('Delete this slider?')" class="flex-fill">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                                    <i class="bi bi-trash me-1"></i>Delete
+                                </button>
+                            </form>
+                        }
+                    </div>
+                }
             </div>
         </div>
     }

@@ -1,5 +1,8 @@
 @model ShopManagementSystem.Models.Order
-@{ ViewData["Title"] = $"Order #{Model.Id}"; }
+@{ 
+    ViewData["Title"] = $"Order #{Model.Id}";
+    var perm = await PermissionChecker.GetPermissionsAsync(User, "Order");
+}
 
 <div class="row g-4">
     <!-- Order Items -->
@@ -89,29 +92,32 @@
         <!-- Update Status -->
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white py-3">
-                <h6 class="fw-bold mb-0"><i class="bi bi-arrow-repeat me-2"></i>Update Status</h6>
+                <h6 class="fw-bold mb-0"><i class="bi bi-arrow-repeat me-2"></i>Status</h6>
             </div>
             <div class="card-body">
                 <div class="mb-3">
                     <div class="text-muted small mb-1">Current Status</div>
                     <span class="badge badge-status-@Model.Status px-3 py-2 rounded-pill fs-6">@Model.Status</span>
                 </div>
-                <form asp-action="UpdateStatus" method="post">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="id" value="@Model.Id" />
-                    <div class="mb-3">
-                        <label class="form-label fw-medium small">New Status</label>
-                        <select name="status" class="form-select">
-                            @foreach (var s in (string[])ViewBag.StatusList)
-                            {
-                                <option value="@s" @@(Model.Status == s ? "selected" : "")>@s</option>
-                            }
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-dark w-100 btn-sm">
-                        <i class="bi bi-check-circle me-2"></i>Update Status
-                    </button>
-                </form>
+                @if (perm.CanEdit)
+                {
+                    <form asp-action="UpdateStatus" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <div class="mb-3">
+                            <label class="form-label fw-medium small">New Status</label>
+                            <select name="status" class="form-select">
+                                @foreach (var s in (string[])ViewBag.StatusList)
+                                {
+                                    <option value="@s" @@(Model.Status == s ? "selected" : "")>@s</option>
+                                }
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100 btn-sm">
+                            <i class="bi bi-check-circle me-2"></i>Update Status
+                        </button>
+                    </form>
+                }
             </div>
         </div>
 

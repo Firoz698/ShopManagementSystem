@@ -1,6 +1,7 @@
 @model ShopManagementSystem.Models.ReturnRequest
 @{
     ViewData["Title"] = $"Return Request #{Model.Id}";
+    var perm = await PermissionChecker.GetPermissionsAsync(User, "Return");
     var statusColor = Model.Status switch
     {
         "Approved" => "success",
@@ -202,7 +203,7 @@
         }
 
         <!-- Action Card -->
-        @if (Model.Status == "Pending")
+        @if (Model.Status == "Pending" && perm.CanEdit)
         {
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white fw-semibold border-bottom py-3">
@@ -243,6 +244,16 @@
                             <i class="bi bi-check2-circle me-1"></i>Save Decision
                         </button>
                     </form>
+                </div>
+            </div>
+        }
+        else if (Model.Status == "Pending")
+        {
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-clock-history text-warning display-5 d-block mb-2"></i>
+                    <div class="fw-semibold text-warning">Pending Review</div>
+                    <div class="text-muted small mt-1">Awaiting admin review</div>
                 </div>
             </div>
         }

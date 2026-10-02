@@ -6,32 +6,35 @@
 {
     @if (group.IsGroupHeader)
     {
-        <div class="nav-section mt-2">@group.Title</div>
-        @foreach (var child in group.Children)
+        @if (group.Children.Any())
         {
-            <a asp-area="@child.Area" asp-controller="@child.Controller" asp-action="@child.Action"
-               class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == child.Controller ? "active" : "")">
-                <i class="@child.Icon me-2"></i>@child.Title
+            <div class="nav-section mt-2">@group.Title</div>
+            @foreach (var child in group.Children)
+            {
+                <a asp-area="@child.Area" asp-controller="@child.Controller" asp-action="@child.Action"
+                   class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == child.Controller ? "active" : "")">
+                    <i class="@child.Icon me-2"></i>@child.Title
 
-                @if (child.Controller == "Return")
-                {
-                    var pendingReturns = 0;
-                    try { pendingReturns = Db.ReturnRequests.Count(r => r.Status == "Pending"); } catch { }
-                    if (pendingReturns > 0)
+                    @if (child.Controller == "Return")
                     {
-                        <span class="badge bg-danger ms-auto rounded-pill" style="font-size:.7rem">@pendingReturns</span>
+                        var pendingReturns = 0;
+                        try { pendingReturns = Db.ReturnRequests.Count(r => r.Status == "Pending"); } catch { }
+                        if (pendingReturns > 0)
+                        {
+                            <span class="badge bg-danger ms-auto rounded-pill" style="font-size:.7rem">@pendingReturns</span>
+                        }
                     }
-                }
-                @if (child.Controller == "Chat")
-                {
-                    var totalUnread = 0;
-                    try { totalUnread = Db.ChatSessions.Sum(s => s.UnreadCount); } catch { }
-                    if (totalUnread > 0)
+                    @if (child.Controller == "Chat")
                     {
-                        <span class="badge bg-danger ms-auto rounded-pill" style="font-size:.7rem">@totalUnread</span>
+                        var totalUnread = 0;
+                        try { totalUnread = Db.ChatSessions.Sum(s => s.UnreadCount); } catch { }
+                        if (totalUnread > 0)
+                        {
+                            <span class="badge bg-danger ms-auto rounded-pill" style="font-size:.7rem">@totalUnread</span>
+                        }
                     }
-                }
-            </a>
+                </a>
+            }
         }
     }
     else
@@ -41,5 +44,4 @@
             <i class="@group.Icon me-2"></i>@group.Title
         </a>
     }
-}
 }

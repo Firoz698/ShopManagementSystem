@@ -1,20 +1,27 @@
 @model List<ShopManagementSystem.Models.ComboOffer>
 @{
     ViewData["Title"] = "Combo Offer Management";
+    var perm = await PermissionChecker.GetPermissionsAsync(User, "Combo");
 }
 
-<div class="d-flex justify-content-end mb-4">
-    <a asp-action="Create" class="btn btn-dark">
-        <i class="bi bi-plus-circle me-2"></i>Create New Combo
-    </a>
-</div>
+@if (perm.CanCreate)
+{
+    <div class="d-flex justify-content-end mb-4">
+        <a asp-action="Create" class="btn btn-dark">
+            <i class="bi bi-plus-circle me-2"></i>Create New Combo
+        </a>
+    </div>
+}
 
 @if (!Model.Any())
 {
     <div class="text-center py-5 text-muted">
         <i class="bi bi-gift display-3 d-block mb-3 opacity-25"></i>
         <h5>No combo offers found</h5>
-        <a asp-action="Create" class="btn btn-dark mt-2">Create First Combo</a>
+        @if (perm.CanCreate)
+        {
+            <a asp-action="Create" class="btn btn-dark mt-2">Create First Combo</a>
+        }
     </div>
 }
 else
@@ -96,25 +103,34 @@ else
                         }
                     </div>
 
-                    <div class="card-footer bg-white border-0 pb-3 px-3 d-flex gap-2">
-                        <a asp-action="Edit" asp-route-id="@combo.Id"
-                           class="btn btn-sm btn-outline-primary flex-fill">
-                            <i class="bi bi-pencil me-1"></i>Edit
-                        </a>
-                        <form asp-action="ToggleActive" asp-route-id="@combo.Id" method="post" class="flex-fill">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-sm @(combo.IsActive ? "btn-outline-warning" : "btn-outline-success") w-100">
-                                @(combo.IsActive ? "Deactivate" : "Activate")
-                            </button>
-                        </form>
-                        <form asp-action="Delete" asp-route-id="@combo.Id" method="post"
-                              onsubmit="return confirm('Delete this combo offer?')">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </form>
-                    </div>
+                    @if (perm.CanEdit || perm.CanDelete)
+                    {
+                        <div class="card-footer bg-white border-0 pb-3 px-3 d-flex gap-2">
+                            @if (perm.CanEdit)
+                            {
+                                <a asp-action="Edit" asp-route-id="@combo.Id"
+                                   class="btn btn-sm btn-outline-primary flex-fill">
+                                    <i class="bi bi-pencil me-1"></i>Edit
+                                </a>
+                                <form asp-action="ToggleActive" asp-route-id="@combo.Id" method="post" class="flex-fill">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm @(combo.IsActive ? "btn-outline-warning" : "btn-outline-success") w-100">
+                                        @(combo.IsActive ? "Deactivate" : "Activate")
+                                    </button>
+                                </form>
+                            }
+                            @if (perm.CanDelete)
+                            {
+                                <form asp-action="Delete" asp-route-id="@combo.Id" method="post"
+                                      onsubmit="return confirm('Delete this combo offer?')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    }
                 </div>
             </div>
         }

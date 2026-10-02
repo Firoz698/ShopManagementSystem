@@ -18,7 +18,7 @@ namespace ShopManagementSystem.Filters
         // Actions requiring Create permission
         private static readonly string[] CreateKeywords = { "Create", "Add" };
         // Actions requiring Edit permission
-        private static readonly string[] EditKeywords = { "Edit", "Update", "Toggle" };
+        private static readonly string[] EditKeywords = { "Edit", "Update", "Toggle", "Move", "Permissions", "ResetPassword" };
         // Actions requiring Delete permission
         private static readonly string[] DeleteKeywords = { "Delete", "Remove" };
 
@@ -38,11 +38,21 @@ namespace ShopManagementSystem.Filters
 
             if (user.IsInRole("Admin")) { await next(); return; } // Admin has full access
 
+            var userId = _userManager.GetUserId(user);
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var appUser = await _db.Users.FindAsync(userId);
+                if (appUser != null && (appUser.UserType == "Admin" || appUser.Email == "admin@shopmanagement.com"))
+                {
+                    await next();
+                    return;
+                }
+            }
+
             var controller = context.RouteData.Values["controller"]?.ToString() ?? "";
-            if (AlwaysAllowed.Contains(controller)) { await next(); return; }
+            if (AlwaysAllowed.Contains(controller, StringComparer.OrdinalIgnoreCase)) { await next(); return; }
 
             var action = context.RouteData.Values["action"]?.ToString() ?? "";
-            var userId = _userManager.GetUserId(user);
 
             // Find Menu corresponding to this controller
             var menu = await _db.Menus

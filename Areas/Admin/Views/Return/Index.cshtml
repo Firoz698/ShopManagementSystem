@@ -1,6 +1,7 @@
 @model List<ShopManagementSystem.Models.ReturnRequest>
 @{
     ViewData["Title"] = "Return Request Management";
+    var perm = await PermissionChecker.GetPermissionsAsync(User, "Return");
 
     // Next stages for each status
     var nextMap = new Dictionary<string, string[]>
@@ -49,7 +50,10 @@
                     <th>Reason</th>
                     <th>Date</th>
                     <th class="text-center">Status</th>
-                    <th class="text-center">Action</th>
+                    @if (perm.CanView || perm.CanEdit)
+                    {
+                        <th class="text-center">Action</th>
+                    }
                 </tr>
             </thead>
             <tbody>
@@ -99,44 +103,50 @@
                         </td>
 
                         <!-- Action -->
-                        <td class="text-center">
-                            <div class="d-flex gap-1 justify-content-center">
-                                <a asp-area="Admin" asp-controller="Return" asp-action="Details"
-                                   asp-route-id="@ret.Id"
-                                   class="btn btn-sm btn-outline-secondary" title="Details">
-                                    <i class="bi bi-eye"></i>
-                                </a>
+                        @if (perm.CanView || perm.CanEdit)
+                        {
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    @if (perm.CanView)
+                                    {
+                                        <a asp-area="Admin" asp-controller="Return" asp-action="Details"
+                                           asp-route-id="@ret.Id"
+                                           class="btn btn-sm btn-outline-secondary" title="Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    }
 
-                                @if (next.Length > 0)
-                                {
-                                    <button class="btn btn-sm btn-outline-primary"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#actionModal"
-                                            data-id="@ret.Id"
-                                            data-current="@ret.Status"
-                                            data-name="@ret.User?.FullName"
-                                            data-product="@ret.Product?.Name"
-                                            data-reason="@ret.Reason"
-                                            data-next="@string.Join(",", next)"
-                                            onclick="openActionModal(this)"
-                                            title="Update Status">
-                                        <i class="bi bi-arrow-right-circle"></i>
-                                    </button>
-                                }
-                                else
-                                {
-                                    <span class="text-muted small d-flex align-items-center px-1">
-                                        <i class="bi bi-check2-all me-1"></i>Completed
-                                    </span>
-                                }
-                            </div>
-                        </td>
+                                    @if (perm.CanEdit && next.Length > 0)
+                                    {
+                                        <button class="btn btn-sm btn-outline-primary"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#actionModal"
+                                                data-id="@ret.Id"
+                                                data-current="@ret.Status"
+                                                data-name="@ret.User?.FullName"
+                                                data-product="@ret.Product?.Name"
+                                                data-reason="@ret.Reason"
+                                                data-next="@string.Join(",", next)"
+                                                onclick="openActionModal(this)"
+                                                title="Update Status">
+                                            <i class="bi bi-arrow-right-circle"></i>
+                                        </button>
+                                    }
+                                    else if (next.Length == 0)
+                                    {
+                                        <span class="text-muted small d-flex align-items-center px-1">
+                                            <i class="bi bi-check2-all me-1"></i>Completed
+                                        </span>
+                                    }
+                                </div>
+                            </td>
+                        }
                     </tr>
                 }
                 @if (!Model.Any())
                 {
                     <tr>
-                        <td colspan="8" class="text-center text-muted py-5">
+                        <td colspan="@(perm.CanView || perm.CanEdit ? 8 : 7)" class="text-center text-muted py-5">
                             <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
                             No return requests found
                         </td>

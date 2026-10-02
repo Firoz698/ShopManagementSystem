@@ -1,5 +1,8 @@
 @model List<ShopManagementSystem.Models.Order>
-@{ ViewData["Title"] = "Order Management"; }
+@{ 
+    ViewData["Title"] = "Order Management";
+    var perm = await PermissionChecker.GetPermissionsAsync(User, "Order");
+}
 
 <!-- Status filter tabs -->
 <div class="d-flex gap-2 mb-4 flex-wrap">
@@ -31,7 +34,10 @@
                     <th>Items</th>
                     <th>Total</th>
                     <th>Status</th>
-                    <th class="text-center">Action</th>
+                    @if (perm.CanView || perm.CanDelete)
+                    {
+                        <th class="text-center">Action</th>
+                    }
                 </tr>
             </thead>
             <tbody>
@@ -54,26 +60,35 @@
                                 @order.Status
                             </span>
                         </td>
-                        <td class="text-center">
-                            <div class="d-flex gap-1 justify-content-center">
-                                <a asp-action="Detail" asp-route-id="@order.Id"
-                                   class="btn btn-sm btn-outline-primary" title="View Details">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <form asp-action="Delete" asp-route-id="@order.Id" method="post"
-                                      onsubmit="return confirm('Are you sure you want to delete order #@order.Id?')">
-                                    @Html.AntiForgeryToken()
-                                    <button class="btn btn-sm btn-outline-danger" title="Delete">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
+                        @if (perm.CanView || perm.CanDelete)
+                        {
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    @if (perm.CanView)
+                                    {
+                                        <a asp-action="Detail" asp-route-id="@order.Id"
+                                           class="btn btn-sm btn-outline-primary" title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    }
+                                    @if (perm.CanDelete)
+                                    {
+                                        <form asp-action="Delete" asp-route-id="@order.Id" method="post"
+                                              onsubmit="return confirm('Are you sure you want to delete order #@order.Id?')">
+                                            @Html.AntiForgeryToken()
+                                            <button class="btn btn-sm btn-outline-danger" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        }
                     </tr>
                 }
                 @if (!Model.Any())
                 {
-                    <tr><td colspan="8" class="text-center text-muted py-5">No orders found</td></tr>
+                    <tr><td colspan="@(perm.CanView || perm.CanDelete ? 8 : 7)" class="text-center text-muted py-5">No orders found</td></tr>
                 }
             </tbody>
         </table>

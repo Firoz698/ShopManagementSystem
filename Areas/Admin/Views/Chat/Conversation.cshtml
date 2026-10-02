@@ -1,11 +1,17 @@
 @model List<ShopManagementSystem.Models.ChatMessage>
 @{
-    ViewData["Title"] = $"Chat — {(ViewBag.TargetUser as ShopManagementSystem.Models.ApplicationUser)?.FullName}";
-}
-
-@{
     var targetUser = ViewBag.TargetUser as ShopManagementSystem.Models.ApplicationUser;
     var targetUserId = ViewBag.TargetUserId as string;
+    ViewData["Title"] = $"Chat — {targetUser?.FullName}";
+    var perm = await PermissionChecker.GetPermissionsAsync(User, "Chat");
+}
+
+@if (!perm.CanView)
+{
+    <div class="alert alert-danger">
+        <i class="bi bi-shield-lock me-2"></i>You do not have permission to view this page.
+    </div>
+    return;
 }
 
 <div class="row g-3">
@@ -132,17 +138,26 @@
             </div>
 
             <!-- Input -->
-            <div class="card-footer bg-white border-top p-3">
-                <div class="d-flex gap-2">
-                    <input type="text" id="messageInput" class="form-control"
-                           placeholder="Write a message to @(targetUser?.FullName)..."
-                           maxlength="1000"
-                           onkeypress="if(event.key==='Enter') sendMessage()" />
-                    <button class="btn btn-danger px-4 flex-shrink-0" onclick="sendMessage()">
-                        <i class="bi bi-send-fill"></i>
-                    </button>
+            @if (perm.CanCreate)
+            {
+                <div class="card-footer bg-white border-top p-3">
+                    <div class="d-flex gap-2">
+                        <input type="text" id="messageInput" class="form-control"
+                               placeholder="Write a message to @(targetUser?.FullName)..."
+                               maxlength="1000"
+                               onkeypress="if(event.key==='Enter') sendMessage()" />
+                        <button class="btn btn-danger px-4 flex-shrink-0" onclick="sendMessage()">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </div>
                 </div>
-            </div>
+            }
+            else
+            {
+                <div class="card-footer bg-light border-top p-3 text-center text-muted small">
+                    <i class="bi bi-lock me-1"></i>You do not have permission to send messages.
+                </div>
+            }
         </div>
     </div>
 </div>
@@ -161,9 +176,10 @@
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script>
-        const targetUserId = '@targetUserId';
-        const targetName = '@targetUser?.FullName';
-        const targetPhoto = '@Html.Raw(targetUser?.ProfilePhoto ?? "")';
+        const targetUserId = @Html.Raw(Json.Serialize(targetUserId ?? ""));
+        const targetName = @Html.Raw(Json.Serialize(targetUser?.FullName ?? ""));
+        const targetPhoto = @Html.Raw(Json.Serialize(targetUser?.ProfilePhoto ?? ""));
+        const canReply = @Html.Raw(Json.Serialize(perm.CanCreate));
 
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/chatHub")
@@ -205,6 +221,7 @@
             .catch(console.error);
 
         function sendMessage() {
+            if (!canReply) return;
             var input = document.getElementById('messageInput');
             var msg = input.value.trim();
             if (!msg) return;
