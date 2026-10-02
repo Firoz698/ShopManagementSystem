@@ -390,14 +390,7 @@
 
                 if (data.success) {
                     if (window.updateCartBadge) window.updateCartBadge(data.cartCount);
-
-                    var fb = document.getElementById('cartFeedback');
-                    if (fb && !btnEl) {
-                        fb.className = 'alert alert-success py-2 small';
-                        fb.textContent = '✅ Added to cart!';
-                        fb.style.display = 'block';
-                        setTimeout(function() { fb.style.display = 'none'; }, 3000);
-                    }
+                    if (window.showToast) window.showToast('success', data.message || 'Product added to cart!');
 
                     if (btnEl) {
                         btnEl.disabled = false;
@@ -407,15 +400,7 @@
                         }, 2000);
                     }
                 } else {
-                    var fb = document.getElementById('cartFeedback');
-                    if (fb && !btnEl) {
-                        fb.className = 'alert alert-danger py-2 small';
-                        fb.textContent = data.message || 'Could not add to cart.';
-                        fb.style.display = 'block';
-                        setTimeout(function() { fb.style.display = 'none'; }, 4000);
-                    } else {
-                        alert(data.message || 'Could not add to cart.');
-                    }
+                    if (window.showToast) window.showToast('error', data.message || 'Could not add to cart.');
                     if (btnEl) {
                         btnEl.disabled = false;
                         btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Add to Cart';
@@ -423,7 +408,7 @@
                 }
             })
             .catch(function(err) {
-                alert('Connection error. Please try again.');
+                if (window.showToast) window.showToast('error', 'Connection error. Please try again.');
                 if (btnEl) {
                     btnEl.disabled = false;
                     btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Add to Cart';

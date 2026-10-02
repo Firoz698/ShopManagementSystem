@@ -1,0 +1,446 @@
+@model ShopManagementSystem.Models.Order
+@{
+    ViewData["Title"] = $"Delivery Details — Order #{Model.Id}";
+    var perm = await PermissionChecker.GetPermissionsAsync(User, "Delivery");
+    var staffList = ViewBag.DeliveryStaffList as List<ShopManagementSystem.Models.ApplicationUser> ?? new List<ShopManagementSystem.Models.ApplicationUser>();
+    var statusList = ViewBag.StatusList as string[] ?? new string[0];
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <a asp-action="Index" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i></a>
+            <h4 class="fw-bold mb-0">Delivery Management — Order #@Model.Id</h4>
+            <span class="badge badge-status-@Model.Status px-3 py-1 rounded-pill">@Model.Status</span>
+        </div>
+        <div class="text-muted small ms-md-4 ps-md-2">
+            @if (!string.IsNullOrEmpty(Model.TrackingNumber))
+            {
+                <span class="me-3"><i class="bi bi-upc-scan text-primary me-1"></i>Tracking #: <strong>@Model.TrackingNumber</strong></span>
+            }
+            <span><i class="bi bi-clock me-1"></i>Placed: @Model.OrderDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-controller="Order" asp-action="Detail" asp-route-id="@Model.Id" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-receipt me-1"></i>Order Details
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Items & Timeline -->
+    <div class="col-lg-8">
+        
+        <!-- Ordered Items -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0"><i class="bi bi-box-seam me-2 text-primary"></i>Package Contents (@Model.OrderDetails.Count items)</h6>
+                <span class="fw-bold text-danger">Total: ৳@Model.TotalAmount.ToString("N0")</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Product</th>
+                            <th class="text-center">Unit Price</th>
+                            <th class="text-center">Quantity</th>
+                            <th class="text-end pe-3">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.OrderDetails)
+                        {
+                            var img = item.Product?.Images?.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
+                                   ?? item.Product?.Images?.FirstOrDefault()?.ImageUrl;
+                            <tr>
+                                <td class="ps-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img src="@img" onerror="this.src='https://via.placeholder.com/48/f8f9fa/6c757d?text=N/A'"
+                                             class="rounded border" style="width:48px;height:48px;object-fit:cover;" />
+                                        <div>
+                                            <div class="fw-medium small">@item.Product?.Name</div>
+                                            <div class="text-muted" style="font-size:0.75rem;">SKU: @item.ProductId</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center small">৳@item.UnitPrice.ToString("N0")</td>
+                                <td class="text-center small"><span class="badge bg-light text-dark border">@item.Quantity</span></td>
+                                <td class="text-end pe-3 fw-bold small text-dark">৳@((item.UnitPrice * item.Quantity).ToString("N0"))</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tracking Timeline -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0"><i class="bi bi-geo-alt me-2 text-primary"></i>Live Tracking Timeline</h6>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">@Model.TrackingLogs.Count Updates</span>
+            </div>
+            <div class="card-body p-4">
+                @if (!Model.TrackingLogs.Any())
+                {
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-signpost-2 display-5 d-block mb-2 opacity-50"></i>
+                        No tracking updates logged yet. Status transitions will appear here automatically.
+                    </div>
+                }
+                else
+                {
+                    <div class="timeline-container">
+                        @foreach (var log in Model.TrackingLogs.OrderByDescending(l => l.Timestamp))
+                        {
+                            <div class="timeline-item pb-4 position-relative ps-4">
+                                <div class="timeline-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm">
+                                    <i class="bi bi-check2"></i>
+                                </div>
+                                <div class="card border bg-light-subtle rounded-3 p-3">
+                                    <div class="d-flex justify-content-between align-items-start mb-1 flex-wrap gap-1">
+                                        <div class="fw-bold text-dark">@log.Title</div>
+                                        <span class="text-muted small" style="font-size:0.78rem;">
+                                            <i class="bi bi-clock me-1"></i>@log.Timestamp.ToString("dd MMM yyyy, hh:mm tt")
+                                        </span>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(log.Description))
+                                    {
+                                        <div class="text-muted small mb-2">@log.Description</div>
+                                    }
+                                    <div class="d-flex justify-content-between align-items-center text-muted" style="font-size:0.75rem;">
+                                        @if (!string.IsNullOrEmpty(log.Location))
+                                        {
+                                            <span><i class="bi bi-geo-alt-fill text-danger me-1"></i>@log.Location</span>
+                                        }
+                                        else
+                                        {
+                                            <span></span>
+                                        }
+                                        @if (!string.IsNullOrEmpty(log.UpdatedBy))
+                                        {
+                                            <span><i class="bi bi-person me-1"></i>By @log.UpdatedBy</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+
+                @if (perm.CanEdit)
+                {
+                    <div class="mt-3 pt-3 border-top">
+                        <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#addLogCollapse">
+                            <i class="bi bi-plus-circle me-1"></i>Add Custom Tracking Note / Event
+                        </button>
+
+                        <div class="collapse mt-3" id="addLogCollapse">
+                            <div class="card card-body bg-light border-0">
+                                <form asp-action="AddLog" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="orderId" value="@Model.Id" />
+                                    <input type="hidden" name="status" value="@Model.Status" />
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-semibold">Event Title *</label>
+                                            <input type="text" name="title" required class="form-control form-control-sm" placeholder="e.g. In Transit to Mirpur Hub" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-semibold">Location (Optional)</label>
+                                            <input type="text" name="location" value="@Model.DeliveryZone" class="form-control form-control-sm" placeholder="e.g. Dhaka Hub / Gulshan Hub" />
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-semibold">Description</label>
+                                        <input type="text" name="description" class="form-control form-control-sm" placeholder="Additional details..." />
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-save me-1"></i>Log Event
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Right Column: Rider Assignment, OTP Verification, Status -->
+    <div class="col-lg-4">
+
+        <!-- OTP Verification Card -->
+        @if (!string.IsNullOrEmpty(Model.DeliveryOtp))
+        {
+            <div class="card border-0 shadow-sm mb-4 border-start border-4 @(Model.IsOtpVerified ? "border-success" : "border-warning")">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold mb-0"><i class="bi bi-shield-lock me-2 text-warning"></i>Customer Delivery OTP</h6>
+                        @if (Model.IsOtpVerified)
+                        {
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                                <i class="bi bi-check-circle me-1"></i>Verified
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning-subtle text-dark border border-warning-subtle px-2 py-1">
+                                <i class="bi bi-hourglass-split me-1"></i>Pending Verification
+                            </span>
+                        }
+                    </div>
+
+                    <div class="bg-light rounded-3 p-3 text-center mb-3">
+                        <div class="text-muted small mb-1">Generated Delivery OTP</div>
+                        <div class="fs-2 fw-bold font-monospace text-primary tracking-widest">
+                            @Model.DeliveryOtp
+                        </div>
+                        <div class="text-muted" style="font-size:0.75rem;">
+                            (Customer also sees this OTP on their tracking page)
+                        </div>
+                    </div>
+
+                    @if (!Model.IsOtpVerified && perm.CanEdit)
+                    {
+                        <form asp-action="VerifyOtp" method="post" class="mt-3">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="orderId" value="@Model.Id" />
+                            <div class="mb-2">
+                                <label class="form-label fw-bold small">Enter Customer's OTP to Complete</label>
+                                <div class="input-group">
+                                    <input type="text" name="otp" required maxlength="6" class="form-control font-monospace text-center fw-bold fs-5" placeholder="000000" autocomplete="off" />
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bi bi-check2-circle me-1"></i>Verify
+                                    </button>
+                                </div>
+                            </div>
+                            <input type="text" name="notes" class="form-control form-control-sm mt-2" placeholder="Optional delivery note..." />
+                        </form>
+                    }
+                    else if (Model.IsOtpVerified)
+                    {
+                        <div class="alert alert-success py-2 px-3 small mb-0 d-flex align-items-center gap-2">
+                            <i class="bi bi-check-circle-fill fs-5"></i>
+                            <div>
+                                <strong>Delivery Verified!</strong><br />
+                                Order completed at @(Model.DeliveredAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "N/A")
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Delivery Partner / Rider Card -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h6 class="fw-bold mb-0"><i class="bi bi-person-badge me-2 text-primary"></i>Assigned Delivery Rider</h6>
+            </div>
+            <div class="card-body p-4">
+                @if (Model.AssignedEmployee != null)
+                {
+                    <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
+                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold fs-4" style="width:50px;height:50px;background:rgba(108,62,232,0.1);color:#6C3EE8;">
+                            @(Model.AssignedEmployee.FullName.Length > 0 ? Model.AssignedEmployee.FullName.Substring(0, 1).ToUpper() : "R")
+                        </div>
+                        <div>
+                            <div class="fw-bold fs-6">@Model.AssignedEmployee.FullName</div>
+                            <div class="text-muted small"><i class="bi bi-telephone me-1"></i>@Model.AssignedEmployee.PhoneNumber</div>
+                            <div class="text-muted small"><i class="bi bi-envelope me-1"></i>@Model.AssignedEmployee.Email</div>
+                        </div>
+                    </div>
+
+                    <div class="small text-muted mb-2">
+                        <strong>Assigned On:</strong> @(Model.AssignedAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "N/A")
+                    </div>
+                    @if (Model.EstimatedDeliveryDate.HasValue)
+                    {
+                        <div class="small text-muted mb-2">
+                            <strong>Estimated Delivery:</strong> @Model.EstimatedDeliveryDate.Value.ToString("dd MMM yyyy")
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.DeliveryNotes))
+                    {
+                        <div class="bg-light rounded p-2 small mt-2">
+                            <strong>Rider Note:</strong> @Model.DeliveryNotes
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center py-3 text-muted mb-3">
+                        <i class="bi bi-person-x display-6 d-block mb-1 opacity-50"></i>
+                        <span class="small">No delivery rider assigned yet.</span>
+                    </div>
+                }
+
+                @if (perm.CanEdit)
+                {
+                    <button class="btn btn-outline-secondary btn-sm w-100 mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#assignRiderCollapse">
+                        <i class="bi bi-person-plus me-1"></i>@(Model.AssignedEmployee != null ? "Reassign Rider" : "Assign Rider")
+                    </button>
+
+                    <div class="collapse mt-3" id="assignRiderCollapse">
+                        <form asp-action="AssignRider" method="post" class="border rounded p-3 bg-light">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="orderId" value="@Model.Id" />
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold">Select Employee / Rider *</label>
+                                <select name="employeeId" required class="form-select form-select-sm">
+                                    <option value="">-- Choose Rider --</option>
+                                    @foreach (var emp in staffList)
+                                    {
+                                        <option value="@emp.Id" selected="@(Model.AssignedEmployeeId == emp.Id)">
+                                            @emp.FullName (@(string.IsNullOrEmpty(emp.PhoneNumber) ? emp.Email : emp.PhoneNumber))
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold">Estimated Delivery Date</label>
+                                <input type="date" name="estimatedDate" class="form-control form-control-sm" value="@(Model.EstimatedDeliveryDate?.ToString("yyyy-MM-dd"))" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Instructions / Notes</label>
+                                <input type="text" name="notes" class="form-control form-control-sm" placeholder="e.g. Call before arrival" value="@Model.DeliveryNotes" />
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm w-100">
+                                <i class="bi bi-check-circle me-1"></i>Save Assignment
+                            </button>
+                        </form>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Status Management Card -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h6 class="fw-bold mb-0"><i class="bi bi-arrow-repeat me-2 text-primary"></i>Update Status</h6>
+            </div>
+            <div class="card-body p-4">
+                <div class="mb-3">
+                    <div class="text-muted small mb-1">Current Order Status</div>
+                    <span class="badge badge-status-@Model.Status fs-6 px-3 py-2 rounded-pill">@Model.Status</span>
+                </div>
+
+                @if (perm.CanEdit)
+                {
+                    <form asp-action="UpdateStatus" method="post" class="mb-3">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="orderId" value="@Model.Id" />
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Change Status To</label>
+                            <select name="status" class="form-select form-select-sm">
+                                @foreach (var s in statusList)
+                                {
+                                    <option value="@s" selected="@(Model.Status == s)">@s</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Location (Optional)</label>
+                            <input type="text" name="location" class="form-control form-control-sm" value="@Model.DeliveryZone" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Note / Update Detail (Optional)</label>
+                            <input type="text" name="notes" class="form-control form-control-sm" placeholder="e.g. Package dispatched from central hub" />
+                        </div>
+                        <button type="submit" class="btn btn-dark btn-sm w-100">
+                            <i class="bi bi-arrow-right-circle me-1"></i>Update Delivery Status
+                        </button>
+                    </form>
+
+                    @if (Model.Status != "Completed")
+                    {
+                        <div class="pt-3 border-top">
+                            <form asp-action="AdminOverrideDeliver" method="post" onsubmit="return confirm('Mark this order as delivered without OTP verification?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="orderId" value="@Model.Id" />
+                                <button type="submit" class="btn btn-outline-success btn-sm w-100">
+                                    <i class="bi bi-check2-all me-1"></i>Direct Complete (Admin Override)
+                                </button>
+                            </form>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+        <!-- Customer & Destination Card -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h6 class="fw-bold mb-0"><i class="bi bi-geo-alt me-2 text-primary"></i>Customer & Destination</h6>
+            </div>
+            <div class="card-body p-4">
+                <div class="mb-3">
+                    <div class="text-muted small">Customer Name</div>
+                    <div class="fw-semibold">@Model.User?.FullName</div>
+                </div>
+                <div class="mb-3">
+                    <div class="text-muted small">Contact Phone</div>
+                    <div class="fw-medium">
+                        <a href="tel:@Model.Phone" class="text-decoration-none text-dark">
+                            <i class="bi bi-telephone-fill text-success me-1"></i>@Model.Phone
+                        </a>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="text-muted small">Delivery Address</div>
+                    <div class="small fw-medium bg-light p-2 rounded">
+                        <i class="bi bi-geo-alt-fill text-danger me-1"></i>@Model.ShippingAddress
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="text-muted small">Delivery Zone</div>
+                    <div class="small fw-medium">@Model.DeliveryZone</div>
+                </div>
+                <div class="mb-0">
+                    <div class="text-muted small">Payment Method</div>
+                    <div class="small fw-medium">@Model.PaymentMethod</div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Notes))
+                {
+                    <div class="mt-3 pt-3 border-top">
+                        <div class="text-muted small">Order Notes</div>
+                        <div class="small text-muted fst-italic">"@Model.Notes"</div>
+                    </div>
+                }
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .timeline-container { position: relative; }
+    .timeline-container::before {
+        content: '';
+        position: absolute;
+        top: 15px;
+        bottom: 15px;
+        left: 11px;
+        width: 2px;
+        background: #e2e8f0;
+    }
+    .timeline-item { position: relative; }
+    .timeline-icon {
+        position: absolute;
+        left: 0;
+        top: 2px;
+        width: 24px;
+        height: 24px;
+        font-size: 0.75rem;
+        z-index: 2;
+    }
+    .badge-status-Pending          { background:#fef3c7;color:#92400e; }
+    .badge-status-Processing       { background:#dbeafe;color:#1e40af; }
+    .badge-status-Shipped          { background:#e0e7ff;color:#3730a3; }
+    .badge-status-Out\ for\ Delivery { background:#fef08a;color:#854d0e; }
+    .badge-status-Completed        { background:#d1fae5;color:#065f46; }
+    .badge-status-Cancelled        { background:#fee2e2;color:#991b1b; }
+    .tracking-widest { letter-spacing: 0.35em; }
+</style>
+

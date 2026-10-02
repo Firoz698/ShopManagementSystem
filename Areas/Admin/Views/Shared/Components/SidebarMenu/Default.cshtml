@@ -28,10 +28,8 @@
                     {
                         var totalUnread = 0;
                         try { totalUnread = Db.ChatSessions.Sum(s => s.UnreadCount); } catch { }
-                        if (totalUnread > 0)
-                        {
-                            <span class="badge bg-danger ms-auto rounded-pill" style="font-size:.7rem">@totalUnread</span>
-                        }
+                        <span class="badge bg-danger ms-auto rounded-pill chat-sidebar-badge @(totalUnread > 0 ? "" : "d-none")"
+                              id="sidebarChatUnreadBadge" style="font-size:.7rem">@totalUnread</span>
                     }
                 </a>
             }

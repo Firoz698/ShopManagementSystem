@@ -132,7 +132,14 @@ namespace ShopManagementSystem.Hubs
                 isFromAdmin = false
             };
 
+            var totalUnread = await _db.ChatSessions.SumAsync(s => s.UnreadCount);
             await Clients.Group("Admins").SendAsync("ReceiveMessage", payload);
+            await Clients.Group("Admins").SendAsync("UnreadCountUpdated", new
+            {
+                userId = user.Id,
+                unreadCount = session.UnreadCount,
+                totalUnread
+            });
             await Clients.Caller.SendAsync("MessageSent", payload);
         }
 
@@ -184,31 +191,64 @@ namespace ShopManagementSystem.Hubs
             };
 
             await Clients.Group($"User_{targetUserId}").SendAsync("ReceiveMessage", payload);
+            var customerUnread = await _db.ChatMessages
+                .CountAsync(m => m.ReceiverId == targetUserId && !m.IsRead && m.IsFromAdmin);
+            await Clients.Group($"User_{targetUserId}").SendAsync("UserUnreadCountUpdated", customerUnread);
+
             await Clients.Caller.SendAsync("MessageSent", new { payload, targetUserId });
         }
 
         // ── Mark Messages as Read ─────────────────────────────────────────────
-        public async Task MarkAsRead(string userId)
+        public async Task MarkAsRead(string? userId = null)
         {
-            if (string.IsNullOrWhiteSpace(userId)) return;
-
             var caller = await _userManager.GetUserAsync(Context.User!);
             if (caller == null) return;
 
-            // Only staff/admin with CanView permission can mark as read
             var perm = await _permissionChecker.GetPermissionsAsync(Context.User!, "Chat");
-            if (!perm.CanView) return;
-
-            var session = await _db.ChatSessions.FirstOrDefaultAsync(s => s.UserId == userId);
-            if (session != null)
+            if (perm.CanView)
             {
-                session.UnreadCount = 0;
-                await _db.SaveChangesAsync();
+                var targetId = string.IsNullOrWhiteSpace(userId) ? caller.Id : userId;
+                var session = await _db.ChatSessions.FirstOrDefaultAsync(s => s.UserId == targetId);
+                if (session != null)
+                {
+                    session.UnreadCount = 0;
+                    await _db.SaveChangesAsync();
+                }
+
+                await _db.ChatMessages
+                    .Where(m => m.SenderId == targetId && !m.IsRead)
+                    .ExecuteUpdateAsync(s => s.SetProperty(m => m.IsRead, true));
+
+                var totalUnread = await _db.ChatSessions.SumAsync(s => s.UnreadCount);
+                await Clients.Group("Admins").SendAsync("UnreadCountUpdated", new
+                {
+                    userId = targetId,
+                    unreadCount = 0,
+                    totalUnread
+                });
+                await Clients.Group($"User_{targetId}").SendAsync("MessagesMarkedAsRead");
             }
+            else
+            {
+                // Customer marking admin messages as read
+                await _db.ChatMessages
+                    .Where(m => m.ReceiverId == caller.Id && !m.IsRead && m.IsFromAdmin)
+                    .ExecuteUpdateAsync(s => s.SetProperty(m => m.IsRead, true));
+
+                await Clients.Group($"User_{caller.Id}").SendAsync("UserUnreadCountUpdated", 0);
+            }
+        }
+
+        public async Task UserMarkAsRead()
+        {
+            var user = await _userManager.GetUserAsync(Context.User!);
+            if (user == null) return;
 
             await _db.ChatMessages
-                .Where(m => m.SenderId == userId && !m.IsRead)
+                .Where(m => m.ReceiverId == user.Id && !m.IsRead && m.IsFromAdmin)
                 .ExecuteUpdateAsync(s => s.SetProperty(m => m.IsRead, true));
+
+            await Clients.Group($"User_{user.Id}").SendAsync("UserUnreadCountUpdated", 0);
         }
 
         // ── Check if user is online ──────────────────────────────────────────

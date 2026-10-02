@@ -111,11 +111,38 @@
             .withAutomaticReconnect()
             .build();
 
+        function setTotalUnread(count) {
+            totalUnreadCount = Math.max(0, count);
+            var totalBadge = document.getElementById('totalUnreadBadge');
+            if (totalBadge) {
+                totalBadge.textContent = totalUnreadCount;
+                totalBadge.classList.toggle('d-none', totalUnreadCount === 0);
+            }
+            if (window.updateChatSidebarBadge) {
+                window.updateChatSidebarBadge(totalUnreadCount);
+            }
+        }
+
+        function updateTotalUnread(delta) {
+            setTotalUnread(totalUnreadCount + delta);
+        }
+
         function loadConversation(userId, linkEl) {
             document.querySelectorAll('.chat-session-item').forEach(function(item) {
                 item.classList.remove('active-session');
             });
-            if (linkEl) linkEl.classList.add('active-session');
+
+            var targetItem = linkEl || document.getElementById('session-' + userId);
+            if (targetItem) {
+                targetItem.classList.add('active-session');
+                var badge = targetItem.querySelector('.session-unread-badge');
+                if (badge) {
+                    var n = parseInt(badge.textContent || "0", 10) || 0;
+                    updateTotalUnread(-n);
+                    badge.remove();
+                }
+                targetItem.classList.remove('bg-light');
+            }
 
             currentUserId = userId;
 
@@ -127,17 +154,9 @@
                 .then(function(html) {
                     document.getElementById('chatPanel').innerHTML = html;
                     scrollToBottom();
-                    connection.invoke("MarkAsRead", userId).catch(function() { });
-
-                    if (linkEl) {
-                        var badge = linkEl.querySelector('.session-unread-badge');
-                        if (badge) {
-                            var n = parseInt(badge.textContent || "0", 10) || 0;
-                            updateTotalUnread(-n);
-                            badge.remove();
-                        }
-                        linkEl.classList.remove('bg-light');
-                    }
+                    connection.invoke("MarkAsRead", userId).catch(function(err) {
+                        console.error('MarkAsRead error:', err);
+                    });
                 })
                 .catch(function(err) {
                     console.error('Conversation load error:', err);
@@ -146,13 +165,31 @@
                 });
         }
 
-        function updateTotalUnread(delta) {
-            totalUnreadCount = Math.max(0, totalUnreadCount + delta);
-            var totalBadge = document.getElementById('totalUnreadBadge');
-            if (!totalBadge) return;
-            totalBadge.textContent = totalUnreadCount;
-            totalBadge.classList.toggle('d-none', totalUnreadCount === 0);
-        }
+        connection.on("UnreadCountUpdated", function(data) {
+            if (data && data.userId) {
+                var item = document.getElementById('session-' + data.userId);
+                if (item) {
+                    var badge = item.querySelector('.session-unread-badge');
+                    if (data.unreadCount <= 0 || data.userId === currentUserId) {
+                        if (badge) badge.remove();
+                        item.classList.remove('bg-light');
+                    } else {
+                        item.classList.add('bg-light');
+                        if (badge) {
+                            badge.textContent = data.unreadCount;
+                        } else {
+                            var span = document.createElement('span');
+                            span.className = 'badge bg-danger rounded-pill flex-shrink-0 session-unread-badge';
+                            span.textContent = data.unreadCount;
+                            item.appendChild(span);
+                        }
+                    }
+                }
+            }
+            if (data && typeof data.totalUnread !== 'undefined') {
+                setTotalUnread(data.totalUnread);
+            }
+        });
 
         connection.on("ReceiveMessage", function(data) {
             if (!data.isFromAdmin) {
@@ -301,5 +338,4 @@
             } catch (e) { }
         }
     </script>
-}
 }

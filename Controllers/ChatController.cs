@@ -51,6 +51,14 @@ namespace ShopManagementSystem.Controllers
             return Json(new { count });
         }
 
+        // POST /Chat/MarkRead
+        [HttpPost]
+        public async Task<IActionResult> MarkRead()
+        {
+            await _chatRepo.MarkMessagesAsReadAsync(UserId);
+            return Json(new { success = true });
+        }
+
         // POST /Chat/SendMessage
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> SendMessage(string messageText)

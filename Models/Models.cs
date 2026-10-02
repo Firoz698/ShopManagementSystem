@@ -256,6 +256,26 @@ namespace ShopManagementSystem.Models
         [MaxLength(100)]
         public string? PaymentTransactionId { get; set; }
 
+        // Delivery & Tracking
+        [MaxLength(50)]
+        public string? TrackingNumber { get; set; }
+
+        public string? AssignedEmployeeId { get; set; }
+        [ForeignKey("AssignedEmployeeId")]
+        public ApplicationUser? AssignedEmployee { get; set; }
+
+        public DateTime? AssignedAt { get; set; }
+        public DateTime? OutForDeliveryAt { get; set; }
+        public DateTime? DeliveredAt { get; set; }
+        public DateTime? EstimatedDeliveryDate { get; set; }
+
+        [MaxLength(10)]
+        public string? DeliveryOtp { get; set; }
+        public bool IsOtpVerified { get; set; }
+
+        [MaxLength(500)]
+        public string? DeliveryNotes { get; set; }
+
         [ForeignKey("UserId")]
         public ApplicationUser? User { get; set; }
 
@@ -263,6 +283,7 @@ namespace ShopManagementSystem.Models
         public PaymentMethodSetting? PaymentMethodSetting { get; set; }
 
         public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+        public ICollection<OrderTrackingLog> TrackingLogs { get; set; } = new List<OrderTrackingLog>();
     }
     // ── Order Detail ────────────────────────────────────────────────────────────
     public class OrderDetail
@@ -464,6 +485,33 @@ namespace ShopManagementSystem.Models
 
         [ForeignKey("ProductId")]
         public Product? Product { get; set; }
+    }
+
+    // ── Order Tracking Log ───────────────────────────────────────────────────────
+    public class OrderTrackingLog
+    {
+        public int Id { get; set; }
+        public int OrderId { get; set; }
+
+        [Required, MaxLength(50)]
+        public string Status { get; set; } = string.Empty;
+
+        [Required, MaxLength(150)]
+        public string Title { get; set; } = string.Empty;
+
+        [MaxLength(500)]
+        public string? Description { get; set; }
+
+        [MaxLength(150)]
+        public string? Location { get; set; }
+
+        [MaxLength(100)]
+        public string? UpdatedBy { get; set; }
+
+        public DateTime Timestamp { get; set; } = DateTime.Now;
+
+        [ForeignKey("OrderId")]
+        public Order? Order { get; set; }
     }
 
 }

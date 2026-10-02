@@ -34,14 +34,6 @@ namespace ShopManagementSystem.Controllers
 
             if (result.Succeeded)
             {
-                var user = new ApplicationUser
-                {
-                    Email = vm.Email,
-                    UserName = vm.Email,
-                    FullName = vm.FullName
-                };
-                await _accountRepo.SignInAfterRegisterAsync(user);
-
                 TempData["Success"] = "Welcome! Your account has been created successfully.";
                 return RedirectToAction("Index", "Home");
             }

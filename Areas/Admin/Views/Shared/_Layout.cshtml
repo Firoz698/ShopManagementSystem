@@ -195,12 +195,6 @@
                 <h6 class="mb-0 fw-semibold text-secondary">@ViewData["Title"]</h6>
             </div>
             <div class="d-flex align-items-center gap-3">
-                @if (TempData["Success"] != null)
-                {
-                    <span class="badge bg-success-subtle text-success py-2 px-3 rounded-pill">
-                        <i class="bi bi-check-circle me-1"></i>@TempData["Success"]
-                    </span>
-                }
                 <div class="dropdown">
                     <button class="btn btn-sm btn-light dropdown-toggle" data-bs-toggle="dropdown">
                         <i class="bi bi-person-circle me-1"></i>@User.Identity?.Name?.Split('@')[0]
@@ -237,13 +231,6 @@
 
         <!-- Page content -->
         <div class="p-4">
-            @if (TempData["Error"] != null)
-            {
-                <div class="alert alert-danger alert-dismissible fade show py-2">
-                    <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            }
             @RenderBody()
         </div>
 
@@ -252,7 +239,82 @@
         </footer>
     </div>
 
+    <!-- ── Global Toast Container (Bottom-Right) ────────────────────────────── -->
+    <div id="globalToastContainer" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 99999;"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // ── Global Bottom-Right Toast Helper ─────────────────────────────────
+        window.showToast = function(type, message) {
+            var container = document.getElementById('globalToastContainer');
+            if (!container) return;
+
+            var isSuccess = type === 'success';
+            var isError = type === 'error' || type === 'danger';
+            var isWarning = type === 'warning';
+
+            var bgClass = isSuccess ? 'bg-success text-white' :
+                          isError   ? 'bg-danger text-white' :
+                          isWarning ? 'bg-warning text-dark' : 'bg-dark text-white';
+
+            var iconClass = isSuccess ? 'bi-check-circle-fill' :
+                            isError   ? 'bi-x-circle-fill' :
+                            isWarning ? 'bi-exclamation-triangle-fill' : 'bi-info-circle-fill';
+
+            var toastId = 'toast_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+
+            var toastHtml = `
+                <div id="${toastId}" class="toast align-items-center ${bgClass} border-0 shadow-lg mb-2 rounded-3" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex p-2 align-items-center">
+                        <div class="toast-body d-flex align-items-center gap-2 flex-grow-1 fw-medium py-1 px-2">
+                            <i class="bi ${iconClass} fs-5 flex-shrink-0"></i>
+                            <div>${message}</div>
+                        </div>
+                        <button type="button" class="btn-close ${isWarning ? '' : 'btn-close-white'} me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+
+            container.insertAdjacentHTML('beforeend', toastHtml);
+            var el = document.getElementById(toastId);
+            var bsToast = new bootstrap.Toast(el, { delay: 3500 });
+            bsToast.show();
+            el.addEventListener('hidden.bs.toast', function() { el.remove(); });
+        };
+
+        window.updateChatSidebarBadge = function(count) {
+            var n = parseInt(count, 10) || 0;
+            var badges = document.querySelectorAll('#sidebarChatUnreadBadge, .chat-sidebar-badge');
+            badges.forEach(function(b) {
+                b.textContent = n;
+                if (n > 0) {
+                    b.classList.remove('d-none');
+                } else {
+                    b.classList.add('d-none');
+                }
+            });
+        };
+    </script>
+
+    @* ── Server-side TempData Toasts ── *@
+    @if (TempData["Success"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                showToast('success', '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(TempData["Success"]!.ToString()!))');
+            });
+        </script>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                showToast('error', '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(TempData["Error"]!.ToString()!))');
+            });
+        </script>
+    }
+
     @RenderSection("Scripts", required: false)
 
     <script>
@@ -299,5 +361,4 @@
         })();
     </script>
 </body>
-</html>
 </html>

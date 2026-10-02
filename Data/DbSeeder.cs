@@ -7,7 +7,32 @@ namespace ShopManagementSystem.Data
     {
         public static async Task SeedMenusAsync(ApplicationDbContext db)
         {
-            if (await db.Menus.AnyAsync()) return;
+            if (await db.Menus.AnyAsync())
+            {
+                // Ensure Delivery menu exists even if database was previously seeded
+                if (!await db.Menus.AnyAsync(m => m.Controller == "Delivery"))
+                {
+                    var salesParent = await db.Menus.FirstOrDefaultAsync(m => m.Title == "Sales & Support" && m.ParentId == null)
+                                     ?? await db.Menus.FirstOrDefaultAsync(m => m.ParentId == null);
+
+                    if (salesParent != null)
+                    {
+                        db.Menus.Add(new Menu
+                        {
+                            Title = "Delivery & Tracking",
+                            Icon = "bi bi-truck",
+                            Controller = "Delivery",
+                            Action = "Index",
+                            Area = "Admin",
+                            ParentId = salesParent.Id,
+                            SortOrder = 2,
+                            IsActive = true
+                        });
+                        await db.SaveChangesAsync();
+                    }
+                }
+                return;
+            }
 
             // 1. Main
             var headerMain = new Menu
@@ -65,8 +90,9 @@ namespace ShopManagementSystem.Data
 
             db.Menus.AddRange(
                 new Menu { Title = "Orders", Icon = "bi bi-receipt", Controller = "Order", Action = "Index", Area = "Admin", ParentId = headerSales.Id, SortOrder = 1, IsActive = true },
-                new Menu { Title = "Return Requests", Icon = "bi bi-arrow-return-left", Controller = "Return", Action = "Index", Area = "Admin", ParentId = headerSales.Id, SortOrder = 2, IsActive = true },
-                new Menu { Title = "Chat Support", Icon = "bi bi-chat-dots", Controller = "Chat", Action = "Index", Area = "Admin", ParentId = headerSales.Id, SortOrder = 3, IsActive = true }
+                new Menu { Title = "Delivery & Tracking", Icon = "bi bi-truck", Controller = "Delivery", Action = "Index", Area = "Admin", ParentId = headerSales.Id, SortOrder = 2, IsActive = true },
+                new Menu { Title = "Return Requests", Icon = "bi bi-arrow-return-left", Controller = "Return", Action = "Index", Area = "Admin", ParentId = headerSales.Id, SortOrder = 3, IsActive = true },
+                new Menu { Title = "Chat Support", Icon = "bi bi-chat-dots", Controller = "Chat", Action = "Index", Area = "Admin", ParentId = headerSales.Id, SortOrder = 4, IsActive = true }
             );
 
             // 4. Users & Permissions

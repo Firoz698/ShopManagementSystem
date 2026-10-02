@@ -407,18 +407,25 @@
                     return;
                 }
                 if (data.success) {
-                    new bootstrap.Toast(document.getElementById('cartToast'), { delay: 2500 }).show();
                     if (window.updateCartBadge) window.updateCartBadge(data.cartCount);
+                    if (window.showToast) window.showToast('success', data.message || 'Product added to cart!');
+                    if (btnEl) {
+                        btnEl.disabled = false;
+                        btnEl.innerHTML = '<i class="bi bi-check-circle me-1 text-success"></i>Added!';
+                        setTimeout(function () {
+                            btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Add to Cart';
+                        }, 2000);
+                    }
                 } else {
-                    alert(data.message || 'Failed to add product to cart.');
-                }
-                if (btnEl) {
-                    btnEl.disabled = false;
-                    btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Add to Cart';
+                    if (window.showToast) window.showToast('error', data.message || 'Failed to add product to cart.');
+                    if (btnEl) {
+                        btnEl.disabled = false;
+                        btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Add to Cart';
+                    }
                 }
             })
             .catch(function() {
-                alert('Connection error. Please try again.');
+                if (window.showToast) window.showToast('error', 'Connection error. Please try again.');
                 if (btnEl) {
                     btnEl.disabled = false;
                     btnEl.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Add to Cart';

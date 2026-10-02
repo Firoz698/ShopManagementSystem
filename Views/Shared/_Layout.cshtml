@@ -564,6 +564,11 @@
                             <i class="bi bi-gift me-1 text-warning"></i>Combo Offers
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Order" asp-action="Track">
+                            <i class="bi bi-geo-alt"></i><span>Track Order</span>
+                        </a>
+                    </li>
 
                     @if (User.Identity?.IsAuthenticated == true)
                     {
@@ -629,6 +634,11 @@
                                         <i class="bi bi-bag-check text-primary"></i> My Orders
                                     </a>
                                 </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Order" asp-action="Track">
+                                        <i class="bi bi-geo-alt text-primary"></i> Track Order
+                                    </a>
+                                </li>
                                 @if (isStaff)
                                 {
                                     <li>
@@ -686,25 +696,8 @@
         </div>
     </div>
 
-    <!-- ── Alert messages ───────────────────────────────────────────────────────── -->
-    <div class="container alert-zone">
-        @if (TempData["Success"] != null)
-        {
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="bi bi-check-circle-fill"></i>
-                <span>@TempData["Success"]</span>
-                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        }
-        @if (TempData["Error"] != null)
-        {
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-circle-fill"></i>
-                <span>@TempData["Error"]</span>
-                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        }
-    </div>
+    <!-- ── Global Toast Container (Bottom-Right) ────────────────────────────── -->
+    <div id="globalToastContainer" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 99999;"></div>
 
     <!-- ── Page content ─────────────────────────────────────────────────────────── -->
     <main>
@@ -812,7 +805,71 @@
                 })
                 .catch(function() {});
         };
+
+        // ── Global Bottom-Right Toast Helper ─────────────────────────────────
+        window.showToast = function(type, message, title) {
+            var container = document.getElementById('globalToastContainer');
+            if (!container) return;
+
+            var isSuccess = type === 'success';
+            var isError = type === 'error' || type === 'danger';
+            var isWarning = type === 'warning';
+
+            var bgClass = isSuccess ? 'bg-success text-white' :
+                          isError   ? 'bg-danger text-white' :
+                          isWarning ? 'bg-warning text-dark' : 'bg-dark text-white';
+
+            var iconClass = isSuccess ? 'bi-check-circle-fill' :
+                            isError   ? 'bi-x-circle-fill' :
+                            isWarning ? 'bi-exclamation-triangle-fill' : 'bi-info-circle-fill';
+
+            var toastId = 'toast_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+
+            var toastHtml = `
+                <div id="${toastId}" class="toast align-items-center ${bgClass} border-0 shadow-lg mb-2 rounded-3" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex p-2 align-items-center">
+                        <div class="toast-body d-flex align-items-center gap-2 flex-grow-1 fw-medium py-1 px-2">
+                            <i class="bi ${iconClass} fs-5 flex-shrink-0"></i>
+                            <div>${message}</div>
+                        </div>
+                        <button type="button" class="btn-close ${isWarning ? '' : 'btn-close-white'} me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+
+            container.insertAdjacentHTML('beforeend', toastHtml);
+            var el = document.getElementById(toastId);
+            var bsToast = new bootstrap.Toast(el, { delay: 3500 });
+            bsToast.show();
+            el.addEventListener('hidden.bs.toast', function() { el.remove(); });
+        };
     </script>
+
+    @* ── Server-side TempData Toasts ── *@
+    @if (TempData["Success"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                showToast('success', '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(TempData["Success"]!.ToString()!))');
+            });
+        </script>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                showToast('error', '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(TempData["Error"]!.ToString()!))');
+            });
+        </script>
+    }
+    @if (TempData["Info"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                showToast('info', '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(TempData["Info"]!.ToString()!))');
+            });
+        </script>
+    }
 
     @RenderSection("Scripts", required: false)
 
@@ -821,12 +878,17 @@
     {
         <script>
             function checkChatUnread() {
+                var isChatPage = window.location.pathname.toLowerCase().startsWith('/chat');
+                var badge = document.getElementById('chatUnreadBadge');
+                if (isChatPage) {
+                    if (badge) badge.style.display = 'none';
+                    return;
+                }
                 fetch('/Chat/UnreadCount')
                     .then(function(r) { return r.json(); })
                     .then(function(data) {
-                        var badge = document.getElementById('chatUnreadBadge');
                         if (badge) {
-                            if (data.count > 0) {
+                            if (data && data.count > 0) {
                                 badge.textContent = data.count;
                                 badge.style.display = 'inline-block';
                             } else {

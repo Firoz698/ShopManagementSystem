@@ -126,5 +126,41 @@ namespace ShopManagementSystem.Controllers
             TempData["Success"] = $"Order #{order.Id} has been cancelled.";
             return RedirectToAction("MyOrders", "Cart");
         }
+
+        // GET /Order/Track
+        [AllowAnonymous]
+        public async Task<IActionResult> Track(int? orderId, string? phone, string? trackingNumber)
+        {
+            Order? order = null;
+            var currentUserId = _userManager.GetUserId(User);
+
+            if (!string.IsNullOrWhiteSpace(trackingNumber))
+            {
+                order = await _orderRepo.TrackOrderByTrackingNumberAsync(trackingNumber.Trim());
+            }
+            else if (orderId.HasValue && !string.IsNullOrWhiteSpace(phone))
+            {
+                order = await _orderRepo.TrackOrderAsync(orderId.Value, phone.Trim());
+            }
+            else if (orderId.HasValue && !string.IsNullOrEmpty(currentUserId))
+            {
+                var userOrder = await _orderRepo.TrackOrderByIdAsync(orderId.Value);
+                if (userOrder != null && (userOrder.UserId == currentUserId || User.IsInRole("Admin")))
+                {
+                    order = userOrder;
+                }
+            }
+
+            ViewBag.SearchedOrderId = orderId;
+            ViewBag.SearchedPhone = phone;
+            ViewBag.SearchedTrackingNumber = trackingNumber;
+
+            if (!string.IsNullOrEmpty(currentUserId))
+            {
+                ViewBag.RecentOrders = await _orderRepo.GetUserRecentOrdersAsync(currentUserId, 5);
+            }
+
+            return View(order);
+        }
     }
 }

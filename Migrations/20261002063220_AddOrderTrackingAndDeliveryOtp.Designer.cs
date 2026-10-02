@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShopManagementSystem.Data;
 
@@ -11,9 +12,11 @@ using ShopManagementSystem.Data;
 namespace ShopManagementSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261002063220_AddOrderTrackingAndDeliveryOtp")]
+    partial class AddOrderTrackingAndDeliveryOtp
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -278,9 +281,8 @@ namespace ShopManagementSystem.Migrations
 
                     b.HasIndex("ProductSizeId");
 
-                    b.HasIndex("UserId", "ProductId", "ProductSizeId")
-                        .IsUnique()
-                        .HasFilter("[ProductSizeId] IS NOT NULL");
+                    b.HasIndex("UserId", "ProductId")
+                        .IsUnique();
 
                     b.ToTable("Carts");
                 });
@@ -320,7 +322,7 @@ namespace ShopManagementSystem.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 10, 2, 12, 50, 16, 748, DateTimeKind.Local).AddTicks(5184),
+                            CreatedAt = new DateTime(2026, 10, 2, 12, 32, 19, 703, DateTimeKind.Local).AddTicks(7442),
                             IsActive = true,
                             Name = "Electronics",
                             Slug = "electronics"
@@ -328,7 +330,7 @@ namespace ShopManagementSystem.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 10, 2, 12, 50, 16, 748, DateTimeKind.Local).AddTicks(5186),
+                            CreatedAt = new DateTime(2026, 10, 2, 12, 32, 19, 703, DateTimeKind.Local).AddTicks(7445),
                             IsActive = true,
                             Name = "Clothing",
                             Slug = "clothing"
@@ -336,7 +338,7 @@ namespace ShopManagementSystem.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2026, 10, 2, 12, 50, 16, 748, DateTimeKind.Local).AddTicks(5188),
+                            CreatedAt = new DateTime(2026, 10, 2, 12, 32, 19, 703, DateTimeKind.Local).AddTicks(7447),
                             IsActive = true,
                             Name = "Books",
                             Slug = "books"
@@ -344,7 +346,7 @@ namespace ShopManagementSystem.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2026, 10, 2, 12, 50, 16, 748, DateTimeKind.Local).AddTicks(5190),
+                            CreatedAt = new DateTime(2026, 10, 2, 12, 32, 19, 703, DateTimeKind.Local).AddTicks(7449),
                             IsActive = true,
                             Name = "Home & Garden",
                             Slug = "home-garden"
@@ -1283,7 +1285,7 @@ namespace ShopManagementSystem.Migrations
                             Id = 1,
                             ButtonText = "Shop Now",
                             ButtonUrl = "/Product",
-                            CreatedAt = new DateTime(2026, 10, 2, 12, 50, 16, 748, DateTimeKind.Local).AddTicks(5472),
+                            CreatedAt = new DateTime(2026, 10, 2, 12, 32, 19, 703, DateTimeKind.Local).AddTicks(7642),
                             ImageUrl = "/images/uploads/slider1.jpg",
                             IsActive = true,
                             SortOrder = 1,
@@ -1295,7 +1297,7 @@ namespace ShopManagementSystem.Migrations
                             Id = 2,
                             ButtonText = "View Deals",
                             ButtonUrl = "/Product",
-                            CreatedAt = new DateTime(2026, 10, 2, 12, 50, 16, 748, DateTimeKind.Local).AddTicks(5476),
+                            CreatedAt = new DateTime(2026, 10, 2, 12, 32, 19, 703, DateTimeKind.Local).AddTicks(7645),
                             ImageUrl = "/images/uploads/slider2.jpg",
                             IsActive = true,
                             SortOrder = 2,

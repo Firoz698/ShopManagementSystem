@@ -28,7 +28,7 @@ namespace ShopManagementSystem.Implementations
 
         public async Task<Cart?> GetCartItemAsync(string userId, int productId, int? productSizeId)
         {
-            if (productSizeId.HasValue)
+            if (productSizeId.HasValue && productSizeId.Value > 0)
             {
                 return await _db.Carts.FirstOrDefaultAsync(c =>
                     c.UserId == userId &&
@@ -40,7 +40,7 @@ namespace ShopManagementSystem.Implementations
                 return await _db.Carts.FirstOrDefaultAsync(c =>
                     c.UserId == userId &&
                     c.ProductId == productId &&
-                    c.ProductSizeId == null);
+                    (c.ProductSizeId == null || c.ProductSizeId <= 0));
             }
         }
 
@@ -54,7 +54,16 @@ namespace ShopManagementSystem.Implementations
 
         public async Task AddToCartAsync(string userId, int productId, int? productSizeId, int quantity)
         {
+            if (productSizeId.HasValue && productSizeId.Value <= 0)
+                productSizeId = null;
+
             var cart = await GetCartItemAsync(userId, productId, productSizeId);
+
+            // Fallback: If product has no sizes, check if any cart exists for this user and product
+            if (cart == null && !productSizeId.HasValue)
+            {
+                cart = await _db.Carts.FirstOrDefaultAsync(c => c.UserId == userId && c.ProductId == productId);
+            }
 
             if (cart == null)
             {
@@ -63,11 +72,14 @@ namespace ShopManagementSystem.Implementations
                     UserId = userId,
                     ProductId = productId,
                     ProductSizeId = productSizeId,
-                    Quantity = quantity
+                    Quantity = Math.Max(1, quantity)
                 });
             }
             else
             {
+                if (productSizeId.HasValue)
+                    cart.ProductSizeId = productSizeId;
+
                 var product = await GetActiveProductWithSizesAsync(productId);
                 int maxStock = productSizeId.HasValue
                     ? product?.Sizes?.FirstOrDefault(s => s.Id == productSizeId.Value)?.Stock ?? 0

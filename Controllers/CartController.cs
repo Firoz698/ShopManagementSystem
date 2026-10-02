@@ -14,6 +14,7 @@ namespace ShopManagementSystem.Controllers
     {
         private readonly ICartRepository _cartRepo;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ISslCommerzService _sslService;
         private readonly INotificationService _notificationService;
         private readonly IPaymentMethodRepository _paymentMethodRepo;
@@ -21,12 +22,14 @@ namespace ShopManagementSystem.Controllers
         public CartController(
             ICartRepository cartRepo,
             UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
             ISslCommerzService sslService,
             INotificationService notificationService,
             IPaymentMethodRepository paymentMethodRepo)
         {
             _cartRepo = cartRepo;
             _userManager = userManager;
+            _signInManager = signInManager;
             _sslService = sslService;
             _notificationService = notificationService;
             _paymentMethodRepo = paymentMethodRepo;
@@ -41,14 +44,34 @@ namespace ShopManagementSystem.Controllers
             if (User.Identity?.IsAuthenticated != true)
                 return Json(new { count = 0 });
 
-            var count = await _cartRepo.GetCartCountAsync(UserId);
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null && !string.IsNullOrEmpty(User.Identity?.Name))
+            {
+                user = await _userManager.FindByEmailAsync(User.Identity.Name)
+                    ?? await _userManager.FindByNameAsync(User.Identity.Name);
+            }
+
+            if (user == null)
+                return Json(new { count = 0 });
+
+            var count = await _cartRepo.GetCartCountAsync(user.Id);
             return Json(new { count });
         }
 
         // GET /Cart
         public async Task<IActionResult> Index()
         {
-            var items = await _cartRepo.GetCartItemsAsync(UserId);
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null && !string.IsNullOrEmpty(User.Identity?.Name))
+            {
+                user = await _userManager.FindByEmailAsync(User.Identity.Name)
+                    ?? await _userManager.FindByNameAsync(User.Identity.Name);
+                if (user != null) await _signInManager.SignInAsync(user, isPersistent: false);
+            }
+
+            if (user == null) return RedirectToAction("Login", "Account");
+
+            var items = await _cartRepo.GetCartItemsAsync(user.Id);
 
             var vm = new CartViewModel
             {
@@ -73,6 +96,16 @@ namespace ShopManagementSystem.Controllers
         [HttpPost]
         public async Task<IActionResult> Add(int productId, int quantity = 1, int? productSizeId = null)
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null && !string.IsNullOrEmpty(User.Identity?.Name))
+            {
+                user = await _userManager.FindByEmailAsync(User.Identity.Name)
+                    ?? await _userManager.FindByNameAsync(User.Identity.Name);
+                if (user != null) await _signInManager.SignInAsync(user, isPersistent: false);
+            }
+
+            if (user == null) return RedirectToAction("Login", "Account");
+
             var product = await _cartRepo.GetActiveProductWithSizesAsync(productId);
 
             if (product == null || !product.IsActive)
@@ -84,11 +117,11 @@ namespace ShopManagementSystem.Controllers
             if (productSizeId.HasValue && productSizeId.Value <= 0)
                 productSizeId = null;
 
-            if (productSizeId == null && product.Sizes.Any(s => s.IsActive && s.Stock > 0))
+            if (productSizeId == null && product.Sizes != null && product.Sizes.Any(s => s.IsActive && s.Stock > 0))
                 productSizeId = product.Sizes.First(s => s.IsActive && s.Stock > 0).Id;
 
             int availableStock = productSizeId.HasValue
-                ? product.Sizes.FirstOrDefault(s => s.Id == productSizeId.Value)?.Stock ?? 0
+                ? product.Sizes?.FirstOrDefault(s => s.Id == productSizeId.Value)?.Stock ?? 0
                 : product.Stock;
 
             if (availableStock < quantity)
@@ -97,7 +130,7 @@ namespace ShopManagementSystem.Controllers
                 return RedirectToAction("Detail", "Product", new { id = productId });
             }
 
-            await _cartRepo.AddToCartAsync(UserId, productId, productSizeId, quantity);
+            await _cartRepo.AddToCartAsync(user.Id, productId, productSizeId, quantity);
             TempData["Success"] = "Product added to cart.";
             return RedirectToAction("Index");
         }
@@ -111,9 +144,24 @@ namespace ShopManagementSystem.Controllers
                 if (User.Identity?.IsAuthenticated != true)
                     return Json(new { success = false, message = "Please login first to add items to your cart.", requireLogin = true });
 
-                var userId = _userManager.GetUserId(User);
-                if (string.IsNullOrEmpty(userId))
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null && !string.IsNullOrEmpty(User.Identity?.Name))
+                {
+                    user = await _userManager.FindByEmailAsync(User.Identity.Name)
+                        ?? await _userManager.FindByNameAsync(User.Identity.Name);
+                    if (user != null)
+                    {
+                        await _signInManager.SignInAsync(user, isPersistent: false);
+                    }
+                }
+
+                if (user == null)
+                {
+                    await _signInManager.SignOutAsync();
                     return Json(new { success = false, message = "Please login first to add items to your cart.", requireLogin = true });
+                }
+
+                var userId = user.Id;
 
                 var product = await _cartRepo.GetActiveProductWithSizesAsync(productId);
 
@@ -136,11 +184,12 @@ namespace ShopManagementSystem.Controllers
                 await _cartRepo.AddToCartAsync(userId, productId, productSizeId, quantity);
 
                 var cartCount = await _cartRepo.GetCartCountAsync(userId);
-                return Json(new { success = true, cartCount, message = "Product added to cart." });
+                return Json(new { success = true, cartCount, message = "Product added to cart successfully!" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error adding to cart: " + ex.Message });
+                var errorMsg = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                return Json(new { success = false, message = "Error adding to cart: " + errorMsg });
             }
         }
 

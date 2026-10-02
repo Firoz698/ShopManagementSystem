@@ -33,6 +33,7 @@ namespace ShopManagementSystem.Data
         public DbSet<NotificationSetting> NotificationSettings { get; set; }
         public DbSet<PaymentMethodSetting> PaymentMethodSettings { get; set; }
         public DbSet<OtpVerification> OtpVerifications { get; set; }
+        public DbSet<OrderTrackingLog> OrderTrackingLogs { get; set; }
 
         public DbSet<Menu> Menus { get; set; }
         public DbSet<UserMenuPermission> UserMenuPermissions { get; set; }
@@ -65,6 +66,20 @@ namespace ShopManagementSystem.Data
                 .HasOne(p => p.Menu)
                 .WithMany(m => m.UserPermissions)
                 .HasForeignKey(p => p.MenuId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Order delivery assignment
+            builder.Entity<Order>()
+                .HasOne(o => o.AssignedEmployee)
+                .WithMany()
+                .HasForeignKey(o => o.AssignedEmployeeId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // Order Tracking Logs
+            builder.Entity<OrderTrackingLog>()
+                .HasOne(l => l.Order)
+                .WithMany(o => o.TrackingLogs)
+                .HasForeignKey(l => l.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<ReturnRequest>()
@@ -173,7 +188,7 @@ namespace ShopManagementSystem.Data
 
             // Unique constraints
             builder.Entity<Cart>()
-                .HasIndex(c => new { c.UserId, c.ProductId })
+                .HasIndex(c => new { c.UserId, c.ProductId, c.ProductSizeId })
                 .IsUnique();
 
             builder.Entity<Wishlist>()

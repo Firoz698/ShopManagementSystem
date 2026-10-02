@@ -198,6 +198,23 @@
         const userInitial = '@(currentUser?.FullName?.FirstOrDefault().ToString().ToUpper() ?? "U")';
         const adminPhoto = '@Html.Raw(adminPhoto ?? "")';
 
+        function markMessagesRead() {
+            var badge = document.getElementById('chatUnreadBadge');
+            if (badge) {
+                badge.textContent = '0';
+                badge.style.display = 'none';
+            }
+            if (typeof connection !== 'undefined' && connection.state === signalR.HubConnectionState.Connected) {
+                connection.invoke("UserMarkAsRead").catch(function() { });
+            } else {
+                fetch('/Chat/MarkRead', { method: 'POST' }).catch(function() { });
+            }
+        }
+
+        // Hide navbar chat badge immediately when on chat page
+        document.addEventListener('DOMContentLoaded', markMessagesRead);
+        window.addEventListener('focus', markMessagesRead);
+
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/chatHub")
             .withAutomaticReconnect()
@@ -207,7 +224,12 @@
             if (data.isFromAdmin) {
                 appendAdminMessage(data);
                 playNotificationSound();
+                markMessagesRead();
             }
+        });
+
+        connection.on("UserUnreadCountUpdated", function(count) {
+            markMessagesRead();
         });
 
         connection.on("MessageSent", function(data) {
@@ -224,6 +246,7 @@
         connection.start()
             .then(function() {
                 console.log("Chat connected");
+                markMessagesRead();
                 scrollToBottom();
             })
             .catch(function(err) {
@@ -240,6 +263,8 @@
 
             var emptyChat = document.getElementById('emptyChat');
             if (emptyChat) emptyChat.style.display = 'none';
+
+            markMessagesRead();
 
             connection.invoke("SendMessageToAdmin", msg).catch(function(err) {
                 console.error("Send error:", err);
@@ -317,5 +342,4 @@
             } catch (e) { }
         }
     </script>
-}
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ShopManagementSystem.Data;
 using ShopManagementSystem.Models;
 using ShopManagementSystem.Repository.Interfaces;
@@ -108,6 +108,49 @@ namespace ShopManagementSystem.Repository.Implementations
             order.CancelledAt = DateTime.Now;
 
             await _db.SaveChangesAsync();
+        }
+
+        // ── Order Tracking ───────────────────────────────────────────────────────
+
+        public async Task<Order?> TrackOrderAsync(int orderId, string phone)
+        {
+            var cleanPhone = phone.Trim().Replace(" ", "").Replace("-", "");
+            return await _db.Orders
+                .Include(o => o.User)
+                .Include(o => o.AssignedEmployee)
+                .Include(o => o.OrderDetails).ThenInclude(od => od.Product).ThenInclude(p => p!.Images)
+                .Include(o => o.TrackingLogs.OrderBy(t => t.Timestamp))
+                .FirstOrDefaultAsync(o => o.Id == orderId && o.Phone.Replace(" ", "").Replace("-", "").EndsWith(cleanPhone));
+        }
+
+        public async Task<Order?> TrackOrderByTrackingNumberAsync(string trackingNumber)
+        {
+            var tn = trackingNumber.Trim();
+            return await _db.Orders
+                .Include(o => o.User)
+                .Include(o => o.AssignedEmployee)
+                .Include(o => o.OrderDetails).ThenInclude(od => od.Product).ThenInclude(p => p!.Images)
+                .Include(o => o.TrackingLogs.OrderBy(t => t.Timestamp))
+                .FirstOrDefaultAsync(o => o.TrackingNumber == tn);
+        }
+
+        public async Task<Order?> TrackOrderByIdAsync(int orderId)
+        {
+            return await _db.Orders
+                .Include(o => o.User)
+                .Include(o => o.AssignedEmployee)
+                .Include(o => o.OrderDetails).ThenInclude(od => od.Product).ThenInclude(p => p!.Images)
+                .Include(o => o.TrackingLogs.OrderBy(t => t.Timestamp))
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+        }
+
+        public async Task<List<Order>> GetUserRecentOrdersAsync(string userId, int count = 5)
+        {
+            return await _db.Orders
+                .Where(o => o.UserId == userId)
+                .OrderByDescending(o => o.OrderDate)
+                .Take(count)
+                .ToListAsync();
         }
     }
 }
