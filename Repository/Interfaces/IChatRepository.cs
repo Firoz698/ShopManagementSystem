@@ -9,5 +9,8 @@ namespace ShopManagementSystem.Repository.Interfaces
         Task MarkMessagesAsReadAsync(string userId);
         Task ResetUnreadCountAsync(ChatSession session);
         Task<int> GetUnreadCountAsync(string userId);
+
+ // ── : User Admin message ──
+        Task<ChatMessage> AddUserMessageAsync(string userId, string messageText);
     }
 }

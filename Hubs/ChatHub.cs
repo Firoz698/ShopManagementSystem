@@ -1,49 +1,58 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using ShopManagementSystem.Data;
 using ShopManagementSystem.Models;
+using ShopManagementSystem.Services;
+using System.Collections.Concurrent;
 
 namespace ShopManagementSystem.Hubs
 {
     [Authorize]
     public class ChatHub : Hub
     {
+        private const int MaxMessageLength = 1000;
+
         private readonly ApplicationDbContext _db;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IPermissionChecker _permissionChecker;
 
-        // Online users track করার জন্য static dictionary
-        private static readonly Dictionary<string, string> _onlineUsers = new();
+        // userId -> all active connectionIds for that user (multi-tab/device safe)
+        private static readonly ConcurrentDictionary<string, HashSet<string>> _onlineUsers = new();
+        private static readonly object _onlineLock = new();
 
-        public ChatHub(ApplicationDbContext db, UserManager<ApplicationUser> userManager)
+        public ChatHub(ApplicationDbContext db, UserManager<ApplicationUser> userManager, IPermissionChecker permissionChecker)
         {
             _db = db;
             _userManager = userManager;
+            _permissionChecker = permissionChecker;
         }
 
         // ── Connection ────────────────────────────────────────────────────────
         public override async Task OnConnectedAsync()
         {
             var user = await _userManager.GetUserAsync(Context.User!);
-            if (user == null) return;
-
-            _onlineUsers[user.Id] = Context.ConnectionId;
-
-            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
-            if (isAdmin)
+            if (user == null)
             {
-                // Admin সব user এর group এ join করবে
+                await base.OnConnectedAsync();
+                return;
+            }
+
+            AddConnection(user.Id, Context.ConnectionId);
+
+            // Check actual "Chat" permission - if user has permission, join Admins group
+            var perm = await _permissionChecker.GetPermissionsAsync(Context.User!, "Chat");
+            if (perm.CanView)
+            {
                 await Groups.AddToGroupAsync(Context.ConnectionId, "Admins");
-                // সব unread count পাঠাও
                 await Clients.Caller.SendAsync("AdminConnected");
             }
             else
             {
-                // User তার নিজের group এ join করবে
+                // Regular customer
                 await Groups.AddToGroupAsync(Context.ConnectionId, $"User_{user.Id}");
 
-                // ChatSession নিশ্চিত করো
                 var session = await _db.ChatSessions.FirstOrDefaultAsync(s => s.UserId == user.Id);
                 if (session == null)
                 {
@@ -52,7 +61,6 @@ namespace ShopManagementSystem.Hubs
                     await _db.SaveChangesAsync();
                 }
 
-                // Admin কে জানাও user online হয়েছে
                 await Clients.Group("Admins").SendAsync("UserOnline", new
                 {
                     userId = user.Id,
@@ -69,23 +77,30 @@ namespace ShopManagementSystem.Hubs
             var user = await _userManager.GetUserAsync(Context.User!);
             if (user != null)
             {
-                _onlineUsers.Remove(user.Id);
-                var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
-                if (!isAdmin)
+                var stillOnline = RemoveConnection(user.Id, Context.ConnectionId);
+
+                // Only send "Offline" when user has no remaining active connections
+                if (!stillOnline)
                 {
-                    await Clients.Group("Admins").SendAsync("UserOffline", user.Id);
+                    var perm = await _permissionChecker.GetPermissionsAsync(Context.User!, "Chat");
+                    if (!perm.CanView)
+                    {
+                        await Clients.Group("Admins").SendAsync("UserOffline", user.Id);
+                    }
                 }
             }
             await base.OnDisconnectedAsync(exception);
         }
 
-        // ── User → Admin মেসেজ পাঠানো ────────────────────────────────────────
+        // ── User -> Admin Send Message ────────────────────────────────────────
         public async Task SendMessageToAdmin(string message)
         {
             var user = await _userManager.GetUserAsync(Context.User!);
-            if (user == null || string.IsNullOrWhiteSpace(message)) return;
+            if (user == null) return;
 
-            // Session update
+            message = (message ?? string.Empty).Trim();
+            if (string.IsNullOrEmpty(message) || message.Length > MaxMessageLength) return;
+
             var session = await _db.ChatSessions.FirstOrDefaultAsync(s => s.UserId == user.Id);
             if (session == null)
             {
@@ -95,12 +110,11 @@ namespace ShopManagementSystem.Hubs
             session.LastMessageAt = DateTime.Now;
             session.UnreadCount++;
 
-            // Message save
             var chatMsg = new ChatMessage
             {
                 SenderId = user.Id,
                 ReceiverId = "admin",
-                Message = message.Trim(),
+                Message = message,
                 IsFromAdmin = false,
                 SentAt = DateTime.Now
             };
@@ -118,35 +132,48 @@ namespace ShopManagementSystem.Hubs
                 isFromAdmin = false
             };
 
-            // Admin কে পাঠাও
+            var totalUnread = await _db.ChatSessions.SumAsync(s => s.UnreadCount);
             await Clients.Group("Admins").SendAsync("ReceiveMessage", payload);
-
-            // নিজেকেও confirm পাঠাও
+            await Clients.Group("Admins").SendAsync("UnreadCountUpdated", new
+            {
+                userId = user.Id,
+                unreadCount = session.UnreadCount,
+                totalUnread
+            });
             await Clients.Caller.SendAsync("MessageSent", payload);
         }
 
-        // ── Admin → User মেসেজ পাঠানো ────────────────────────────────────────
+        // ── Admin -> User Send Message ────────────────────────────────────────
         public async Task SendMessageToUser(string targetUserId, string message)
         {
             var admin = await _userManager.GetUserAsync(Context.User!);
-            if (admin == null || string.IsNullOrWhiteSpace(message)) return;
+            if (admin == null || string.IsNullOrWhiteSpace(targetUserId)) return;
 
-            var isAdmin = await _userManager.IsInRoleAsync(admin, "Admin");
-            if (!isAdmin) return;
+            message = (message ?? string.Empty).Trim();
+            if (string.IsNullOrEmpty(message) || message.Length > MaxMessageLength) return;
 
-            // Session এর unread reset
-            var session = await _db.ChatSessions.FirstOrDefaultAsync(s => s.UserId == targetUserId);
-            if (session != null)
+            // Check actual permission - reject if CanCreate is false
+            var perm = await _permissionChecker.GetPermissionsAsync(Context.User!, "Chat");
+            if (!perm.CanCreate)
             {
-                session.LastMessageAt = DateTime.Now;
+                await Clients.Caller.SendAsync("Error", "You do not have permission to send messages.");
+                return;
             }
 
-            // Message save
+            // Create session if it doesn't exist
+            var session = await _db.ChatSessions.FirstOrDefaultAsync(s => s.UserId == targetUserId);
+            if (session == null)
+            {
+                session = new ChatSession { UserId = targetUserId };
+                _db.ChatSessions.Add(session);
+            }
+            session.LastMessageAt = DateTime.Now;
+
             var chatMsg = new ChatMessage
             {
                 SenderId = admin.Id,
                 ReceiverId = targetUserId,
-                Message = message.Trim(),
+                Message = message,
                 IsFromAdmin = true,
                 SentAt = DateTime.Now
             };
@@ -163,36 +190,98 @@ namespace ShopManagementSystem.Hubs
                 isFromAdmin = true
             };
 
-            // User কে পাঠাও
             await Clients.Group($"User_{targetUserId}").SendAsync("ReceiveMessage", payload);
+            var customerUnread = await _db.ChatMessages
+                .CountAsync(m => m.ReceiverId == targetUserId && !m.IsRead && m.IsFromAdmin);
+            await Clients.Group($"User_{targetUserId}").SendAsync("UserUnreadCountUpdated", customerUnread);
 
-            // Admin নিজেও দেখবে
-            await Clients.Caller.SendAsync("MessageSent", new
-            {
-                payload,
-                targetUserId
-            });
+            await Clients.Caller.SendAsync("MessageSent", new { payload, targetUserId });
         }
 
-        // ── Messages পড়া হয়েছে mark করা ─────────────────────────────────────
-        public async Task MarkAsRead(string userId)
+        // ── Mark Messages as Read ─────────────────────────────────────────────
+        public async Task MarkAsRead(string? userId = null)
         {
-            var admin = await _userManager.GetUserAsync(Context.User!);
-            if (admin == null) return;
+            var caller = await _userManager.GetUserAsync(Context.User!);
+            if (caller == null) return;
 
-            var session = await _db.ChatSessions.FirstOrDefaultAsync(s => s.UserId == userId);
-            if (session != null)
+            var perm = await _permissionChecker.GetPermissionsAsync(Context.User!, "Chat");
+            if (perm.CanView)
             {
-                session.UnreadCount = 0;
-                await _db.SaveChangesAsync();
+                var targetId = string.IsNullOrWhiteSpace(userId) ? caller.Id : userId;
+                var session = await _db.ChatSessions.FirstOrDefaultAsync(s => s.UserId == targetId);
+                if (session != null)
+                {
+                    session.UnreadCount = 0;
+                    await _db.SaveChangesAsync();
+                }
+
+                await _db.ChatMessages
+                    .Where(m => m.SenderId == targetId && !m.IsRead)
+                    .ExecuteUpdateAsync(s => s.SetProperty(m => m.IsRead, true));
+
+                var totalUnread = await _db.ChatSessions.SumAsync(s => s.UnreadCount);
+                await Clients.Group("Admins").SendAsync("UnreadCountUpdated", new
+                {
+                    userId = targetId,
+                    unreadCount = 0,
+                    totalUnread
+                });
+                await Clients.Group($"User_{targetId}").SendAsync("MessagesMarkedAsRead");
             }
+            else
+            {
+                // Customer marking admin messages as read
+                await _db.ChatMessages
+                    .Where(m => m.ReceiverId == caller.Id && !m.IsRead && m.IsFromAdmin)
+                    .ExecuteUpdateAsync(s => s.SetProperty(m => m.IsRead, true));
+
+                await Clients.Group($"User_{caller.Id}").SendAsync("UserUnreadCountUpdated", 0);
+            }
+        }
+
+        public async Task UserMarkAsRead()
+        {
+            var user = await _userManager.GetUserAsync(Context.User!);
+            if (user == null) return;
 
             await _db.ChatMessages
-                .Where(m => m.SenderId == userId && !m.IsRead)
+                .Where(m => m.ReceiverId == user.Id && !m.IsRead && m.IsFromAdmin)
                 .ExecuteUpdateAsync(s => s.SetProperty(m => m.IsRead, true));
+
+            await Clients.Group($"User_{user.Id}").SendAsync("UserUnreadCountUpdated", 0);
         }
 
-        // ── চেক করো user online কিনা ─────────────────────────────────────────
+        // ── Check if user is online ──────────────────────────────────────────
         public bool IsUserOnline(string userId) => _onlineUsers.ContainsKey(userId);
+
+        // ── Multi-connection safe helpers ───────────────────────────────────
+        private static void AddConnection(string userId, string connectionId)
+        {
+            lock (_onlineLock)
+            {
+                if (!_onlineUsers.TryGetValue(userId, out var set))
+                {
+                    set = new HashSet<string>();
+                    _onlineUsers[userId] = set;
+                }
+                set.Add(connectionId);
+            }
+        }
+
+        /// <returns>true if user still has other active connections</returns>
+        private static bool RemoveConnection(string userId, string connectionId)
+        {
+            lock (_onlineLock)
+            {
+                if (!_onlineUsers.TryGetValue(userId, out var set)) return false;
+                set.Remove(connectionId);
+                if (set.Count == 0)
+                {
+                    _onlineUsers.TryRemove(userId, out _);
+                    return false;
+                }
+                return true;
+            }
+        }
     }
 }

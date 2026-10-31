@@ -17,12 +17,23 @@ namespace ShopManagementSystem.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+        [MaxLength(300)]
+        public string? ProfilePhoto { get; set; }
+
+        [MaxLength(20)]
+        public string? Gender { get; set; }
+
+        public DateTime? DateOfBirth { get; set; }
+
+        [MaxLength(20)]
+        public string UserType { get; set; } = "Customer";
+
         public ICollection<Order> Orders { get; set; } = new List<Order>();
         public ICollection<Cart> CartItems { get; set; } = new List<Cart>();
         public ICollection<Wishlist> Wishlist { get; set; } = new List<Wishlist>();
         public ICollection<Review> Reviews { get; set; } = new List<Review>();
+        public ICollection<UserMenuPermission> MenuPermissions { get; set; } = new List<UserMenuPermission>();
     }
-
     // ── Category ────────────────────────────────────────────────────────────────
     public class Category
     {
@@ -166,7 +177,7 @@ namespace ShopManagementSystem.Models
         [Required]
         public int ProductId { get; set; }
 
-        // ✅ nullable — Size না থাকলে null হবে, FK error হবে না
+        // Nullable - null if no size variant is selected
         public int? ProductSizeId { get; set; }
 
         [Required, Range(1, 999)]
@@ -221,9 +232,8 @@ namespace ShopManagementSystem.Models
         [MaxLength(50)]
         public string PaymentMethod { get; set; } = "Cash on Delivery";
 
-        // ✅ নতুন — ঢাকার ভিতর / ঢাকার বাইরে
         [MaxLength(50)]
-        public string DeliveryZone { get; set; } = "ঢাকার ভিতর";
+        public string DeliveryZone { get; set; } = "Inside Dhaka";
 
         [MaxLength(50)]
         public string Status { get; set; } = "Pending";
@@ -235,12 +245,46 @@ namespace ShopManagementSystem.Models
         public DateTime OrderDate { get; set; } = DateTime.Now;
         public DateTime? UpdatedAt { get; set; }
 
+        // Order Cancel details
+        public string? CancelReason { get; set; }
+        public DateTime? CancelledAt { get; set; }
+
+        // Manual Payment (bKash/Nagad/Rocket/Bank)
+        public int? PaymentMethodSettingId { get; set; }
+        [MaxLength(50)]
+        public string? SenderNumber { get; set; }
+        [MaxLength(100)]
+        public string? PaymentTransactionId { get; set; }
+
+        // Delivery & Tracking
+        [MaxLength(50)]
+        public string? TrackingNumber { get; set; }
+
+        public string? AssignedEmployeeId { get; set; }
+        [ForeignKey("AssignedEmployeeId")]
+        public ApplicationUser? AssignedEmployee { get; set; }
+
+        public DateTime? AssignedAt { get; set; }
+        public DateTime? OutForDeliveryAt { get; set; }
+        public DateTime? DeliveredAt { get; set; }
+        public DateTime? EstimatedDeliveryDate { get; set; }
+
+        [MaxLength(10)]
+        public string? DeliveryOtp { get; set; }
+        public bool IsOtpVerified { get; set; }
+
+        [MaxLength(500)]
+        public string? DeliveryNotes { get; set; }
+
         [ForeignKey("UserId")]
         public ApplicationUser? User { get; set; }
 
-        public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
-    }
+        [ForeignKey("PaymentMethodSettingId")]
+        public PaymentMethodSetting? PaymentMethodSetting { get; set; }
 
+        public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+        public ICollection<OrderTrackingLog> TrackingLogs { get; set; } = new List<OrderTrackingLog>();
+    }
     // ── Order Detail ────────────────────────────────────────────────────────────
     public class OrderDetail
     {
@@ -357,10 +401,10 @@ namespace ShopManagementSystem.Models
         public string? BannerImageUrl { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal ComboPrice { get; set; }       // কম্বো মূল্য
+        public decimal ComboPrice { get; set; }       // Combo price
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal? OriginalPrice { get; set; }   // মূল মূল্য (auto-calculated)
+        public decimal? OriginalPrice { get; set; }   // Original price (auto-calculated)
 
         public bool IsActive { get; set; } = true;
 
@@ -373,7 +417,7 @@ namespace ShopManagementSystem.Models
         public ICollection<ComboItem> Items { get; set; } = new List<ComboItem>();
     }
 
-    // ── Combo Item (কম্বোর ভেতরে যে প্রোডাক্টগুলো আছে) ─────────────────────────
+    // ── Combo Item (products included in the combo) ───────────────────────────
     public class ComboItem
     {
         public int Id { get; set; }
@@ -388,7 +432,7 @@ namespace ShopManagementSystem.Models
         public Product? Product { get; set; }
     }
 
-    // ── Homepage Section (ডায়নামিক সেকশন) ──────────────────────────────────────
+    // ── Homepage Section (Dynamic Section) ────────────────────────────────────
     public class HomepageSection
     {
         public int Id { get; set; }
@@ -410,10 +454,10 @@ namespace ShopManagementSystem.Models
         public int SortOrder { get; set; } = 0;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        // Category section এর জন্য
+        // For category sections
         public ICollection<HomepageSectionCategory> Categories { get; set; } = new List<HomepageSectionCategory>();
 
-        // Product section এর জন্য
+        // For product sections
         public ICollection<HomepageSectionProduct> Products { get; set; } = new List<HomepageSectionProduct>();
     }
 
@@ -441,6 +485,33 @@ namespace ShopManagementSystem.Models
 
         [ForeignKey("ProductId")]
         public Product? Product { get; set; }
+    }
+
+    // ── Order Tracking Log ───────────────────────────────────────────────────────
+    public class OrderTrackingLog
+    {
+        public int Id { get; set; }
+        public int OrderId { get; set; }
+
+        [Required, MaxLength(50)]
+        public string Status { get; set; } = string.Empty;
+
+        [Required, MaxLength(150)]
+        public string Title { get; set; } = string.Empty;
+
+        [MaxLength(500)]
+        public string? Description { get; set; }
+
+        [MaxLength(150)]
+        public string? Location { get; set; }
+
+        [MaxLength(100)]
+        public string? UpdatedBy { get; set; }
+
+        public DateTime Timestamp { get; set; } = DateTime.Now;
+
+        [ForeignKey("OrderId")]
+        public Order? Order { get; set; }
     }
 
 }

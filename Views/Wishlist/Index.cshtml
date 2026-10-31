@@ -1,16 +1,16 @@
 @model List<ShopManagementSystem.Models.Wishlist>
-@{ ViewData["Title"] = "উইশলিস্ট"; }
+@{ ViewData["Title"] = "Wishlist"; }
 
 <div class="container my-4">
-    <h4 class="fw-bold mb-4"><i class="bi bi-heart-fill text-danger me-2"></i>আমার উইশলিস্ট</h4>
+    <h4 class="fw-bold mb-4"><i class="bi bi-heart-fill text-danger me-2"></i>My Wishlist</h4>
 
     @if (!Model.Any())
     {
         <div class="text-center py-5 text-muted">
             <i class="bi bi-heart display-2 d-block mb-3 opacity-25"></i>
-            <h5>উইশলিস্ট খালি</h5>
-            <p class="small">পছন্দের পণ্যগুলো উইশলিস্টে সেভ করুন।</p>
-            <a asp-controller="Product" asp-action="Index" class="btn btn-dark mt-2">প্রোডাক্ট দেখুন</a>
+            <h5>Your wishlist is empty</h5>
+            <p class="small">Save your favorite products to your wishlist.</p>
+            <a asp-controller="Product" asp-action="Index" class="btn btn-dark mt-2">Explore Products</a>
         </div>
     }
     else
@@ -29,7 +29,7 @@
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="id" value="@item.Id" />
                             <button type="submit" class="btn btn-sm btn-light rounded-circle shadow-sm"
-                                    title="সরান" onclick="return confirm('উইশলিস্ট থেকে সরাবেন?')">
+                                    title="Remove" onclick="return confirm('Remove this item from your wishlist?')">
                                 <i class="bi bi-x text-danger"></i>
                             </button>
                         </form>
@@ -62,13 +62,13 @@
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="productId" value="@p.Id" />
                                     <button class="btn btn-dark btn-sm w-100">
-                                        <i class="bi bi-cart-plus me-1"></i>কার্টে যোগ করুন
+                                        <i class="bi bi-cart-plus me-1"></i>Add to Cart
                                     </button>
                                 </form>
                             }
                             else
                             {
-                                <button class="btn btn-secondary btn-sm w-100" disabled>স্টক নেই</button>
+                                <button class="btn btn-secondary btn-sm w-100" disabled>Out of Stock</button>
                             }
                         </div>
                     </div>
@@ -77,3 +77,4 @@
         </div>
     }
 </div>
+

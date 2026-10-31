@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +19,7 @@ namespace ShopManagementSystem.Controllers
 
         private string? UserId => _userManager.GetUserId(User);
 
-        // GET /Combo — সব active combo
+        // GET /Combo - all active combos
         public async Task<IActionResult> Index()
         {
             var now = DateTime.Now;
@@ -50,7 +50,7 @@ namespace ShopManagementSystem.Controllers
             return View(combo);
         }
 
-        // POST /Combo/AddToCart/5 — পুরো combo কার্টে যোগ করো
+        // POST /Combo/AddToCart/5 - add entire combo to cart
         [HttpPost, Authorize]
         public async Task<IActionResult> AddToCart(int id)
         {
@@ -62,7 +62,7 @@ namespace ShopManagementSystem.Controllers
 
             if (combo == null)
             {
-                TempData["Error"] = "কম্বো অফার পাওয়া যায়নি।";
+                TempData["Error"] = "Combo offer not found.";
                 return RedirectToAction("Index");
             }
 
@@ -71,12 +71,12 @@ namespace ShopManagementSystem.Controllers
             {
                 if (item.Product!.Stock < item.Quantity)
                 {
-                    TempData["Error"] = $"'{item.Product.Name}' এর পর্যাপ্ত স্টক নেই।";
+                    TempData["Error"] = $"'{item.Product.Name}' does not have enough stock.";
                     return RedirectToAction("Detail", new { id });
                 }
             }
 
-            // প্রতিটি product কার্টে যোগ করো
+            // Add each product to cart
             foreach (var item in combo.Items)
             {
                 var cart = await _db.Carts.FirstOrDefaultAsync(c =>
@@ -98,7 +98,7 @@ namespace ShopManagementSystem.Controllers
             }
 
             await _db.SaveChangesAsync();
-            TempData["Success"] = $"'{combo.Title}' কম্বো কার্টে যোগ হয়েছে!";
+            TempData["Success"] = $"'{combo.Title}' combo has been added to cart!";
             return RedirectToAction("Index", "Cart");
         }
     }

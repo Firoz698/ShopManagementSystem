@@ -1,4 +1,4 @@
-﻿@model ShopManagementSystem.Models.ComboOffer
+@model ShopManagementSystem.Models.ComboOffer
 @{
     ViewData["Title"] = Model.Title;
     var allItems = Model.Items.ToList();
@@ -12,8 +12,8 @@
 <div class="container my-4">
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb small">
-            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">হোম</a></li>
-            <li class="breadcrumb-item"><a asp-controller="Combo" asp-action="Index">কম্বো অফার</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Combo" asp-action="Index">Combo Offers</a></li>
             <li class="breadcrumb-item active">@Model.Title</li>
         </ol>
     </nav>
@@ -66,16 +66,16 @@
             @if (Model.EndDate.HasValue && timeLeft > 0)
             {
                 <div class="card border-0 shadow-sm mt-3 bg-dark text-white text-center p-3">
-                    <div class="small mb-2 opacity-75">⏳ অফার শেষ হতে বাকি</div>
+                    <div class="small mb-2 opacity-75">⏳ Offer Ends In</div>
                     <div class="d-flex justify-content-center gap-3" id="detailCountdown"
                          data-seconds="@((int)timeLeft)">
-                        <div><div class="fs-3 fw-bold" id="ct_d">00</div><div class="small opacity-75">দিন</div></div>
+                        <div><div class="fs-3 fw-bold" id="ct_d">00</div><div class="small opacity-75">Days</div></div>
                         <div class="fs-3 fw-bold opacity-50">:</div>
-                        <div><div class="fs-3 fw-bold" id="ct_h">00</div><div class="small opacity-75">ঘণ্টা</div></div>
+                        <div><div class="fs-3 fw-bold" id="ct_h">00</div><div class="small opacity-75">Hours</div></div>
                         <div class="fs-3 fw-bold opacity-50">:</div>
-                        <div><div class="fs-3 fw-bold" id="ct_m">00</div><div class="small opacity-75">মিনিট</div></div>
+                        <div><div class="fs-3 fw-bold" id="ct_m">00</div><div class="small opacity-75">Mins</div></div>
                         <div class="fs-3 fw-bold opacity-50">:</div>
-                        <div><div class="fs-3 fw-bold" id="ct_s">00</div><div class="small opacity-75">সেকেন্ড</div></div>
+                        <div><div class="fs-3 fw-bold" id="ct_s">00</div><div class="small opacity-75">Secs</div></div>
                     </div>
                 </div>
             }
@@ -85,7 +85,7 @@
         <div class="col-lg-7">
             @if (savePct > 0)
             {
-                <span class="badge bg-danger mb-2 px-3 py-2">@savePct% সাশ্রয়</span>
+                <span class="badge bg-danger mb-2 px-3 py-2">Save @savePct%</span>
             }
 
             <h2 class="fw-bold mb-2">@Model.Title</h2>
@@ -97,7 +97,7 @@
             <!-- Products included -->
             <div class="card border-0 bg-light mb-4">
                 <div class="card-header bg-transparent border-0 fw-semibold">
-                    📦 এই কম্বোতে যা যা আছে
+                    📦 Products included in this combo
                 </div>
                 <div class="card-body pt-0">
                     @foreach (var item in allItems)
@@ -114,7 +114,7 @@
                                 <div class="fw-semibold small">@item.Product?.Name</div>
                                 <div class="text-muted small">@item.Product?.Category?.Name</div>
                                 <div class="small">
-                                    একক মূল্য: <span class="text-muted text-decoration-line-through">৳@pPrice.ToString("N0")</span>
+                                    Unit Price: <span class="text-muted text-decoration-line-through">৳@pPrice.ToString("N0")</span>
                                     @if (item.Quantity > 1)
                                     {
                                         <span class="ms-1">× @item.Quantity</span>
@@ -138,17 +138,17 @@
                     @if (Model.OriginalPrice.HasValue)
                     {
                         <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">আলাদাভাবে কিনলে</span>
+                            <span class="text-muted">Individual Total</span>
                             <span class="text-muted text-decoration-line-through">৳@Model.OriginalPrice.Value.ToString("N0")</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
-                            <span class="text-success fw-medium">আপনার সাশ্রয়</span>
+                            <span class="text-success fw-medium">Your Savings</span>
                             <span class="text-success fw-bold">-৳@savings.ToString("N0")</span>
                         </div>
                         <hr class="my-2" />
                     }
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="fw-bold fs-5">কম্বো মূল্য</span>
+                        <span class="fw-bold fs-5">Combo Price</span>
                         <span class="fw-bold text-danger" style="font-size:2rem">৳@Model.ComboPrice.ToString("N0")</span>
                     </div>
                 </div>
@@ -161,19 +161,19 @@
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.Id" />
                     <button type="submit" class="btn btn-danger btn-lg w-100 fw-semibold py-3">
-                        <i class="bi bi-cart-plus me-2"></i>পুরো কম্বো কার্টে যোগ করুন
+                        <i class="bi bi-cart-plus me-2"></i>Add Combo to Cart
                     </button>
                 </form>
                 <p class="text-muted small text-center mt-2">
                     <i class="bi bi-shield-check me-1 text-success"></i>
-                    সব পণ্য একসাথে কার্টে যোগ হবে
+                    All combo items will be added to your cart together
                 </p>
             }
             else
             {
                 <a asp-controller="Account" asp-action="Login"
                    class="btn btn-danger btn-lg w-100 fw-semibold py-3">
-                    <i class="bi bi-cart-plus me-2"></i>কার্টে যোগ করতে লগইন করুন
+                    <i class="bi bi-cart-plus me-2"></i>Login to Add to Cart
                 </a>
             }
         </div>
@@ -197,4 +197,5 @@
             setInterval(updateDetail, 1000);
         }
     </script>
+}
 }

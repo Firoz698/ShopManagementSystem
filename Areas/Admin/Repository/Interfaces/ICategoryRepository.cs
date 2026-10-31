@@ -3,7 +3,7 @@ using ShopManagementSystem.Models;
 
 namespace ShopManagementSystem.Areas.Admin.Repository.Interfaces
 {
-    // Generic IRepository<Category> এর উপরে Category-specific method গুলো
+ // Generic IRepository<Category> Category-specific method 
     public interface ICategoryRepository : IRepository<Category>
     {
         Task<List<Category>> GetAllWithProductsAsync();
@@ -11,3 +11,4 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Interfaces
         Task<bool> ExistsAsync(int id);
     }
 }
+

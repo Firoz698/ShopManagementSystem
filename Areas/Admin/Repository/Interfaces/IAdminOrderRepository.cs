@@ -1,4 +1,4 @@
-﻿using ShopManagementSystem.Models;
+using ShopManagementSystem.Models;
 
 namespace ShopManagementSystem.Areas.Admin.Repository.Interfaces
 {
@@ -15,5 +15,15 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Interfaces
         Task<Order?> GetByIdAsync(int id);
         Task UpdateStatusAsync(Order order, string status);
         Task DeleteAsync(Order order);
+
+        // ── Delivery & Tracking ──────────────────────────────────────────────────
+        Task<List<Order>> GetDeliveryOrdersAsync(string? status, string? search, string? assignedEmployeeId = null);
+        Task<Order?> GetDeliveryOrderAsync(int id);
+        Task<List<ApplicationUser>> GetDeliveryStaffListAsync();
+        Task AssignRiderAsync(int orderId, string employeeId, DateTime? estimatedDate, string? notes, string updatedBy);
+        Task UpdateDeliveryStatusAsync(int orderId, string status, string? location, string? notes, string updatedBy);
+        Task<(bool Success, string Message)> VerifyOtpAndCompleteDeliveryAsync(int orderId, string otp, string? notes, string updatedBy);
+        Task AdminOverrideCompleteDeliveryAsync(int orderId, string? notes, string updatedBy);
+        Task AddTrackingLogAsync(int orderId, string status, string title, string? description, string? location, string? updatedBy);
     }
 }

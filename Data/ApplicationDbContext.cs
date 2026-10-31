@@ -30,13 +30,78 @@ namespace ShopManagementSystem.Data
         public DbSet<HomepageSection> HomepageSections { get; set; }
         public DbSet<HomepageSectionCategory> HomepageSectionCategories { get; set; }
         public DbSet<HomepageSectionProduct> HomepageSectionProducts { get; set; }
+        public DbSet<NotificationSetting> NotificationSettings { get; set; }
+        public DbSet<PaymentMethodSetting> PaymentMethodSettings { get; set; }
+        public DbSet<OtpVerification> OtpVerifications { get; set; }
+        public DbSet<OrderTrackingLog> OrderTrackingLogs { get; set; }
+
+        public DbSet<Menu> Menus { get; set; }
+        public DbSet<UserMenuPermission> UserMenuPermissions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
+            // One user + one menu = unique permission row
+            builder.Entity<UserMenuPermission>()
+                .HasIndex(p => new { p.UserId, p.MenuId })
+                .IsUnique();
+
+            // Menu -> Parent (self-reference) restrict cascade delete to prevent SQL Server cycle error
+            builder.Entity<Menu>()
+                .HasOne(m => m.Parent)
+                .WithMany(m => m.Children)
+                .HasForeignKey(m => m.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Cascade delete permissions when user/employee is deleted
+            builder.Entity<UserMenuPermission>()
+                .HasOne(p => p.User)
+                .WithMany(u => u.MenuPermissions)
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Cascade delete permissions when menu is deleted
+            builder.Entity<UserMenuPermission>()
+                .HasOne(p => p.Menu)
+                .WithMany(m => m.UserPermissions)
+                .HasForeignKey(p => p.MenuId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Order delivery assignment
+            builder.Entity<Order>()
+                .HasOne(o => o.AssignedEmployee)
+                .WithMany()
+                .HasForeignKey(o => o.AssignedEmployeeId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // Order Tracking Logs
+            builder.Entity<OrderTrackingLog>()
+                .HasOne(l => l.Order)
+                .WithMany(o => o.TrackingLogs)
+                .HasForeignKey(l => l.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             builder.Entity<ReturnRequest>()
                 .HasIndex(r => new { r.OrderId, r.ProductId, r.UserId });
+
+            builder.Entity<ReturnRequest>()
+                .HasOne(r => r.Order)
+                .WithMany()
+                .HasForeignKey(r => r.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ReturnRequest>()
+                .HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<ReturnRequest>()
+                .HasOne(r => r.Product)
+                .WithMany()
+                .HasForeignKey(r => r.ProductId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             builder.Entity<ComboOffer>()
                 .HasMany(c => c.Items)
@@ -55,11 +120,23 @@ namespace ShopManagementSystem.Data
                 .HasForeignKey(sc => sc.SectionId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<HomepageSectionCategory>()
+                .HasOne(sc => sc.Category)
+                .WithMany()
+                .HasForeignKey(sc => sc.CategoryId)
+                .OnDelete(DeleteBehavior.NoAction);
+
             builder.Entity<HomepageSection>()
                 .HasMany(s => s.Products)
                 .WithOne(sp => sp.Section)
                 .HasForeignKey(sp => sp.SectionId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<HomepageSectionProduct>()
+                .HasOne(sp => sp.Product)
+                .WithMany()
+                .HasForeignKey(sp => sp.ProductId)
+                .OnDelete(DeleteBehavior.NoAction);
 
 
             builder.Entity<ChatMessage>()
@@ -91,10 +168,16 @@ namespace ShopManagementSystem.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<Cart>()
+                .HasOne(c => c.Product)
+                .WithMany(p => p.CartItems)
+                .HasForeignKey(c => c.ProductId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<Cart>()
                 .HasOne(c => c.ProductSize)
                 .WithMany()
                 .HasForeignKey(c => c.ProductSizeId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.NoAction);
 
 
             builder.Entity<PaymentTransaction>()
@@ -105,7 +188,7 @@ namespace ShopManagementSystem.Data
 
             // Unique constraints
             builder.Entity<Cart>()
-                .HasIndex(c => new { c.UserId, c.ProductId })
+                .HasIndex(c => new { c.UserId, c.ProductId, c.ProductSizeId })
                 .IsUnique();
 
             builder.Entity<Wishlist>()

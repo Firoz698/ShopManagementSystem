@@ -10,7 +10,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
     {
         public CategoryRepository(ApplicationDbContext db) : base(db) { }
 
-        // সব category — products সহ, নতুন থেকে পুরনো
+ // category — products , 
         public async Task<List<Category>> GetAllWithProductsAsync()
         {
             return await _db.Categories
@@ -19,16 +19,17 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
                 .ToListAsync();
         }
 
-        // Id দিয়ে category খোঁজে
+ // Id category 
         public async Task<Category?> GetByIdAsync(int id)
         {
             return await _db.Categories.FindAsync(id);
         }
 
-        // Category exist করে কিনা check
+ // Category exist check
         public async Task<bool> ExistsAsync(int id)
         {
             return await _db.Categories.AnyAsync(c => c.Id == id);
         }
     }
 }
+

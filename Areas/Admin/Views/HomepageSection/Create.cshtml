@@ -1,6 +1,6 @@
-﻿@model HomepageSectionCreateViewModel
+@model HomepageSectionCreateViewModel
 @{
-    ViewData["Title"] = "নতুন হোমপেজ সেকশন";
+    ViewData["Title"] = "New Homepage Section";
 }
 
 @{
@@ -20,29 +20,29 @@
                     <!-- Basic -->
                     <div class="card bg-light border-0 mb-3">
                         <div class="card-body">
-                            <h6 class="fw-bold mb-3">📋 সেকশন তথ্য</h6>
+                            <h6 class="fw-bold mb-3">📋 Section Information</h6>
                             <div class="mb-3">
-                                <label class="form-label fw-medium small">শিরোনাম <span class="text-danger">*</span></label>
-                                <input asp-for="Title" class="form-control" placeholder="যেমন: জনপ্রিয় ক্যাটাগরি" />
+                                <label class="form-label fw-medium small">Title <span class="text-danger">*</span></label>
+                                <input asp-for="Title" class="form-control" placeholder="e.g. Featured Categories" />
                             </div>
                             <div class="mb-3">
-                                <label class="form-label fw-medium small">সাব-টাইটেল</label>
+                                <label class="form-label fw-medium small">Subtitle</label>
                                 <input asp-for="SubTitle" class="form-control"
-                                       placeholder="যেমন: আপনার পছন্দের ক্যাটাগরি বেছে নিন" />
+                                       placeholder="e.g. Discover our best collection" />
                             </div>
 
                             <!-- Section Type -->
                             <div class="mb-3">
-                                <label class="form-label fw-medium small">সেকশনের ধরন <span class="text-danger">*</span></label>
+                                <label class="form-label fw-medium small">Section Type <span class="text-danger">*</span></label>
                                 <div class="row g-2">
                                     @{
                                         var types = new[]
                                         {
-                                                                        ("category", "bi-tag", "ক্যাটাগরি", "নির্দিষ্ট ক্যাটাগরি দেখাবে"),
-                                                                        ("combo",    "bi-gift", "কম্বো অফার", "সব active কম্বো দেখাবে"),
-                                                                        ("product",  "bi-box-seam", "পণ্য", "নির্দিষ্ট পণ্য দেখাবে"),
-                                                                        ("banner",   "bi-image", "ব্যানার", "ফুল-উইথ ব্যানার ইমেজ")
-                                                                        };
+                                            ("category", "bi-tag", "Category", "Display specific categories"),
+                                            ("combo",    "bi-gift", "Combo Offers", "Display active combo offers"),
+                                            ("product",  "bi-box-seam", "Products", "Display selected products"),
+                                            ("banner",   "bi-image", "Banner", "Full-width promotional banner")
+                                        };
                                     }
                                     @foreach (var (val, icon, label, desc) in types)
                                     {
@@ -66,11 +66,11 @@
                             <!-- Button -->
                             <div class="row g-2">
                                 <div class="col-md-5">
-                                    <label class="form-label fw-medium small">বাটনের লেখা</label>
-                                    <input asp-for="ButtonText" class="form-control" placeholder="সব দেখুন" />
+                                    <label class="form-label fw-medium small">Button Text</label>
+                                    <input asp-for="ButtonText" class="form-control" placeholder="View All" />
                                 </div>
                                 <div class="col-md-7">
-                                    <label class="form-label fw-medium small">বাটনের লিংক</label>
+                                    <label class="form-label fw-medium small">Button Link</label>
                                     <input asp-for="ButtonUrl" class="form-control" placeholder="/Product" />
                                 </div>
                             </div>
@@ -80,7 +80,7 @@
                     <!-- Category selection (shows when type=category) -->
                     <div id="categorySection" class="card bg-light border-0 mb-3">
                         <div class="card-body">
-                            <h6 class="fw-bold mb-3">🏷️ ক্যাটাগরি নির্বাচন করুন</h6>
+                            <h6 class="fw-bold mb-3">🏷️ Select Categories</h6>
                             <div class="row g-2">
                                 @foreach (var cat in allCategories)
                                 {
@@ -109,10 +109,10 @@
                     <!-- Product selection (shows when type=product) -->
                     <div id="productSection" class="card bg-light border-0 mb-3" style="display:none">
                         <div class="card-body">
-                            <h6 class="fw-bold mb-3">📦 পণ্য নির্বাচন করুন</h6>
+                            <h6 class="fw-bold mb-3">📦 Select Products</h6>
                             <div class="mb-2">
                                 <input type="text" class="form-control form-control-sm"
-                                       placeholder="পণ্য খুঁজুন..."
+                                       placeholder="Search product..."
                                        onkeyup="filterProducts(this.value)" />
                             </div>
                             <div class="row g-2" id="productCheckboxes" style="max-height:300px;overflow-y:auto">
@@ -149,10 +149,10 @@
                     <!-- Colors -->
                     <div class="card bg-light border-0 mb-3">
                         <div class="card-body">
-                            <h6 class="fw-semibold mb-3">🎨 ডিজাইন</h6>
+                            <h6 class="fw-semibold mb-3">🎨 Styling</h6>
                             <div class="row g-3 mb-3">
                                 <div class="col-6">
-                                    <label class="form-label fw-medium small">ব্যাকগ্রাউন্ড রং</label>
+                                    <label class="form-label fw-medium small">Background Color</label>
                                     <div class="d-flex gap-2 align-items-center">
                                         <input asp-for="BgColor" type="color" class="form-control form-control-color"
                                                style="width:50px;height:38px" value="#f8f9fa" />
@@ -174,7 +174,7 @@
                                     </div>
                                 </div>
                                 <div class="col-6">
-                                    <label class="form-label fw-medium small">লেখার রং</label>
+                                    <label class="form-label fw-medium small">Text Color</label>
                                     <div class="d-flex gap-2 align-items-center">
                                         <input asp-for="TextColor" type="color" class="form-control form-control-color"
                                                style="width:50px;height:38px" value="#1a1a2e" />
@@ -197,8 +197,8 @@
                             <!-- Preview -->
                             <div class="rounded-3 p-3 text-center mt-2" id="sectionPreview"
                                  style="background:#f8f9fa;transition:.3s">
-                                <div class="fw-bold" id="previewTitle">সেকশন টাইটেল</div>
-                                <div class="small opacity-75" id="previewSubtitle">সাব-টাইটেল</div>
+                                <div class="fw-bold" id="previewTitle">Section Title</div>
+                                <div class="small opacity-75" id="previewSubtitle">Section Subtitle</div>
                             </div>
                         </div>
                     </div>
@@ -206,7 +206,7 @@
                     <!-- Banner image (for banner type) -->
                     <div id="bannerImageSection" class="card bg-light border-0 mb-3" style="display:none">
                         <div class="card-body">
-                            <h6 class="fw-semibold mb-2"><i class="bi bi-image me-2"></i>ব্যানার ছবি</h6>
+                            <h6 class="fw-semibold mb-2"><i class="bi bi-image me-2"></i>Banner Image</h6>
                             <input type="file" name="BannerImage" class="form-control form-control-sm"
                                    accept="image/*"
                                    onchange="document.getElementById('bannerPrev').src=URL.createObjectURL(this.files[0]);document.getElementById('bannerPrev').style.display='block'" />
@@ -218,15 +218,15 @@
                     <!-- Settings -->
                     <div class="card bg-light border-0">
                         <div class="card-body">
-                            <h6 class="fw-semibold mb-3">⚙️ সেটিংস</h6>
+                            <h6 class="fw-semibold mb-3">⚙️ Settings</h6>
                             <div class="mb-3">
-                                <label class="form-label fw-medium small">সাজানোর ক্রম</label>
+                                <label class="form-label fw-medium small">Sort Order</label>
                                 <input asp-for="SortOrder" type="number" min="0"
                                        class="form-control form-control-sm" style="width:100px" />
                             </div>
                             <div class="form-check form-switch">
                                 <input asp-for="IsActive" class="form-check-input" type="checkbox" checked />
-                                <label class="form-check-label fw-medium">সক্রিয়</label>
+                                <label class="form-check-label fw-medium">Active</label>
                             </div>
                         </div>
                     </div>
@@ -236,9 +236,9 @@
             <hr class="my-4" />
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-dark px-4">
-                    <i class="bi bi-check-circle me-2"></i>সেকশন সেভ করুন
+                    <i class="bi bi-check-circle me-2"></i>Save Section
                 </button>
-                <a asp-action="Index" class="btn btn-outline-secondary">বাতিল</a>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
             </div>
         </form>
     </div>
@@ -268,14 +268,12 @@
             container.classList.add('selected');
             document.getElementById('type_' + val).checked = true;
 
-            // Show/hide panels
             document.getElementById('categorySection').style.display   = val === 'category' ? '' : 'none';
             document.getElementById('productSection').style.display    = val === 'product'  ? '' : 'none';
             document.getElementById('bannerImageSection').style.display = val === 'banner'  ? '' : 'none';
         }
 
-        // Init first type selected
-        document.querySelector('.type-option').classList.add('selected');
+        document.querySelector('.type-option')?.classList.add('selected');
 
         function setBg(color) {
             document.querySelector('[name=BgColor]').value = color;
@@ -288,12 +286,11 @@
             document.getElementById('sectionPreview').style.color = color;
         }
 
-        // Live preview
         document.querySelector('[name=Title]')?.addEventListener('input', function() {
-            document.getElementById('previewTitle').textContent = this.value || 'সেকশন টাইটেল';
+            document.getElementById('previewTitle').textContent = this.value || 'Section Title';
         });
         document.querySelector('[name=SubTitle]')?.addEventListener('input', function() {
-            document.getElementById('previewSubtitle').textContent = this.value || 'সাব-টাইটেল';
+            document.getElementById('previewSubtitle').textContent = this.value || 'Section Subtitle';
         });
 
         function filterProducts(query) {
@@ -303,3 +300,4 @@
         }
     </script>
 }
+

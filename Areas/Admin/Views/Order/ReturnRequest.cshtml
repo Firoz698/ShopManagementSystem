@@ -1,5 +1,5 @@
-﻿@{
-    ViewData["Title"] = "রিটার্ন রিকোয়েস্ট";
+@{
+    ViewData["Title"] = "Return Request";
 }
 
 @{
@@ -10,8 +10,8 @@
 <div class="container my-4">
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb small">
-            <li class="breadcrumb-item"><a asp-controller="Cart" asp-action="MyOrders">আমার অর্ডার</a></li>
-            <li class="breadcrumb-item active">রিটার্ন রিকোয়েস্ট</li>
+            <li class="breadcrumb-item"><a asp-controller="Cart" asp-action="MyOrders">My Orders</a></li>
+            <li class="breadcrumb-item active">Return Request</li>
         </ol>
     </nav>
 
@@ -20,7 +20,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white py-3">
                     <h5 class="fw-bold mb-0">
-                        <i class="bi bi-arrow-return-left text-danger me-2"></i>রিটার্ন রিকোয়েস্ট
+                        <i class="bi bi-arrow-return-left text-danger me-2"></i>Submit Return Request
                     </h5>
                 </div>
                 <div class="card-body p-4">
@@ -29,7 +29,7 @@
                     <div class="bg-light rounded-3 p-3 mb-4">
                         <div class="fw-semibold">@product?.Name</div>
                         <div class="text-muted small mt-1">
-                            অর্ডার #@order?.Id &nbsp;|&nbsp;
+                            Order #@order?.Id &nbsp;|&nbsp;
                             <span class="badge badge-status-@order?.Status rounded-pill px-2">@order?.Status</span>
                         </div>
                     </div>
@@ -37,8 +37,8 @@
                     <!-- Return reasons info -->
                     <div class="alert alert-info border-0 py-2 mb-4 small">
                         <i class="bi bi-info-circle me-2"></i>
-                        রিটার্ন রিকোয়েস্ট গ্রহণযোগ্য কারণ: পণ্য ক্ষতিগ্রস্ত, ভুল পণ্য ডেলিভারি,
-                        অর্ডার থেকে পার্থক্য। রিকোয়েস্টের পর ৩-৫ কার্যদিবসের মধ্যে যোগাযোগ করা হবে।
+                        Valid return reasons include damaged product, wrong product delivery, or mismatch with description.
+                        Our team will get in touch within 3-5 business days.
                     </div>
 
                     <form asp-controller="Order" asp-action="ReturnRequest" method="post">
@@ -48,17 +48,17 @@
 
                         <!-- Quick reason select -->
                         <div class="mb-3">
-                            <label class="form-label fw-medium">রিটার্নের কারণ নির্বাচন করুন <span class="text-danger">*</span></label>
+                            <label class="form-label fw-medium">Select Return Reason <span class="text-danger">*</span></label>
                             <div class="d-flex flex-column gap-2">
                                 @{
                                     var reasons = new[]
                                     {
-                                                                "পণ্যটি ক্ষতিগ্রস্ত অবস্থায় পেয়েছি",
-                                                                "ভুল পণ্য ডেলিভারি হয়েছে",
-                                                                "পণ্যের মান প্রত্যাশার চেয়ে খারাপ",
-                                                                "পণ্যটি অর্ডারের বিবরণের সাথে মিলছে না",
-                                                                "অন্য কারণ"
-                                                                };
+                                        "Received damaged product",
+                                        "Wrong item delivered",
+                                        "Product quality is below expectation",
+                                        "Item does not match description",
+                                        "Other reason"
+                                    };
                                 }
                                 @foreach (var r in reasons)
                                 {
@@ -78,17 +78,17 @@
 
                         <!-- Full reason textarea -->
                         <div class="mb-4">
-                            <label class="form-label fw-medium">বিস্তারিত বর্ণনা <span class="text-danger">*</span></label>
+                            <label class="form-label fw-medium">Detailed Description <span class="text-danger">*</span></label>
                             <textarea name="reason" id="reasonText" class="form-control" rows="4" required
-                                      placeholder="রিটার্নের কারণ বিস্তারিত লিখুন..."></textarea>
+                                      placeholder="Explain the reason for return in detail..."></textarea>
                         </div>
 
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-danger px-4 fw-semibold">
-                                <i class="bi bi-send me-2"></i>রিটার্ন রিকোয়েস্ট পাঠান
+                                <i class="bi bi-send me-2"></i>Submit Request
                             </button>
                             <a asp-controller="Cart" asp-action="MyOrders"
-                               class="btn btn-outline-secondary">বাতিল</a>
+                               class="btn btn-outline-secondary">Cancel</a>
                         </div>
                     </form>
                 </div>
@@ -103,15 +103,15 @@
         transition: border-color .2s, background .2s;
     }
 
-        .reason-option:hover {
-            border-color: #dc3545 !important;
-            background: #fff5f5;
-        }
+    .reason-option:hover {
+        border-color: #dc3545 !important;
+        background: #fff5f5;
+    }
 
-        .reason-option.selected {
-            border-color: #dc3545 !important;
-            background: #fff5f5;
-        }
+    .reason-option.selected {
+        border-color: #dc3545 !important;
+        background: #fff5f5;
+    }
 
     .badge-status-Completed {
         background: #d1fae5;
@@ -131,8 +131,9 @@
                 opt.classList.remove('selected');
             });
             el.classList.add('selected');
-            document.getElementById('reasonText').value = text === 'অন্য কারণ' ? '' : text;
-            if (text === 'অন্য কারণ') document.getElementById('reasonText').focus();
+            document.getElementById('reasonText').value = text === 'Other reason' ? '' : text;
+            if (text === 'Other reason') document.getElementById('reasonText').focus();
         }
     </script>
 }
+

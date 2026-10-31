@@ -12,6 +12,12 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Interfaces
         Task RemoveUserRelatedDataAsync(string userId);
         Task<bool> DeleteUserAsync(ApplicationUser user);
         Task ToggleRoleAsync(ApplicationUser user);
-        Task<bool> UpdateUserAsync(ApplicationUser user, ApplicationUser model);
+
+        // ✅ Update — email, photo shoho sob property
+        Task<(bool Success, string Message)> UpdateUserAsync(
+            ApplicationUser user, ApplicationUser model, IFormFile? photoFile, string webRootPath);
+
+        // ✅ Admin diye password reset (current password lagbe na)
+        Task<Microsoft.AspNetCore.Identity.IdentityResult> AdminResetPasswordAsync(ApplicationUser user, string newPassword);
     }
 }

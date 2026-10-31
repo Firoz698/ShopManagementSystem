@@ -10,7 +10,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
     {
         public SliderRepository(ApplicationDbContext db) : base(db) { }
 
-        // SortOrder অনুযায়ী সাজানো সব slider
+ // SortOrder slider
         public async Task<List<Slider>> GetAllOrderedAsync()
         {
             return await _db.Sliders
@@ -18,10 +18,11 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
                 .ToListAsync();
         }
 
-        // Id দিয়ে slider খোঁজে
+ // Id slider 
         public async Task<Slider?> GetByIdAsync(int id)
         {
             return await _db.Sliders.FindAsync(id);
         }
     }
 }
+

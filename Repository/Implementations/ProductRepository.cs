@@ -15,7 +15,7 @@ namespace ShopManagementSystem.Repository.Implementations
             _db = db;
         }
 
-        // Filter, search, sort ও pagination সহ product list
+ // Filter, search, sort pagination product list
         public async Task<(List<Product> Products, int TotalCount)> GetProductsAsync(
             int? categoryId, string? search,
             decimal? minPrice, decimal? maxPrice,
@@ -53,13 +53,13 @@ namespace ShopManagementSystem.Repository.Implementations
             return (products, total);
         }
 
-        // শুধু active category গুলো
+ // active category 
         public async Task<List<Category>> GetActiveCategoriesAsync()
         {
             return await _db.Categories.Where(c => c.IsActive).ToListAsync();
         }
 
-        // Product detail — images, sizes, reviews, user সহ
+ // Product detail — images, sizes, reviews, user 
         public async Task<Product?> GetProductDetailAsync(int id)
         {
             return await _db.Products
@@ -70,14 +70,14 @@ namespace ShopManagementSystem.Repository.Implementations
                 .FirstOrDefaultAsync(p => p.Id == id && p.IsActive);
         }
 
-        // User এর wishlist এ product আছে কিনা
+ // User wishlist product 
         public async Task<bool> IsInWishlistAsync(string userId, int productId)
         {
             return await _db.Wishlists
                 .AnyAsync(w => w.UserId == userId && w.ProductId == productId);
         }
 
-        // Same category র related products (নিজেকে বাদ দিয়ে)
+ // Same category related products ( )
         public async Task<List<Product>> GetRelatedProductsAsync(int categoryId, int excludeProductId)
         {
             return await _db.Products
@@ -88,14 +88,14 @@ namespace ShopManagementSystem.Repository.Implementations
                 .ToListAsync();
         }
 
-        // User আগে review দিয়েছে কিনা
+ // User review 
         public async Task<bool> HasUserReviewedAsync(string userId, int productId)
         {
             return await _db.Reviews
                 .AnyAsync(r => r.UserId == userId && r.ProductId == productId);
         }
 
-        // নতুন review save করা
+ // review save 
         public async Task AddReviewAsync(string userId, ReviewViewModel vm)
         {
             var alreadyReviewed = await HasUserReviewedAsync(userId, vm.ProductId);
@@ -113,3 +113,4 @@ namespace ShopManagementSystem.Repository.Implementations
         }
     }
 }
+

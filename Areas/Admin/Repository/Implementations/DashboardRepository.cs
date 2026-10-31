@@ -14,29 +14,29 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
             _db = db;
         }
 
-        // মোট product count
+ // product count
         public async Task<int> GetTotalProductsAsync()
             => await _db.Products.CountAsync();
 
-        // মোট order count
+ // order count
         public async Task<int> GetTotalOrdersAsync()
             => await _db.Orders.CountAsync();
 
-        // মোট user count
+ // user count
         public async Task<int> GetTotalUsersAsync()
             => await _db.Users.CountAsync();
 
-        // Pending অর্ডারের count
+ // Pending count
         public async Task<int> GetPendingOrdersAsync()
             => await _db.Orders.CountAsync(o => o.Status == "Pending");
 
-        // শুধু Completed অর্ডারের মোট revenue
+ // Completed revenue
         public async Task<decimal> GetTotalRevenueAsync()
             => await _db.Orders
                 .Where(o => o.Status == "Completed")
                 .SumAsync(o => o.TotalAmount);
 
-        // সর্বশেষ orders — user সহ
+ // orders — user 
         public async Task<List<Order>> GetRecentOrdersAsync(int take = 10)
             => await _db.Orders
                 .Include(o => o.User)
@@ -44,7 +44,7 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
                 .Take(take)
                 .ToListAsync();
 
-        // Stock কম এমন products (threshold এর সমান বা কম)
+ // Stock products (threshold )
         public async Task<List<Product>> GetLowStockItemsAsync(int threshold = 5, int take = 10)
             => await _db.Products
                 .Where(p => p.Stock <= threshold)
@@ -52,3 +52,4 @@ namespace ShopManagementSystem.Areas.Admin.Repository.Implementations
                 .ToListAsync();
     }
 }
+

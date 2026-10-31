@@ -7,7 +7,7 @@ using ShopManagementSystem.Services;
 
 namespace ShopManagementSystem.Areas.Admin.Controllers
 {
-    [Area("Admin"), Authorize(Roles = "Admin")]
+    [Area("Admin"), Authorize]
     public class CategoryController : Controller
     {
         private readonly ICategoryRepository _categoryRepo;
@@ -45,7 +45,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             await _categoryRepo.AddAsync(model);
             await _categoryRepo.SaveAsync();
 
-            TempData["Success"] = "ক্যাটাগরি যোগ করা হয়েছে।";
+            TempData["Success"] = "Category created successfully.";
             return RedirectToAction("Index");
         }
 
@@ -80,7 +80,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
             await _categoryRepo.UpdateAsync(cat);
             await _categoryRepo.SaveAsync();
 
-            TempData["Success"] = "ক্যাটাগরি আপডেট করা হয়েছে।";
+            TempData["Success"] = "Category updated successfully.";
             return RedirectToAction("Index");
         }
 
@@ -97,7 +97,7 @@ namespace ShopManagementSystem.Areas.Admin.Controllers
                 await _categoryRepo.DeleteAsync(cat);
                 await _categoryRepo.SaveAsync();
 
-                TempData["Success"] = "ক্যাটাগরি মুছে ফেলা হয়েছে।";
+                TempData["Success"] = "Category deleted successfully.";
             }
             return RedirectToAction("Index");
         }

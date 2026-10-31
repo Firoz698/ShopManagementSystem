@@ -1,0 +1,76 @@
+@model List<ShopManagementSystem.Models.Menu>
+@{
+    ViewData["Title"] = "Menu Management";
+    var perm = await PermissionChecker.GetPermissionsAsync(User, "Menu");
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">Menu Management</h3>
+    @if (perm.CanCreate)
+    {
+        <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>New Menu</a>
+    }
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Title</th>
+                    <th>Controller/Action</th>
+                    <th>Parent</th>
+                    <th>Order</th>
+                    <th>Status</th>
+                    @if (perm.CanEdit || perm.CanDelete)
+                    {
+                        <th class="text-end">Action</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var m in Model)
+                {
+                    <tr>
+                        <td>
+                            @if (m.ParentId != null)
+                            {
+                                <span class="text-muted">— </span>
+                            }
+                            <i class="@m.Icon me-1"></i>@m.Title
+                        </td>
+                        <td class="small text-muted">@(m.Controller ?? "(Group Header)") @(m.Controller != null ? "/" + m.Action : "")</td>
+                        <td class="small">@m.Parent?.Title</td>
+                        <td>@m.SortOrder</td>
+                        <td>
+                            @if (m.IsActive)
+                            {
+                                <span class="badge bg-success-subtle text-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
+                            }
+                        </td>
+                        @if (perm.CanEdit || perm.CanDelete)
+                        {
+                            <td class="text-end">
+                                @if (perm.CanEdit)
+                                {
+                                    <a asp-action="Edit" asp-route-id="@m.Id" class="btn btn-sm btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
+                                }
+                                @if (perm.CanDelete)
+                                {
+                                    <form asp-action="Delete" asp-route-id="@m.Id" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this menu?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
